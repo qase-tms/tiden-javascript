@@ -1,6 +1,5 @@
 import { ModeEnum } from '../options';
 import { DriverEnum, FormatEnum } from '../writer';
-import { ExternalLinkType } from '../models/config/TestOpsOptionsType';
 
 /**
  * @type {JSONSchemaType<ConfigType>}
@@ -113,39 +112,6 @@ export const configValidationSchema = {
               type: 'boolean',
               nullable: true,
             },
-            tags: {
-              type: 'array',
-              items: {
-                type: 'string',
-              },
-              nullable: true,
-            },
-            externalLink: {
-              type: 'object',
-              nullable: true,
-              properties: {
-                type: {
-                  type: 'string',
-                  enum: [ExternalLinkType.JIRA_CLOUD, ExternalLinkType.JIRA_SERVER],
-                },
-                link: {
-                  type: 'string',
-                },
-              },
-              required: ['type', 'link'],
-            },
-          },
-        },
-
-        plan: {
-          type: 'object',
-          nullable: true,
-
-          properties: {
-            id: {
-              type: 'number',
-              nullable: true,
-            },
           },
         },
 
@@ -188,10 +154,6 @@ export const configValidationSchema = {
                 required: ['name', 'value'],
               },
             },
-            createIfNotExists: {
-              type: 'boolean',
-              nullable: true,
-            },
           },
           required: ['values'],
         },
@@ -232,30 +194,6 @@ export const configValidationSchema = {
                   title: { type: 'string', nullable: true },
                   description: { type: 'string', nullable: true },
                   complete: { type: 'boolean', nullable: true },
-                  tags: {
-                    type: 'array',
-                    items: { type: 'string' },
-                    nullable: true,
-                  },
-                  externalLink: {
-                    type: 'object',
-                    nullable: true,
-                    properties: {
-                      type: {
-                        type: 'string',
-                        enum: [ExternalLinkType.JIRA_CLOUD, ExternalLinkType.JIRA_SERVER],
-                      },
-                      link: { type: 'string' },
-                    },
-                    required: ['type', 'link'],
-                  },
-                },
-              },
-              plan: {
-                type: 'object',
-                nullable: true,
-                properties: {
-                  id: { type: 'number', nullable: true },
                 },
               },
               environment: {

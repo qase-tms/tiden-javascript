@@ -5,8 +5,7 @@ import {
   EnvApiEnum,
   EnvRunEnum,
   EnvLocalEnum,
-  EnvPlanEnum, 
-  EnvBatchEnum, 
+  EnvBatchEnum,
   EnvConfigurationsEnum,
   EnvLoggingEnum,
 } from './env-enum';
@@ -14,7 +13,6 @@ import {
 import { DriverEnum } from '../writer';
 import { ConfigType } from '../config';
 import { FormatEnum } from '../writer/driver-enum';
-import { ExternalLinkType } from '../models/config/TestOpsOptionsType';
 
 /**
  * @param {EnvType} env
@@ -38,7 +36,6 @@ export const envToConfig = (env: EnvType): ConfigType => ({
     project: env[EnvTestOpsEnum.project],
     uploadAttachments: env[EnvTestOpsEnum.uploadAttachments],
     statusFilter: env[EnvTestOpsEnum.statusFilter]?.split(',').map(status => status.trim()) ?? undefined,
-    showPublicReportLink: env[EnvTestOpsEnum.showPublicReportLink],
 
     api: {
       token: env[EnvApiEnum.token],
@@ -50,31 +47,6 @@ export const envToConfig = (env: EnvType): ConfigType => ({
       title: env[EnvRunEnum.title],
       description: env[EnvRunEnum.description],
       complete: env[EnvRunEnum.complete],
-      tags: env[EnvRunEnum.tags]?.split(',').map(tag => tag.trim()) ?? [],
-      externalLink: env[EnvRunEnum.externalLink] ? (() => {
-        try {
-          const externalLinkValue = env[EnvRunEnum.externalLink];
-          if (!externalLinkValue) return undefined;
-          
-          const parsed = JSON.parse(externalLinkValue) as { type: string; link: string };
-          
-          // Validate that type is a valid ExternalLinkType value
-          if (parsed.type !== 'jiraCloud' && parsed.type !== 'jiraServer') {
-            return undefined;
-          }
-          
-          return {
-            type: parsed.type as ExternalLinkType,
-            link: parsed.link,
-          };
-        } catch {
-          return undefined;
-        }
-      })() : undefined,
-    },
-
-    plan: {
-      id: env[EnvPlanEnum.id],
     },
 
     batch: {
@@ -86,7 +58,6 @@ export const envToConfig = (env: EnvType): ConfigType => ({
         const [name, value] = item.split('=');
         return { name: (name ?? '').trim(), value: value ? value.trim() : '' };
       }),
-      createIfNotExists: env[EnvConfigurationsEnum.createIfNotExists],
     } : undefined,
   },
 

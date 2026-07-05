@@ -4,8 +4,7 @@ import {
   EnvApiEnum,
   EnvRunEnum,
   EnvLocalEnum,
-  EnvPlanEnum, 
-  EnvBatchEnum, 
+  EnvBatchEnum,
   EnvConfigurationsEnum,
   EnvLoggingEnum,
 } from './env-enum';
@@ -26,7 +25,6 @@ export interface EnvType {
   [EnvTestOpsEnum.uploadAttachments]?: boolean;
   [EnvTestOpsEnum.defect]?: boolean;
   [EnvTestOpsEnum.statusFilter]?: string;
-  [EnvTestOpsEnum.showPublicReportLink]?: boolean;
 
   [EnvApiEnum.token]?: string;
   [EnvApiEnum.host]?: string;
@@ -35,15 +33,10 @@ export interface EnvType {
   [EnvRunEnum.title]?: string;
   [EnvRunEnum.description]?: string;
   [EnvRunEnum.complete]?: boolean;
-  [EnvRunEnum.tags]?: string;
-  [EnvRunEnum.externalLink]?: string;
-
-  [EnvPlanEnum.id]?: number;
 
   [EnvBatchEnum.size]?: number;
 
   [EnvConfigurationsEnum.values]?: string;
-  [EnvConfigurationsEnum.createIfNotExists]?: boolean;
 
   [EnvLocalEnum.path]?: string;
   [EnvLocalEnum.format]?: `${FormatEnum}`;

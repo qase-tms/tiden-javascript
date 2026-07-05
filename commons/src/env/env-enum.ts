@@ -19,7 +19,6 @@ export enum EnvTestOpsEnum {
   uploadAttachments = 'QASE_TESTOPS_UPLOAD_ATTACHMENTS',
   defect = 'QASE_TESTOPS_DEFECT',
   statusFilter = 'QASE_TESTOPS_STATUS_FILTER',
-  showPublicReportLink = 'QASE_TESTOPS_SHOW_PUBLIC_REPORT_LINK',
 }
 
 /**
@@ -38,15 +37,6 @@ export enum EnvRunEnum {
   title = 'QASE_TESTOPS_RUN_TITLE',
   description = 'QASE_TESTOPS_RUN_DESCRIPTION',
   complete = 'QASE_TESTOPS_RUN_COMPLETE',
-  tags = 'QASE_TESTOPS_RUN_TAGS',
-  externalLink = 'QASE_TESTOPS_RUN_EXTERNAL_LINK',
-}
-
-/**
- * @enum {string}
- */
-export enum EnvPlanEnum {
-  id = 'QASE_TESTOPS_PLAN_ID',
 }
 
 /**
@@ -61,7 +51,6 @@ export enum EnvBatchEnum {
  */
 export enum EnvConfigurationsEnum {
   values = 'QASE_TESTOPS_CONFIGURATIONS_VALUES',
-  createIfNotExists = 'QASE_TESTOPS_CONFIGURATIONS_CREATE_IF_NOT_EXISTS',
 }
 
 /**

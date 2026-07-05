@@ -5,9 +5,8 @@ import {
   EnvApiEnum, EnvBatchEnum,
   EnvEnum,
   EnvLocalEnum,
-  EnvPlanEnum,
   EnvRunEnum,
-  EnvTestOpsEnum, 
+  EnvTestOpsEnum,
   EnvConfigurationsEnum,
   EnvLoggingEnum,
 } from './env-enum';
@@ -69,10 +68,6 @@ export const envValidationSchema: JSONSchemaType<EnvType> = {
       type: 'string',
       nullable: true,
     },
-    [EnvTestOpsEnum.showPublicReportLink]: {
-      type: 'boolean',
-      nullable: true,
-    },
 
     [EnvApiEnum.token]: {
       type: 'string',
@@ -99,19 +94,6 @@ export const envValidationSchema: JSONSchemaType<EnvType> = {
       type: 'boolean',
       nullable: true,
     },
-    [EnvRunEnum.tags]: {
-      type: 'string',
-      nullable: true,
-    },
-    [EnvRunEnum.externalLink]: {
-      type: 'string',
-      nullable: true,
-    },
-
-    [EnvPlanEnum.id]: {
-      type: 'number',
-      nullable: true,
-    },
 
     [EnvBatchEnum.size]: {
       type: 'number',
@@ -120,10 +102,6 @@ export const envValidationSchema: JSONSchemaType<EnvType> = {
 
     [EnvConfigurationsEnum.values]: {
       type: 'string',
-      nullable: true,
-    },
-    [EnvConfigurationsEnum.createIfNotExists]: {
-      type: 'boolean',
       nullable: true,
     },
 

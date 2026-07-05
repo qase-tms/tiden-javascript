@@ -15,22 +15,6 @@ describe('configValidationSchema', () => {
               { name: 'group1', value: 'value1' },
               { name: 'group2', value: 'value2' },
             ],
-            createIfNotExists: true,
-          },
-        },
-      };
-
-      const isValid = validate(validConfig);
-      expect(isValid).toBe(true);
-    });
-
-    it('should validate configurations without createIfNotExists', () => {
-      const validConfig = {
-        testops: {
-          configurations: {
-            values: [
-              { name: 'group1', value: 'value1' },
-            ],
           },
         },
       };
@@ -55,9 +39,7 @@ describe('configValidationSchema', () => {
     it('should reject configurations without values', () => {
       const invalidConfig = {
         testops: {
-          configurations: {
-            createIfNotExists: true,
-          },
+          configurations: {},
         },
       };
 
@@ -105,23 +87,6 @@ describe('configValidationSchema', () => {
             values: [
               { name: 'group1', value: 123 }, // value should be string
             ],
-          },
-        },
-      };
-
-      const isValid = validate(invalidConfig);
-      expect(isValid).toBe(false);
-      expect(validate.errors).toBeDefined();
-    });
-
-    it('should reject configurations with invalid createIfNotExists type', () => {
-      const invalidConfig = {
-        testops: {
-          configurations: {
-            values: [
-              { name: 'group1', value: 'value1' },
-            ],
-            createIfNotExists: 'true', // should be boolean
           },
         },
       };
