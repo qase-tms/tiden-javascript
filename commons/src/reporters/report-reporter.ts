@@ -1,0 +1,190 @@
+import { AbstractReporter } from './abstract-reporter';
+import { Attachment, Report, TestStatusEnum, TestStepType, TestResultType } from '../models';
+import { WriterInterface } from '../writer';
+import { LoggerInterface } from '../utils/logger';
+import { getHostInfo } from '../utils/hostData';
+import { HostData } from '../models/host-data';
+import { ReportSerializer, ReportSerializerInterface } from '../formatter/report-serializer';
+
+/**
+ * @class ReportReporter
+ * @extends AbstractReporter
+ */
+export class ReportReporter extends AbstractReporter {
+
+  private readonly environment: string | undefined;
+  private readonly runId: number | undefined;
+  private readonly rootSuite: string | undefined;
+  private readonly hostData: HostData | undefined;
+  private readonly serializer: ReportSerializerInterface;
+  private startTime: number = Date.now();
+
+  /**
+   * @param {LoggerInterface} logger
+   * @param {WriterInterface} writer
+   * @param {string} frameworkName
+   * @param {string} reporterName
+   * @param {string | undefined} environment
+   * @param {string | undefined} rootSuite
+   * @param {number | undefined} runId
+   * @param {HostData | undefined} hostData
+   * @param {ReportSerializerInterface} serializer
+   */
+  constructor(
+    logger: LoggerInterface,
+    private writer: WriterInterface,
+    private frameworkName: string,
+    private reporterName: string,
+    environment?: string,
+    rootSuite?: string,
+    runId?: number,
+    hostData?: HostData,
+    serializer: ReportSerializerInterface = new ReportSerializer(),
+  ) {
+    super(logger);
+    this.environment = environment;
+    this.runId = runId;
+    this.rootSuite = rootSuite;
+    this.hostData = hostData;
+    this.serializer = serializer;
+  }
+
+  /**
+   * @returns {Promise<void>}
+   */
+  // eslint-disable-next-line @typescript-eslint/require-await
+  public async startTestRun(): Promise<void> {
+    this.startTime = Date.now();
+  }
+
+  /**
+   * @returns {Promise<void>}
+   *
+   */
+  public async publish(): Promise<void> {
+    await this.sendResults();
+    await this.complete();
+  }
+
+  public async sendResults(): Promise<void> {
+    this.writer.clearPreviousResults();
+
+    for (const result of this.results) {
+      if (result.attachments.length > 0) {
+        result.attachments = this.writer.writeAttachment(result.attachments);
+      }
+
+      result.steps = this.copyStepAttachments(result.steps);
+      result.run_id = this.runId ?? null;
+      if (result.relations != null && this.rootSuite != null) {
+        const data = {
+          title: this.rootSuite,
+          public_id: null,
+        };
+
+        result.relations.suite?.data.unshift(data);
+      } else if (this.rootSuite != null) {
+        result.relations = {
+          suite: {
+            data: [
+              {
+                title: this.rootSuite,
+                public_id: null,
+              },
+            ],
+          },
+        };
+      }
+
+      // Serialize to spec-compliant format before writing
+      const serialized = this.serializer.serializeResult(result);
+      await this.writer.writeTestResult(serialized as unknown as TestResultType);
+    }
+  }
+
+  public async complete(): Promise<void> {
+    const endTime = Date.now();
+    const report: Report = {
+      title: 'Test run',
+      execution: {
+        start_time: this.startTime / 1000,
+        end_time: endTime / 1000,
+        duration: endTime - this.startTime,
+        cumulative_duration: 0,
+      },
+      stats: {
+        total: 0,
+        passed: 0,
+        failed: 0,
+        skipped: 0,
+        blocked: 0,
+        invalid: 0,
+        muted: 0,
+      },
+      results: [],
+      threads: [],
+      suites: [],
+      environment: this.environment ?? '',
+      host_data: this.hostData ?? getHostInfo(this.frameworkName, this.reporterName),
+    };
+
+    for (const result of this.results) {
+      report.stats.total++;
+      switch (result.execution.status) {
+        case TestStatusEnum.passed:
+          report.stats.passed++;
+          break;
+        case TestStatusEnum.failed:
+          report.stats.failed++;
+          break;
+        case TestStatusEnum.skipped:
+          report.stats.skipped++;
+          break;
+        case TestStatusEnum.invalid:
+          report.stats.invalid++;
+          break;
+        case TestStatusEnum.blocked:
+          report.stats.blocked++;
+          break;
+      }
+
+      report.execution.cumulative_duration += result.execution.duration ?? 0;
+
+      report.results.push({
+        duration: result.execution.duration ?? 0,
+        id: result.id,
+        status: result.execution.status,
+        thread: result.execution.thread,
+        title: result.title,
+      });
+    }
+
+    const path = await this.writer.writeReport(report);
+
+    this.logger.log(`Report saved to ${path}`);
+  }
+
+  override uploadAttachment(attachment: Attachment): Promise<string> {
+    this.writer.writeAttachment([attachment]);
+    return Promise.resolve('');
+  }
+
+  /**
+   * @param {TestStepType[]} steps
+   * @returns {TestStepType[]}
+   */
+  private copyStepAttachments(steps: TestStepType[]): TestStepType[] {
+    for (const step of steps) {
+      if (step.attachments.length > 0) {
+        step.attachments = this.writer.writeAttachment(step.attachments);
+      }
+
+      if (step.steps.length > 0) {
+        step.steps = this.copyStepAttachments(step.steps);
+      }
+    }
+
+    return steps;
+  }
+
+}

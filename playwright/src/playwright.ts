@@ -1,0 +1,371 @@
+import test from '@playwright/test';
+import { v4 as uuidv4 } from 'uuid';
+import { PlaywrightQaseReporter } from './reporter';
+import * as path from 'path';
+import { getMimeTypes, formatTitleWithProjectMapping } from 'qase-javascript-commons';
+import { filterPositiveIds } from 'qase-javascript-commons/internal';
+
+export const ReporterContentType = 'application/qase.metadata+json';
+const defaultContentType = 'application/octet-stream';
+
+/** Project code -> test case IDs for multi-project (testops_multi) mode. */
+export type ProjectMapping = Record<string, number[]>;
+
+export interface MetadataMessage {
+  ids?: number[];
+  /** Multi-project mapping: project code -> list of test case IDs. */
+  projectMapping?: ProjectMapping;
+  title?: string;
+  fields?: Record<string, string>;
+  parameters?: Record<string, string>;
+  groupParams?: Record<string, string>;
+  ignore?: boolean;
+  suite?: string;
+  comment?: string;
+  tags?: string[];
+}
+
+/**
+ * Set IDs for the test case
+ *
+ * @param caseId
+ * @param name
+ * @example
+ * test(qase(1, 'test'), async ({ page }) => {
+ *  await page.goto('https://example.com');
+ * });
+ * @returns {string}
+ */
+export const qase = (
+  caseId: number | string | number[] | string[],
+  name: string,
+): string => {
+  const caseIds = Array.isArray(caseId) ? caseId : [caseId];
+  const ids: number[] = [];
+
+  for (const id of caseIds) {
+    if (typeof id === 'number') {
+      ids.push(id);
+      continue;
+    }
+
+    const parsedId = parseInt(id);
+
+    if (!isNaN(parsedId)) {
+      ids.push(parsedId);
+      continue;
+    }
+
+    console.log(`qase: qase ID ${id} should be a number`);
+  }
+
+  const newName = `${name} (Qase ID: ${caseIds.join(',')})`;
+
+  const filteredIds = filterPositiveIds(ids);
+  if (filteredIds.length > 0) {
+    PlaywrightQaseReporter.addIds(filteredIds, newName);
+  }
+
+  return newName;
+};
+
+/**
+ * Set IDs for the test case
+ * Use `qase()` instead. This method is deprecated and kept for reverse compatibility.
+ *
+ * @param {number | number[]} value
+ *
+ * @example
+ * test('test', async ({ page }) => {
+ *    qase.id(1);
+ *    await page.goto('https://example.com');
+ * });
+ *
+ */
+qase.id = function(value: number | number[]) {
+  const ids = filterPositiveIds(Array.isArray(value) ? value : [value]);
+  if (ids.length > 0) {
+    addMetadata({ ids });
+  }
+  return this;
+};
+
+/**
+ * Set multi-project mapping: project code -> test case IDs (for testops_multi mode).
+ * @param mapping — e.g. { PROJ1: [1, 2], PROJ2: [3] }
+ * @example
+ * test('test', async ({ page }) => {
+ *   qase.projects({ PROJ1: [1, 2], PROJ2: [3] });
+ *   await page.goto('https://example.com');
+ * });
+ */
+qase.projects = function(mapping: ProjectMapping) {
+  const normalized: ProjectMapping = {};
+  for (const [code, ids] of Object.entries(mapping)) {
+    if (Array.isArray(ids) && ids.length > 0) {
+      const parsed = ids
+        .map((id) => (typeof id === 'number' ? id : parseInt(String(id), 10)))
+        .filter((n) => !Number.isNaN(n));
+      const filtered = filterPositiveIds(parsed);
+      if (filtered.length > 0) {
+        normalized[code] = filtered;
+      }
+    }
+  }
+  if (Object.keys(normalized).length > 0) {
+    addMetadata({ projectMapping: normalized });
+  }
+  return this;
+};
+
+/**
+ * Return test title with multi-project markers (for testops_multi mode).
+ * Use as the test name: test(qase.projectsTitle('Test name', { PROJ1: [1], PROJ2: [2] }), () => { ... }).
+ * @param name — base test title
+ * @param mapping — project code → test case IDs, e.g. { PROJ1: [1], PROJ2: [2] }
+ */
+qase.projectsTitle = function(name: string, mapping: ProjectMapping): string {
+  const normalized: ProjectMapping = {};
+  for (const [code, ids] of Object.entries(mapping)) {
+    if (Array.isArray(ids) && ids.length > 0) {
+      normalized[code] = ids.map((id) => (typeof id === 'number' ? id : parseInt(String(id), 10))).filter((n) => !Number.isNaN(n));
+    }
+  }
+  return Object.keys(normalized).length > 0 ? formatTitleWithProjectMapping(name, normalized) : name;
+};
+
+/**
+ * Set a title for the test case
+ * @param {string} value
+ * @example
+ * test('test', async ({ page }) => {
+ *    qase.title("Title");
+ *    await page.goto('https://example.com');
+ * });
+ */
+qase.title = function(value: string) {
+  addMetadata({
+    title: value,
+  });
+  return this;
+};
+
+/**
+ * Set fields for the test case
+ * @param {Record<string, string>[]} values
+ * @example
+ * test('test', async ({ page }) => {
+ *    qase.fields({ 'severity': 'high', 'priority': 'medium' });
+ *    await page.goto('https://example.com');
+ * });
+ */
+qase.fields = function(values: Record<string, string>) {
+  const stringRecord: Record<string, string> = {};
+  for (const [key, value] of Object.entries(values)) {
+    stringRecord[String(key)] = String(value);
+  }
+
+  addMetadata({
+    fields: stringRecord,
+  });
+  return this;
+};
+
+/**
+ * Set parameters for the test case
+ * @param {Record<string, string>[]} values
+ * @example
+ * for (const value of values) {
+ *    test('test', async ({ page }) => {
+ *      qase.parameters({ 'parameter': value });
+ *      await page.goto('https://example.com');
+ *    });
+ * )
+ */
+qase.parameters = function(values: Record<string, string>) {
+  const stringRecord: Record<string, string> = {};
+  for (const [key, value] of Object.entries(values)) {
+    stringRecord[String(key)] = String(value);
+  }
+
+  addMetadata({
+    parameters: stringRecord,
+  });
+  return this;
+};
+
+/**
+ * Set group parameters for the test case.
+ * All parameters will be grouped as a single entity.
+ * @param {Record<string, string>[]} values
+ * @example
+ * for (const value of values) {
+ *    test('test', async ({ page }) => {
+ *      qase.groupParameters({ 'parameter': value });
+ *      await page.goto('https://example.com');
+ *    });
+ * )
+ */
+qase.groupParameters = function(values: Record<string, string>) {
+  const stringRecord: Record<string, string> = {};
+  for (const [key, value] of Object.entries(values)) {
+    stringRecord[String(key)] = String(value);
+  }
+
+  addMetadata({
+    groupParams: stringRecord,
+  });
+  return this;
+};
+
+/**
+ * Attach a file to the test case or the step
+ * @param attach
+ * @example
+ * test('test', async ({ page }) => {
+ *   qase.attach({ name: 'attachment.txt', content: 'Hello, world!', contentType: 'text/plain' });
+ *   qase.attach({ paths: '/path/to/file'});
+ *   qase.attach({ paths: ['/path/to/file', '/path/to/another/file']});
+ *   await page.goto('https://example.com');
+ *  });
+ */
+qase.attach = function(attach: {
+  name?: string,
+  paths?: string | string[],
+  content?: Buffer | string,
+  contentType?: string,
+}) {
+  if (attach.paths !== undefined) {
+    const files = Array.isArray(attach.paths) ? attach.paths : [attach.paths];
+
+    for (const file of files) {
+      const attachmentName = path.basename(file);
+      const contentType: string = getMimeTypes(file);
+      addAttachment(attachmentName, contentType, file);
+    }
+
+    return this;
+  }
+  const attachmentName = attach.name ?? 'attachment';
+  const contentType = attach.contentType ?? defaultContentType;
+  addAttachment(attachmentName, contentType, undefined, attach.content);
+
+  return this;
+};
+
+/**
+ * Ignore the test case result in Qase
+ * @example
+ * test('test', async ({ page }) => {
+ *   qase.ignore();
+ *   await page.goto('https://example.com');
+ * });
+ */
+qase.ignore = function() {
+  addMetadata({
+    ignore: true,
+  });
+  return this;
+};
+
+/**
+ * Set a suite for the test case
+ * @param {string} value
+ * @example
+ * test('test', async ({ page }) => {
+ *    qase.suite("Suite");
+ *    await page.goto('https://example.com');
+ * });
+ */
+qase.suite = function(value: string) {
+  addMetadata({
+    suite: value,
+  });
+  return this;
+};
+
+/**
+ * Set a comment for the test case
+ * @param {string} value
+ * @example
+ * test('test', async ({ page }) => {
+ *    qase.comment("Comment");
+ *    await page.goto('https://example.com');
+ * });
+ */
+qase.comment = function(value: string) {
+  addMetadata({
+    comment: value,
+  });
+  return this;
+};
+
+/**
+ * Set tags for the test case
+ * @param {...string} values
+ * @example
+ * test('test', async ({ page }) => {
+ *    qase.tags('smoke', 'regression');
+ *    await page.goto('https://example.com');
+ * });
+ */
+qase.tags = function(...values: string[]) {
+  addMetadata({
+    tags: values,
+  });
+  return this;
+};
+
+/**
+ * Build a step title with optional expected result and data markers.
+ *
+ * This is a title decorator, not a step runner: it returns a string meant to be
+ * passed to Playwright's `test.step()`. `expectedResult` and `data` are optional.
+ *
+ * @param action — step title
+ * @param expectedResult — optional expected result
+ * @param data — optional step data
+ * @example
+ * test('test', async ({ page }) => {
+ *    await test.step(qase.step('action'), async () => {
+ *      await page.goto('https://example.com');
+ *    });
+ *    await test.step(qase.step('action', 'expected result', 'data'), async () => {
+ *      await page.goto('https://example.com');
+ *    });
+ * });
+ */
+qase.step = function(action: string, expectedResult?: string, data?: string): string {
+  return `${action} QaseExpRes:${expectedResult ? `: ${expectedResult}` : ''} QaseData:${data ? `: ${data}` : ''}`;
+};
+
+
+const addMetadata = (metadata: MetadataMessage): void => {
+  test.info().attach('qase-metadata.json', {
+    contentType: ReporterContentType,
+    body: Buffer.from(JSON.stringify(metadata), 'utf8'),
+  }).catch(() => {/**/
+  });
+};
+
+const addAttachment = (name: string, contentType: string, filePath?: string, body?: string | Buffer) => {
+  const stepName = filePath != undefined ? `step_attach_file_${uuidv4()}_${name}` : `step_attach_body_${uuidv4()}_${name}`;
+
+  test.step(stepName, async () => {
+    if (filePath) {
+      await test.info().attach(stepName, {
+        contentType: contentType,
+        body: filePath,
+      });
+    }
+
+    if (body) {
+      await test.info().attach(stepName, {
+        contentType: contentType,
+        body: body,
+      });
+    }
+  }).catch(() => {/**/
+  });
+};
+

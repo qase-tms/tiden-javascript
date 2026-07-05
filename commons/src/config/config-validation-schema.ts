@@ -1,0 +1,336 @@
+import { ModeEnum } from '../options';
+import { DriverEnum, FormatEnum } from '../writer';
+import { ExternalLinkType } from '../models/config/TestOpsOptionsType';
+
+/**
+ * @type {JSONSchemaType<ConfigType>}
+ */
+export const configValidationSchema = {
+  type: 'object',
+
+  properties: {
+    mode: {
+      type: 'string',
+      enum: [ModeEnum.report, ModeEnum.testops, ModeEnum.testops_multi, ModeEnum.off],
+      nullable: true,
+    },
+    fallback: {
+      type: 'string',
+      enum: [ModeEnum.report, ModeEnum.testops, ModeEnum.testops_multi, ModeEnum.off],
+      nullable: true,
+    },
+    debug: {
+      type: 'boolean',
+      nullable: true,
+    },
+    environment: {
+      type: 'string',
+      nullable: true,
+    },
+    captureLogs: {
+      type: 'boolean',
+      nullable: true,
+    },
+    rootSuite: {
+      type: 'string',
+      nullable: true,
+    },
+
+    statusMapping: {
+      type: 'object',
+      nullable: true,
+      additionalProperties: {
+        type: 'string',
+      },
+    },
+
+    logging: {
+      type: 'object',
+      nullable: true,
+
+      properties: {
+        console: {
+          type: 'boolean',
+          nullable: true,
+        },
+        file: {
+          type: 'boolean',
+          nullable: true,
+        },
+      },
+    },
+
+    testops: {
+      type: 'object',
+      nullable: true,
+
+      properties: {
+        api: {
+          type: 'object',
+          nullable: true,
+
+          properties: {
+            token: {
+              type: 'string',
+              nullable: true,
+            },
+
+            host: {
+              type: 'string',
+              nullable: true,
+            },
+          },
+        },
+
+        project: {
+          type: 'string',
+          nullable: true,
+        },
+
+        uploadAttachments: {
+          type: 'boolean',
+          nullable: true,
+        },
+
+        run: {
+          type: 'object',
+          nullable: true,
+
+          properties: {
+            id: {
+              type: 'number',
+              nullable: true,
+            },
+            title: {
+              type: 'string',
+              nullable: true,
+            },
+            description: {
+              type: 'string',
+              nullable: true,
+            },
+            complete: {
+              type: 'boolean',
+              nullable: true,
+            },
+            tags: {
+              type: 'array',
+              items: {
+                type: 'string',
+              },
+              nullable: true,
+            },
+            externalLink: {
+              type: 'object',
+              nullable: true,
+              properties: {
+                type: {
+                  type: 'string',
+                  enum: [ExternalLinkType.JIRA_CLOUD, ExternalLinkType.JIRA_SERVER],
+                },
+                link: {
+                  type: 'string',
+                },
+              },
+              required: ['type', 'link'],
+            },
+          },
+        },
+
+        plan: {
+          type: 'object',
+          nullable: true,
+
+          properties: {
+            id: {
+              type: 'number',
+              nullable: true,
+            },
+          },
+        },
+
+        batch: {
+          type: 'object',
+          nullable: true,
+
+          properties: {
+            size: {
+              type: 'number',
+              nullable: true,
+            },
+          },
+        },
+
+        defect: {
+          type: 'boolean',
+          nullable: true,
+        },
+
+        configurations: {
+          type: 'object',
+          nullable: true,
+
+          properties: {
+            values: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  name: {
+                    type: 'string',
+                    nullable: true,
+                  },
+                  value: {
+                    type: 'string',
+                    nullable: true,
+                  },
+                },
+                required: ['name', 'value'],
+              },
+            },
+            createIfNotExists: {
+              type: 'boolean',
+              nullable: true,
+            },
+          },
+          required: ['values'],
+        },
+
+        statusFilter: {
+          type: 'array',
+          items: {
+            type: 'string',
+          },
+          nullable: true,
+        },
+      },
+    },
+
+    testops_multi: {
+      type: 'object',
+      nullable: true,
+
+      properties: {
+        default_project: {
+          type: 'string',
+          nullable: true,
+        },
+        projects: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              code: {
+                type: 'string',
+                nullable: true,
+              },
+              run: {
+                type: 'object',
+                nullable: true,
+                properties: {
+                  id: { type: 'number', nullable: true },
+                  title: { type: 'string', nullable: true },
+                  description: { type: 'string', nullable: true },
+                  complete: { type: 'boolean', nullable: true },
+                  tags: {
+                    type: 'array',
+                    items: { type: 'string' },
+                    nullable: true,
+                  },
+                  externalLink: {
+                    type: 'object',
+                    nullable: true,
+                    properties: {
+                      type: {
+                        type: 'string',
+                        enum: [ExternalLinkType.JIRA_CLOUD, ExternalLinkType.JIRA_SERVER],
+                      },
+                      link: { type: 'string' },
+                    },
+                    required: ['type', 'link'],
+                  },
+                },
+              },
+              plan: {
+                type: 'object',
+                nullable: true,
+                properties: {
+                  id: { type: 'number', nullable: true },
+                },
+              },
+              environment: {
+                type: 'string',
+                nullable: true,
+              },
+            },
+            required: ['code'],
+          },
+          nullable: true,
+        },
+      },
+      required: ['projects'],
+    },
+
+    report: {
+      type: 'object',
+      nullable: true,
+
+      properties: {
+        driver: {
+          type: 'string',
+          enum: [DriverEnum.local],
+          nullable: true,
+        },
+
+        connections: {
+          type: 'object',
+          nullable: true,
+
+          properties: {
+            [DriverEnum.local]: {
+              type: 'object',
+              nullable: true,
+
+              properties: {
+                path: {
+                  type: 'string',
+                  nullable: true,
+                },
+
+                format: {
+                  type: 'string',
+                  enum: [FormatEnum.json, FormatEnum.jsonp],
+                  nullable: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+
+    profilers: {
+      type: 'array',
+      items: {
+        type: 'string',
+      },
+      nullable: true,
+    },
+
+    networkProfiler: {
+      type: 'object',
+      nullable: true,
+      properties: {
+        skip_domains: {
+          type: 'array',
+          items: { type: 'string' },
+          nullable: true,
+        },
+        track_on_fail: {
+          type: 'boolean',
+          nullable: true,
+        },
+      },
+    },
+  },
+};
