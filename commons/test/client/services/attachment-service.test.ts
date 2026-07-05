@@ -79,6 +79,24 @@ describe('AttachmentService', () => {
       expect(rawBody.toString()).toContain('name="file[]"');
       expect(rawBody.toString()).toContain('filename="a.txt"');
     });
+
+    it('declares the attachment mime_type as the part Content-Type even when the filename extension would not infer it', async () => {
+      let rawBody: Buffer = Buffer.alloc(0);
+      const srv = await testServerRaw((req, body, res) => {
+        rawBody = body;
+        res.setHeader('content-type', 'application/json');
+        res.end(JSON.stringify({ status: true, result: [{ hash: 'abc123def4567890', filename: 'shot.bin' }] }));
+      });
+      const realHttp = createTidenClient(baseUrl(srv), 'tfy_token');
+      const realService = new AttachmentService(logger, realHttp);
+      const hash = await realService.uploadAttachment('prod-1', {
+        id: 'att-1', file_name: 'shot.bin', mime_type: 'image/png', content: 'hello', file_path: null, size: 5,
+      } as never);
+      srv.close();
+      expect(hash).toBe('abc123def4567890');
+      expect(rawBody.toString()).toContain('filename="shot.bin"');
+      expect(rawBody.toString()).toContain('Content-Type: image/png');
+    });
   });
 
   describe('uploadAttachments', () => {

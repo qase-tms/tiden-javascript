@@ -14,6 +14,7 @@ const MAX_FILES_PER_REQUEST = 20; // 20 files per request
 interface AttachmentData {
   name: string;
   value: Buffer | Readable;
+  contentType?: string;
 }
 
 export class AttachmentService {
@@ -157,7 +158,10 @@ export class AttachmentService {
   ): Promise<{ data: { result?: { hash?: string }[] } }> {
     const form = new FormData();
     for (const item of data) {
-      form.append('file[]', item.value, { filename: item.name });
+      form.append('file[]', item.value, {
+        filename: item.name,
+        ...(item.contentType ? { contentType: item.contentType } : {}),
+      });
     }
     const response = await this.http.post<{ result?: { hash?: string }[] }>(
       `/v1/products/${projectCode}/attachments:upload`, form,
@@ -262,10 +266,15 @@ export class AttachmentService {
   }
 
   private prepareAttachmentData(attachment: Attachment): AttachmentData {
+    const contentType = typeof attachment.mime_type === 'string' && attachment.mime_type.length > 0
+      ? attachment.mime_type
+      : undefined;
+
     if (attachment.file_path) {
       return {
         name: attachment.file_name,
         value: createReadStream(attachment.file_path),
+        ...(contentType ? { contentType } : {}),
       };
     }
 
@@ -274,6 +283,7 @@ export class AttachmentService {
       value: typeof attachment.content === 'string'
         ? Buffer.from(attachment.content, attachment.content.match(/^[A-Za-z0-9+/=]+$/) ? 'base64' : undefined)
         : attachment.content,
+      ...(contentType ? { contentType } : {}),
     };
   }
 }
