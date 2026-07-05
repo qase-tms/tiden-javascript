@@ -1,5 +1,5 @@
-import { AxiosError } from 'axios';
-import { AttachmentsApi } from 'qase-api-client';
+import { AxiosError, AxiosInstance } from 'axios';
+import FormData from 'form-data';
 import { createReadStream, statSync } from 'fs';
 import { Readable } from 'stream';
 import { Attachment } from '../../models';
@@ -19,13 +19,13 @@ interface AttachmentData {
 export class AttachmentService {
   constructor(
     private readonly logger: LoggerInterface,
-    private readonly attachmentClient: AttachmentsApi,
+    private readonly http: AxiosInstance,
   ) {}
 
   async uploadAttachment(projectCode: string, attachment: Attachment): Promise<string> {
     try {
       const data = this.prepareAttachmentData(attachment);
-      const response = await this.attachmentClient.uploadAttachment(projectCode, [data]);
+      const response = await this.postAttachmentBatch(projectCode, [data]);
       return response.data.result?.[0]?.hash ?? '';
     } catch (error) {
       throw processError(error, 'Error on uploading attachment');
@@ -148,6 +148,24 @@ export class AttachmentService {
     return batches;
   }
 
+  /** POST one multipart batch to Tiden. Returns the upstream-shaped
+   *  `{data: {result: [{hash}]}}` envelope so callers stay unchanged
+   *  (Tiden's response body is `{status, result: [{hash, ...}]}`). */
+  private async postAttachmentBatch(
+    projectCode: string,
+    data: AttachmentData[],
+  ): Promise<{ data: { result?: { hash?: string }[] } }> {
+    const form = new FormData();
+    for (const item of data) {
+      form.append('file[]', item.value, { filename: item.name });
+    }
+    const response = await this.http.post<{ result?: { hash?: string }[] }>(
+      `/v1/products/${projectCode}/attachments:upload`, form,
+      { headers: form.getHeaders(), maxBodyLength: Infinity, maxContentLength: Infinity },
+    );
+    return { data: response.data };
+  }
+
   private async uploadWithRetry(
     projectCode: string,
     data: AttachmentData[],
@@ -160,7 +178,7 @@ export class AttachmentService {
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
-        return await this.attachmentClient.uploadAttachment(projectCode, data);
+        return await this.postAttachmentBatch(projectCode, data);
       } catch (error) {
         lastError = error;
 

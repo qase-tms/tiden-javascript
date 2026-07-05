@@ -1,8 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any, @typescript-eslint/unbound-method */
 import { expect } from '@jest/globals';
+import { AxiosInstance } from 'axios';
 import { AttachmentService } from '../../../src/client/services/attachment-service';
+import { createTidenClient } from '../../../src/client/tiden-http';
 import { LoggerInterface } from '../../../src/utils/logger';
 import { Attachment } from '../../../src/models';
+import { testServerRaw, baseUrl } from '../../helpers/test-server';
 
 const silentLogger = (): jest.Mocked<LoggerInterface> => ({
   log: jest.fn(),
@@ -10,9 +13,9 @@ const silentLogger = (): jest.Mocked<LoggerInterface> => ({
   logError: jest.fn(),
 });
 
-function mockAttachmentsApi() {
+function mockHttp() {
   return {
-    uploadAttachment: jest.fn(),
+    post: jest.fn(),
   };
 }
 
@@ -28,18 +31,18 @@ function makeAttachment(overrides: Partial<Attachment> = {}): Attachment {
 
 describe('AttachmentService', () => {
   let logger: jest.Mocked<LoggerInterface>;
-  let api: ReturnType<typeof mockAttachmentsApi>;
+  let http: ReturnType<typeof mockHttp>;
   let service: AttachmentService;
 
   beforeEach(() => {
     logger = silentLogger();
-    api = mockAttachmentsApi();
-    service = new AttachmentService(logger, api as any);
+    http = mockHttp();
+    service = new AttachmentService(logger, http as unknown as AxiosInstance);
   });
 
   describe('uploadAttachment', () => {
     it('should upload a single attachment and return hash', async () => {
-      api.uploadAttachment.mockResolvedValue({
+      http.post.mockResolvedValue({
         data: { result: [{ hash: 'abc123' }] },
       });
 
@@ -48,12 +51,33 @@ describe('AttachmentService', () => {
     });
 
     it('should return empty string when no hash in response', async () => {
-      api.uploadAttachment.mockResolvedValue({
+      http.post.mockResolvedValue({
         data: { result: [{}] },
       });
 
       const result = await service.uploadAttachment('PROJ', makeAttachment());
       expect(result).toBe('');
+    });
+
+    it('uploads multipart file[] parts and returns result[].hash', async () => {
+      let contentType = '';
+      let rawBody: Buffer = Buffer.alloc(0);
+      const srv = await testServerRaw((req, body, res) => {
+        contentType = req.headers['content-type'] ?? '';
+        rawBody = body;
+        res.setHeader('content-type', 'application/json');
+        res.end(JSON.stringify({ status: true, result: [{ hash: 'abc123def4567890', filename: 'a.txt' }] }));
+      });
+      const realHttp = createTidenClient(baseUrl(srv), 'tfy_token');
+      const realService = new AttachmentService(logger, realHttp);
+      const hash = await realService.uploadAttachment('prod-1', {
+        id: 'att-1', file_name: 'a.txt', mime_type: 'text/plain', content: 'hello', file_path: null, size: 5,
+      } as never);
+      srv.close();
+      expect(hash).toBe('abc123def4567890');
+      expect(contentType).toContain('multipart/form-data');
+      expect(rawBody.toString()).toContain('name="file[]"');
+      expect(rawBody.toString()).toContain('filename="a.txt"');
     });
   });
 
@@ -61,11 +85,11 @@ describe('AttachmentService', () => {
     it('should return empty array when uploadAttachments disabled', async () => {
       const result = await service.uploadAttachments('PROJ', [makeAttachment()], false);
       expect(result).toEqual([]);
-      expect(api.uploadAttachment).not.toHaveBeenCalled();
+      expect(http.post).not.toHaveBeenCalled();
     });
 
     it('should skip null/undefined attachments', async () => {
-      api.uploadAttachment.mockResolvedValue({
+      http.post.mockResolvedValue({
         data: { result: [{ hash: 'h1' }] },
       });
 
@@ -74,7 +98,7 @@ describe('AttachmentService', () => {
     });
 
     it('should skip oversized attachments (> 32 MB)', async () => {
-      api.uploadAttachment.mockResolvedValue({
+      http.post.mockResolvedValue({
         data: { result: [{ hash: 'h1' }] },
       });
 
@@ -87,7 +111,7 @@ describe('AttachmentService', () => {
     });
 
     it('should batch attachments respecting MAX_FILES_PER_REQUEST limit', async () => {
-      api.uploadAttachment.mockResolvedValue({
+      http.post.mockResolvedValue({
         data: { result: [{ hash: 'h' }] },
       });
 
@@ -97,7 +121,7 @@ describe('AttachmentService', () => {
       );
 
       await service.uploadAttachments('PROJ', attachments, true);
-      expect(api.uploadAttachment).toHaveBeenCalledTimes(2);
+      expect(http.post).toHaveBeenCalledTimes(2);
     });
 
     it('should retry on 429 errors with exponential backoff', async () => {
@@ -105,13 +129,13 @@ describe('AttachmentService', () => {
       axiosError.isAxiosError = true;
       axiosError.response = { status: 429, headers: { 'retry-after': '1' }, data: {} };
 
-      api.uploadAttachment
+      http.post
         .mockRejectedValueOnce(axiosError)
         .mockResolvedValueOnce({ data: { result: [{ hash: 'h1' }] } });
 
       const result = await service.uploadAttachments('PROJ', [makeAttachment()], true);
       expect(result).toEqual(['h1']);
-      expect(api.uploadAttachment).toHaveBeenCalledTimes(2);
+      expect(http.post).toHaveBeenCalledTimes(2);
     });
 
     it('should continue with next batch if current batch fails with non-429 error', async () => {
@@ -119,7 +143,7 @@ describe('AttachmentService', () => {
       nonRetryableError.isAxiosError = true;
       nonRetryableError.response = { status: 500, headers: {}, data: {} };
 
-      api.uploadAttachment
+      http.post
         .mockRejectedValueOnce(nonRetryableError)
         .mockResolvedValueOnce({ data: { result: [{ hash: 'h2' }] } });
 
@@ -135,7 +159,7 @@ describe('AttachmentService', () => {
     });
 
     it('should calculate size from file content when size is 0', async () => {
-      api.uploadAttachment.mockResolvedValue({
+      http.post.mockResolvedValue({
         data: { result: [{ hash: 'h1' }] },
       });
 

@@ -1,22 +1,9 @@
-import { createServer, IncomingMessage, Server, ServerResponse } from 'node:http';
-import { AddressInfo } from 'node:net';
 import { createTidenClient } from '../../../src/client/tiden-http';
 import { RunService } from '../../../src/client/services/run-service';
 import { LoggerInterface } from '../../../src/utils/logger';
+import { testServer, baseUrl } from '../../helpers/test-server';
 
 const logger: LoggerInterface = { log: jest.fn(), logError: jest.fn(), logDebug: jest.fn() } as unknown as LoggerInterface;
-
-function testServer(handler: (req: IncomingMessage, body: string, res: ServerResponse) => void): Promise<Server> {
-  return new Promise((resolve) => {
-    const srv = createServer((req, res) => {
-      let body = '';
-      req.on('data', (c: Buffer) => (body += c.toString()));
-      req.on('end', () => handler(req, body, res));
-    });
-    srv.listen(0, '127.0.0.1', () => resolve(srv));
-  });
-}
-const baseUrl = (srv: Server) => `http://127.0.0.1:${(srv.address() as AddressInfo).port}`;
 
 describe('RunService against Tiden wire', () => {
   it('creates a run: POST /v1/products/{product}/runs with Bearer auth, flat configurations, and reads run.seqNum', async () => {
