@@ -4,4 +4,3 @@ export {
 } from './abstract-reporter';
 export { ReportReporter } from './report-reporter';
 export { TestOpsReporter } from './testops-reporter';
-export { TestOpsMultiReporter } from './testops-multi-reporter';

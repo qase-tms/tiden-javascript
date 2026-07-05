@@ -1,7 +1,6 @@
 import {
   InternalReporterInterface,
   TestOpsReporter,
-  TestOpsMultiReporter,
   ReportReporter,
 } from '../reporters';
 import { ModeEnum, OptionsType } from '../options';
@@ -11,7 +10,7 @@ import { LoggerInterface } from '../utils/logger';
 import { DisabledException } from '../utils/disabled-exception';
 import { HostData } from '../models/host-data';
 import { TestOpsOptionsType } from '../models/config/TestOpsOptionsType';
-import { ClientV2 } from '../client/clientV2';
+import { TidenApiClient } from '../client/tiden-client';
 import { DriverEnum, FsWriter } from '../writer';
 
 /**
@@ -33,8 +32,6 @@ export class ReporterFactory {
     switch (mode) {
       case ModeEnum.testops:
         return this.createTestOps(options, withState);
-      case ModeEnum.testops_multi:
-        return this.createTestOpsMulti(options, withState);
       case ModeEnum.report:
         return this.createReport(options);
       case ModeEnum.off:
@@ -59,64 +56,31 @@ export class ReporterFactory {
       );
     }
 
-    const apiClient = new ClientV2(
+    const testops = options.testops as TestOpsOptionsType;
+    testops.clientMeta = {
+      framework: options.frameworkName ?? '',
+      reporter: options.reporterName ?? '',
+      framework_version: this.hostData.framework,
+      reporter_version: this.hostData.reporter,
+      commons_version: this.hostData.commons,
+      os: this.hostData.system,
+      node: this.hostData.language,
+    };
+
+    const apiClient = new TidenApiClient(
       this.logger,
-      options.testops as TestOpsOptionsType,
+      testops,
       options.environment,
       options.rootSuite,
-      this.hostData,
-      options.reporterName,
-      options.frameworkPackage,
     );
 
     return new TestOpsReporter(
       this.logger,
       apiClient,
       withState,
-      options.testops.project,
-      options.testops.api.host,
-      options.testops.batch?.size,
-      options.testops.run?.id,
-      options.testops.showPublicReportLink,
-    );
-  }
-
-  private createTestOpsMulti(
-    options: ConfigType & OptionsType,
-    withState: boolean,
-  ): TestOpsMultiReporter {
-    if (!options.testops?.api?.token) {
-      throw new Error(
-        `Either "testops.api.token" parameter or "${EnvApiEnum.token}" environment variable is required in "testops_multi" mode`,
-      );
-    }
-
-    const multi = options.testops_multi;
-    if (!multi?.projects?.length) {
-      throw new Error(
-        '"testops_multi.projects" must contain at least one project with a "code" field',
-      );
-    }
-    for (const p of multi.projects) {
-      if (!p?.code) {
-        throw new Error(
-          'Each project in "testops_multi.projects" must have a "code" field',
-        );
-      }
-    }
-
-    return new TestOpsMultiReporter(
-      this.logger,
-      options.testops as TestOpsOptionsType,
-      multi,
-      withState,
-      this.hostData,
-      options.reporterName,
-      options.frameworkPackage,
-      options.environment,
-      options.testops.api?.host,
-      options.testops.batch?.size,
-      options.testops.showPublicReportLink,
+      testops.project,
+      testops.batch?.size,
+      testops.run?.id,
     );
   }
 

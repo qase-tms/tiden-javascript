@@ -23,12 +23,12 @@ export const envValidationSchema: JSONSchemaType<EnvType> = {
   properties: {
     [EnvEnum.mode]: {
       type: 'string',
-      enum: [ModeEnum.report, ModeEnum.testops, ModeEnum.testops_multi, ModeEnum.off],
+      enum: [ModeEnum.report, ModeEnum.testops, ModeEnum.off],
       nullable: true,
     },
     [EnvEnum.fallback]: {
       type: 'string',
-      enum: [ModeEnum.report, ModeEnum.testops, ModeEnum.testops_multi, ModeEnum.off],
+      enum: [ModeEnum.report, ModeEnum.testops, ModeEnum.off],
       nullable: true,
     },
     [EnvEnum.debug]: {

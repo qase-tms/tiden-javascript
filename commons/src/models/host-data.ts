@@ -9,6 +9,4 @@ export interface HostData {
   framework: string;
   reporter: string;
   commons: string;
-  apiClientV1: string;
-  apiClientV2: string;
 }

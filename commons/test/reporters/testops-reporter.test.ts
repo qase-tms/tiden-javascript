@@ -17,11 +17,11 @@ jest.mock('chalk', () => {
       return result + str + (values[i] || '');
     }, '');
   });
-  
+
   (mockChalk as unknown as { blue: jest.Mock; green: jest.Mock; yellow: jest.Mock }).blue = jest.fn((text: string) => text);
   (mockChalk as unknown as { blue: jest.Mock; green: jest.Mock; yellow: jest.Mock }).green = jest.fn((text: string) => text);
   (mockChalk as unknown as { blue: jest.Mock; green: jest.Mock; yellow: jest.Mock }).yellow = jest.fn((text: string) => text);
-  
+
   return mockChalk;
 });
 
@@ -38,7 +38,7 @@ describe('TestOpsReporter', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     mockLogger = {
       log: jest.fn(),
       logDebug: jest.fn(),
@@ -58,7 +58,6 @@ describe('TestOpsReporter', () => {
       mockApiClient,
       true,
       'TEST_PROJECT',
-      'qase.io',
       100,
       123
     );
@@ -67,7 +66,6 @@ describe('TestOpsReporter', () => {
   describe('constructor', () => {
     it('should initialize with correct parameters', () => {
       expect(reporter).toBeInstanceOf(TestOpsReporter);
-      expect(reporter['baseUrl']).toBe('https://app.qase.io');
       expect(reporter['batchSize']).toBe(100);
       expect(reporter['runId']).toBe(123);
       expect(reporter['projectCode']).toBe('TEST_PROJECT');
@@ -84,26 +82,15 @@ describe('TestOpsReporter', () => {
       expect(reporterWithoutBatch['batchSize']).toBe(200);
     });
 
-    it('should handle custom baseUrl correctly', () => {
-      const reporterWithCustomUrl = new TestOpsReporter(
+    it('should clamp batchSize to MAX_BATCH_SIZE', () => {
+      const reporterWithHugeBatch = new TestOpsReporter(
         mockLogger,
         mockApiClient,
         false,
         'TEST_PROJECT',
-        'custom.qase.io'
+        999_999
       );
-      expect(reporterWithCustomUrl['baseUrl']).toBe('https://custom.qase.io');
-    });
-
-    it('should replace api with app in baseUrl', () => {
-      const reporterWithApiUrl = new TestOpsReporter(
-        mockLogger,
-        mockApiClient,
-        false,
-        'TEST_PROJECT',
-        'api.custom.qase.io'
-      );
-      expect(reporterWithApiUrl['baseUrl']).toBe('https://app.custom.qase.io');
+      expect(reporterWithHugeBatch['batchSize']).toBe(2000);
     });
   });
 
@@ -184,7 +171,7 @@ describe('TestOpsReporter', () => {
       await reporter.startTestRun();
     });
 
-    it('should add successful test without showing link', async () => {
+    it('should add successful test without logging the run', async () => {
       const testResult = new TestResultType('Successful Test');
       testResult.id = 'test-1';
       testResult.testops_id = 1;
@@ -195,11 +182,11 @@ describe('TestOpsReporter', () => {
 
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockLogger.log).not.toHaveBeenCalledWith(
-        expect.stringContaining('See why this test failed')
+        expect.stringContaining('Test run #')
       );
     });
 
-    it('should show link for failed test with single ID', async () => {
+    it('should log the test run for a failed test (no dashboard URL — no workspace id)', async () => {
       const testResult = new TestResultType('Failed Test');
       testResult.id = 'test-2';
       testResult.testops_id = 2;
@@ -209,12 +196,10 @@ describe('TestOpsReporter', () => {
       await reporter.addTestResult(testResult);
 
       // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(mockLogger.log).toHaveBeenCalledWith(
-        expect.stringContaining('See why this test failed')
-      );
+      expect(mockLogger.log).toHaveBeenCalledWith('Test run #123');
     });
 
-    it('should show links for failed test with multiple IDs', async () => {
+    it('should log the test run once even for a failed test with multiple IDs', async () => {
       const testResult = new TestResultType('Failed Test Multiple IDs');
       testResult.id = 'test-3';
       testResult.testops_id = [3, 4, 5];
@@ -224,11 +209,9 @@ describe('TestOpsReporter', () => {
       await reporter.addTestResult(testResult);
 
       // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(mockLogger.log).toHaveBeenCalledTimes(3);
+      expect(mockLogger.log).toHaveBeenCalledTimes(1);
       // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(mockLogger.log).toHaveBeenCalledWith(
-        expect.stringContaining('See why this test failed')
-      );
+      expect(mockLogger.log).toHaveBeenCalledWith('Test run #123');
     });
 
     it('should publish results when batchSize is reached', async () => {
@@ -315,7 +298,7 @@ describe('TestOpsReporter', () => {
       reporter['firstIndex'] = 0;
       // eslint-disable-next-line @typescript-eslint/unbound-method
       mockApiClient.uploadResults.mockClear();
-      
+
       const testResults = Array.from({ length: 250 }, (_, i) => {
         const result = new TestResultType(`Test ${i}`);
         result.id = `test-${i}`;
@@ -347,72 +330,9 @@ describe('TestOpsReporter', () => {
       expect(mockApiClient.completeRun).toHaveBeenCalledWith(123);
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockLogger.log).toHaveBeenCalledWith('{green Run 123 completed}');
-    });
-
-    it('should enable public report when showPublicReportLink is true', async () => {
-      const reporterWithPublicLink = new TestOpsReporter(
-        mockLogger,
-        mockApiClient,
-        true,
-        'TEST_PROJECT',
-        'qase.io',
-        100,
-        123,
-        true // showPublicReportLink
-      );
-
-      mockApiClient.createRun.mockResolvedValue(123);
-      await reporterWithPublicLink.startTestRun();
-
-      await reporterWithPublicLink.complete();
-
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(mockApiClient.completeRun).toHaveBeenCalledWith(123);
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(mockApiClient.enablePublicReport).toHaveBeenCalledWith(123);
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(mockLogger.log).toHaveBeenCalledWith('{green Run 123 completed}');
-    });
-
-    it('should not enable public report when showPublicReportLink is false', async () => {
-      mockApiClient.createRun.mockResolvedValue(123);
-      await reporter.startTestRun();
-
-      await reporter.complete();
-
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(mockApiClient.completeRun).toHaveBeenCalledWith(123);
+      // Public report links are dropped (no config knob to enable them anymore).
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockApiClient.enablePublicReport).not.toHaveBeenCalled();
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(mockLogger.log).toHaveBeenCalledWith('{green Run 123 completed}');
-    });
-
-    it('should handle enablePublicReport error gracefully', async () => {
-      const reporterWithPublicLink = new TestOpsReporter(
-        mockLogger,
-        mockApiClient,
-        true,
-        'TEST_PROJECT',
-        'qase.io',
-        100,
-        123,
-        true // showPublicReportLink
-      );
-
-      mockApiClient.createRun.mockResolvedValue(123);
-      mockApiClient.enablePublicReport.mockRejectedValue(new Error('API Error'));
-      await reporterWithPublicLink.startTestRun();
-
-      await reporterWithPublicLink.complete();
-
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(mockApiClient.completeRun).toHaveBeenCalledWith(123);
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(mockApiClient.enablePublicReport).toHaveBeenCalledWith(123);
-      // Error message is logged in enablePublicReport implementation, not here
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(mockLogger.log).toHaveBeenCalledWith('{green Run 123 completed}');
     });
 
     it('should throw error when runId is not set', async () => {
@@ -426,58 +346,4 @@ describe('TestOpsReporter', () => {
       await expect(reporterWithoutRun.complete()).rejects.toThrow('Run ID is not set');
     });
   });
-
-  describe('prepareFailedTestLink', () => {
-    beforeEach(async () => {
-      mockApiClient.createRun.mockResolvedValue(123);
-      await reporter.startTestRun();
-    });
-
-    it('should create link with test ID', () => {
-      const link = reporter['prepareFailedTestLink'](42, 'Test Title');
-      
-      expect(link).toContain('TEST_PROJECT-42');
-      expect(link).toContain('https://app.qase.io/run/TEST_PROJECT/dashboard/123');
-    });
-
-    it('should create link with test title when ID is not provided', () => {
-      const link = reporter['prepareFailedTestLink'](null, 'Test Title');
-      
-      expect(link).toContain(encodeURI('Test Title'));
-      expect(link).toContain('https://app.qase.io/run/TEST_PROJECT/dashboard/123');
-    });
-
-    it('should throw error when runId is not set', () => {
-      const reporterWithoutRun = new TestOpsReporter(
-        mockLogger,
-        mockApiClient,
-        false,
-        'TEST_PROJECT'
-      );
-
-      expect(() => {
-        reporterWithoutRun['prepareFailedTestLink'](42, 'Test Title');
-      }).toThrow('Run ID is not set');
-    });
-  });
-
-  describe('showLink', () => {
-    beforeEach(async () => {
-      mockApiClient.createRun.mockResolvedValue(123);
-      await reporter.startTestRun();
-    });
-
-    it('should show link for failed test', () => {
-      reporter['showLink'](42, 'Failed Test');
-
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(mockLogger.log).toHaveBeenCalledWith(
-        expect.stringContaining('See why this test failed')
-      );
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(mockLogger.log).toHaveBeenCalledWith(
-        expect.stringContaining('TEST_PROJECT-42')
-      );
-    });
-  });
-}); 
+});

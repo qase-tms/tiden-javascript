@@ -11,16 +11,13 @@ import { LoggerInterface } from '../utils/logger';
 import { StateManager } from '../state/state';
 import { Mutex } from 'async-mutex';
 import { IClient } from '../client/interface';
-import { DEFAULT_BATCH_SIZE } from './shared/testops-constants';
-import { resolveTestOpsBaseUrl } from './shared/testops-url';
+import { DEFAULT_BATCH_SIZE, MAX_BATCH_SIZE } from './shared/testops-constants';
 
 /**
  * @class TestOpsReporter
  * @extends AbstractReporter
  */
 export class TestOpsReporter extends AbstractReporter {
-  private readonly baseUrl: string;
-
   private readonly batchSize: number;
 
   private runId: number | undefined;
@@ -36,22 +33,19 @@ export class TestOpsReporter extends AbstractReporter {
    * @param {IClient} api
    * @param {boolean} withState
    * @param {string} projectCode
-   * @param {string | undefined} baseUrl
    * @param {number | undefined} batchSize
    */
   constructor(
     logger: LoggerInterface,
     private api: IClient,
     private withState: boolean,
-    private projectCode: string,
-    baseUrl?: string,
+    /** Not read internally (no dashboard link without a workspace id) — kept for callers/telemetry. */
+    public readonly projectCode: string,
     batchSize?: number,
     runId?: number,
-    private showPublicReportLink?: boolean,
   ) {
     super(logger);
-    this.baseUrl = resolveTestOpsBaseUrl(baseUrl);
-    this.batchSize = batchSize ?? DEFAULT_BATCH_SIZE;
+    this.batchSize = Math.min(batchSize ?? DEFAULT_BATCH_SIZE, MAX_BATCH_SIZE);
     this.runId = runId;
   }
 
@@ -73,12 +67,7 @@ export class TestOpsReporter extends AbstractReporter {
    */
   public override async addTestResult(result: TestResultType): Promise<void> {
     if (result.execution.status === TestStatusEnum.failed) {
-
-      const testOpsIds = Array.isArray(result.testops_id) ? result.testops_id : [result.testops_id];
-
-      for (const id of testOpsIds) {
-        this.showLink(id, result.title);
-      }
+      this.logger.log(`Test run #${this.runId}`);
     }
 
     const release = await this.mutex.acquire();
@@ -189,43 +178,6 @@ export class TestOpsReporter extends AbstractReporter {
     }
     await this.api.completeRun(this.runId);
 
-    if (this.showPublicReportLink) {
-      try {
-        await this.api.enablePublicReport(this.runId);
-      } catch (error) {
-        // Error is already logged in enablePublicReport
-      }
-    }
-
     this.logger.log(chalk`{green Run ${this.runId} completed}`);
-  }
-
-  /**
-   * @param {number | null} id
-   * @param {string} title
-   * @return string
-   * @private
-   */
-  private prepareFailedTestLink(id: number | null, title: string): string {
-    if (!this.runId) {
-      throw new Error('Run ID is not set');
-    }
-    const baseLink = `${this.baseUrl}/run/${this.projectCode}/dashboard/${this.runId}?source=logs&search=`;
-    if (id) {
-      return `${baseLink}${this.projectCode}-${id}`;
-    }
-
-    return `${baseLink}${encodeURI(title)}`;
-  }
-
-  /**
-   * Show link to failed test
-   * @param {number | null} id
-   * @param {string} title
-   * @private
-   */
-  private showLink(id: number | null, title: string): void {
-    const link = this.prepareFailedTestLink(id, title);
-    this.logger.log(chalk`{blue See why this test failed: ${link}}`);
   }
 }

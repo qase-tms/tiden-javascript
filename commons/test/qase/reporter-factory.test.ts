@@ -7,26 +7,8 @@ import { EnvApiEnum, EnvTestOpsEnum } from '../../src/env';
 import { LoggerInterface } from '../../src/utils/logger';
 import { HostData } from '../../src/models/host-data';
 import { DisabledException } from '../../src/utils/disabled-exception';
-import { TestOpsReporter, TestOpsMultiReporter, ReportReporter } from '../../src/reporters';
-
-jest.mock('qase-api-v2-client', () => ({
-  Configuration: jest.fn(),
-  ResultsApi: jest.fn(),
-  ResultStepStatus: {
-    PASSED: 'passed',
-    FAILED: 'failed',
-    BLOCKED: 'blocked',
-    SKIPPED: 'skipped',
-  },
-}));
-
-jest.mock('qase-api-client', () => ({
-  Configuration: jest.fn(),
-  RunsApi: jest.fn(),
-  EnvironmentsApi: jest.fn(),
-  AttachmentsApi: jest.fn(),
-  ConfigurationsApi: jest.fn(),
-}));
+import { TestOpsReporter, ReportReporter } from '../../src/reporters';
+import { TidenApiClient } from '../../src/client/tiden-client';
 
 const silentLogger = (): jest.Mocked<LoggerInterface> => ({
   log: jest.fn(),
@@ -81,62 +63,40 @@ describe('ReporterFactory', () => {
       } as any;
       const r = factory.create(ModeEnum.testops, opts, false);
       expect(r).toBeInstanceOf(TestOpsReporter);
-    });
-  });
-
-  describe('testops_multi mode validation', () => {
-    it('throws when token missing', () => {
-      const opts = {
-        ...baseOptions(),
-        testops_multi: { projects: [{ code: 'A' }] },
-      } as any;
-      expect(() => factory.create(ModeEnum.testops_multi, opts, false)).toThrow(
-        /testops.api.token/,
-      );
+      // The reporter's api client should be a TidenApiClient wired against the
+      // supplied testops config (private field access, mirrors the client_meta
+      // plumb-through in ReporterFactory.createTestOps).
+      expect((r as TestOpsReporter)['api']).toBeInstanceOf(TidenApiClient);
     });
 
-    it('throws when projects list is empty', () => {
+    it('builds client_meta from hostData and framework/reporter names', () => {
+      const hostData: HostData = {
+        system: 'linux',
+        machineName: 'host',
+        release: '1.0',
+        version: '1.0',
+        arch: 'x64',
+        language: 'v20',
+        packageManager: 'npm',
+        framework: '1.2.3',
+        reporter: '4.5.6',
+        commons: '7.8.9',
+      };
+      const localFactory = new ReporterFactory(silentLogger(), hostData);
       const opts = {
         ...baseOptions(),
-        testops: { api: { token: 't' } },
-        testops_multi: { projects: [] },
+        testops: { api: { token: 't' }, project: 'DEMO' },
       } as any;
-      expect(() => factory.create(ModeEnum.testops_multi, opts, false)).toThrow(
-        /testops_multi.projects/,
-      );
-    });
-
-    it('throws when any project lacks a code', () => {
-      const opts = {
-        ...baseOptions(),
-        testops: { api: { token: 't' } },
-        testops_multi: { projects: [{ code: 'A' }, { code: '' }] },
-      } as any;
-      expect(() => factory.create(ModeEnum.testops_multi, opts, false)).toThrow(
-        /Each project.*code/,
-      );
-    });
-
-    it('creates TestOpsMultiReporter when options are valid', () => {
-      const opts = {
-        ...baseOptions(),
-        testops: { api: { token: 't' } },
-        testops_multi: { projects: [{ code: 'A' }] },
-      } as any;
-      const r = factory.create(ModeEnum.testops_multi, opts, false);
-      expect(r).toBeInstanceOf(TestOpsMultiReporter);
-    });
-
-    it('threads withState through to TestOpsMultiReporter', () => {
-      const opts = {
-        ...baseOptions(),
-        testops: { api: { token: 't' } },
-        testops_multi: { projects: [{ code: 'A' }] },
-      } as any;
-      // Verify both true and false produce an instance (no exception).
-      // The 4th constructor argument is withState per the class signature.
-      expect(factory.create(ModeEnum.testops_multi, opts, true)).toBeInstanceOf(TestOpsMultiReporter);
-      expect(factory.create(ModeEnum.testops_multi, opts, false)).toBeInstanceOf(TestOpsMultiReporter);
+      localFactory.create(ModeEnum.testops, opts, false);
+      expect(opts.testops.clientMeta).toEqual({
+        framework: 'playwright',
+        reporter: 'qase-playwright',
+        framework_version: '1.2.3',
+        reporter_version: '4.5.6',
+        commons_version: '7.8.9',
+        os: 'linux',
+        node: 'v20',
+      });
     });
   });
 

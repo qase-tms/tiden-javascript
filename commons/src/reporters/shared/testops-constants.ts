@@ -1,5 +1,12 @@
 /**
  * Default number of test results per upload batch.
- * Used by TestOpsReporter and TestOpsMultiReporter when no explicit batch size is configured.
+ * Used by TestOpsReporter when no explicit batch size is configured.
  */
 export const DEFAULT_BATCH_SIZE = 200;
+
+/**
+ * Upper bound on the configurable batch size — protects against
+ * unreasonably large `testops.batch.size` values overwhelming the
+ * results:report endpoint in a single request.
+ */
+export const MAX_BATCH_SIZE = 2000;

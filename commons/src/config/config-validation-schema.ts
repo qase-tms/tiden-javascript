@@ -10,12 +10,12 @@ export const configValidationSchema = {
   properties: {
     mode: {
       type: 'string',
-      enum: [ModeEnum.report, ModeEnum.testops, ModeEnum.testops_multi, ModeEnum.off],
+      enum: [ModeEnum.report, ModeEnum.testops, ModeEnum.off],
       nullable: true,
     },
     fallback: {
       type: 'string',
-      enum: [ModeEnum.report, ModeEnum.testops, ModeEnum.testops_multi, ModeEnum.off],
+      enum: [ModeEnum.report, ModeEnum.testops, ModeEnum.off],
       nullable: true,
     },
     debug: {
@@ -75,6 +75,11 @@ export const configValidationSchema = {
             },
 
             host: {
+              type: 'string',
+              nullable: true,
+            },
+
+            baseUrl: {
               type: 'string',
               nullable: true,
             },
@@ -166,47 +171,6 @@ export const configValidationSchema = {
           nullable: true,
         },
       },
-    },
-
-    testops_multi: {
-      type: 'object',
-      nullable: true,
-
-      properties: {
-        default_project: {
-          type: 'string',
-          nullable: true,
-        },
-        projects: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              code: {
-                type: 'string',
-                nullable: true,
-              },
-              run: {
-                type: 'object',
-                nullable: true,
-                properties: {
-                  id: { type: 'number', nullable: true },
-                  title: { type: 'string', nullable: true },
-                  description: { type: 'string', nullable: true },
-                  complete: { type: 'boolean', nullable: true },
-                },
-              },
-              environment: {
-                type: 'string',
-                nullable: true,
-              },
-            },
-            required: ['code'],
-          },
-          nullable: true,
-        },
-      },
-      required: ['projects'],
     },
 
     report: {

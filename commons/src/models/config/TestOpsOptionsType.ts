@@ -1,22 +1,3 @@
-/**
- * Per-project configuration for multi-project (testops_multi) mode.
- */
-export interface TestOpsProjectConfigType {
-  code: string;
-  run?: TestOpsRunType;
-  environment?: string;
-}
-
-/**
- * Multi-project TestOps configuration.
- */
-export interface TestOpsMultiConfigType {
-  /** Default project for tests without explicit mapping (and for results without any case ID). */
-  default_project?: string;
-  /** List of project configurations. */
-  projects: TestOpsProjectConfigType[];
-}
-
 export interface TestOpsOptionsType {
   project: string;
   uploadAttachments?: boolean | undefined;
@@ -52,6 +33,9 @@ export interface TestOpsBatchType {
 
 export interface TestOpsApiType {
   token: string;
+  /** @deprecated use `baseUrl` — kept until the `host`-based env plumbing is fully renamed. */
   host?: string | undefined;
+  /** Tiden API base URL, taken verbatim (no qase.io/self-host URL templating). */
+  baseUrl?: string | undefined;
 }
 
