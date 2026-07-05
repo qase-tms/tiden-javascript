@@ -151,7 +151,7 @@ export class ResultBuilder {
         },
       },
       run_id: null,
-      signature: generateSignature(idsForSignature, suites, metadata.parameters),
+      signature: generateSignature(idsForSignature, suites),
       steps: this.stepConverter.transform(result.steps, null),
       testops_id,
       testops_project_mapping,

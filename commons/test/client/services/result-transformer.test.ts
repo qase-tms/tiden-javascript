@@ -3,15 +3,6 @@ import { expect } from '@jest/globals';
 import { ResultTransformer } from '../../../src/client/services/result-transformer';
 import { StepStatusEnum, StepType, TestStatusEnum, TestStepType } from '../../../src/models';
 
-jest.mock('qase-api-v2-client', () => ({
-  ResultStepStatus: {
-    PASSED: 'passed',
-    FAILED: 'failed',
-    BLOCKED: 'blocked',
-    SKIPPED: 'skipped',
-  },
-}));
-
 const silentLogger = (): any => ({
   log: jest.fn(),
   logDebug: jest.fn(),
@@ -176,38 +167,52 @@ describe('ResultTransformer', () => {
       expect(model.params).toEqual({ key: 'value', num: '42' });
     });
 
-    it('should build param_groups from group_params', async () => {
+    it('should build param_groups from group_params as [{names}] objects', async () => {
       const model = await transformer.transform(
         makeResult({ group_params: { browser: 'chrome', os: 'linux' }, params: {} }),
         mockUploader,
       );
-      expect(model.param_groups).toEqual([['browser', 'os']]);
+      expect(model.param_groups).toEqual([{ names: ['browser', 'os'] }]);
       expect(model.params).toEqual({ browser: 'chrome', os: 'linux' });
+    });
+
+    it('emits param_groups as [{names}] objects (delta a)', async () => {
+      const result = makeResult({ params: {}, group_params: { browser: 'chromium', os: 'mac' } });
+      const model = await transformer.transform(result, async () => '');
+      expect(model.param_groups).toEqual([{ names: ['browser', 'os'] }]);
     });
   });
 
-  describe('relations', () => {
-    it('should use default suite relation with rootSuite', async () => {
+  describe('suite_path', () => {
+    it('should use just the rootSuite when there is no relation', async () => {
       transformer = new ResultTransformer(silentLogger(), 'Root Suite');
       const model = await transformer.transform(makeResult(), mockUploader);
-      expect(model.relations?.suite?.data).toEqual([{ public_id: null, title: 'Root Suite' }]);
+      expect(model.suite_path).toEqual([{ title: 'Root Suite' }]);
     });
 
-    it('should prepend rootSuite to existing suite relation', async () => {
+    it('should prepend rootSuite to an existing suite relation', async () => {
       transformer = new ResultTransformer(silentLogger(), 'Root');
       const result = makeResult({
         relations: { suite: { data: [{ title: 'Child' }] } },
       });
       const model = await transformer.transform(result, mockUploader);
-      expect(model.relations?.suite?.data).toEqual([
-        { public_id: null, title: 'Root' },
-        { public_id: null, title: 'Child' },
+      expect(model.suite_path).toEqual([
+        { title: 'Root' },
+        { title: 'Child' },
       ]);
     });
 
-    it('should return empty relations when no rootSuite and no relation', async () => {
+    it('should return an empty suite_path when there is no rootSuite and no relation', async () => {
       const model = await transformer.transform(makeResult(), mockUploader);
-      expect(model.relations).toEqual({});
+      expect(model.suite_path).toEqual([]);
+    });
+
+    it('emits a flat suite_path with root suite prefix (delta b)', async () => {
+      transformer = new ResultTransformer(silentLogger(), 'Root');
+      const result = makeResult({ relations: { suite: { data: [{ title: 'Checkout', public_id: null }, { title: 'Cards', public_id: null }] } } });
+      const model = await transformer.transform(result, async () => '');
+      expect(model.suite_path).toEqual([{ title: 'Root' }, { title: 'Checkout' }, { title: 'Cards' }]);
+      expect((model as Record<string, unknown>)['relations']).toBeUndefined();
     });
   });
 });

@@ -1,10 +1,15 @@
-import { ResultCreate, ResultExecution, ResultRelations, ResultStep, ResultStepStatus } from 'qase-api-v2-client';
+import {
+  TidenParamGroup,
+  TidenResultCreate,
+  TidenResultExecution,
+  TidenResultStep,
+  TidenSuiteSegment,
+} from '../models/tiden-result';
 import {
   Attachment,
   Relation,
   StepStatusEnum,
   StepType,
-  SuiteData,
   TestExecution,
   TestResultType,
   TestStatusEnum,
@@ -22,11 +27,11 @@ const statusMap: Record<TestStatusEnum, string> = {
   [TestStatusEnum.invalid]: 'invalid',
 };
 
-const stepStatusMap: Record<StepStatusEnum, ResultStepStatus> = {
-  [StepStatusEnum.passed]: ResultStepStatus.PASSED,
-  [StepStatusEnum.failed]: ResultStepStatus.FAILED,
-  [StepStatusEnum.blocked]: ResultStepStatus.BLOCKED,
-  [StepStatusEnum.skipped]: ResultStepStatus.SKIPPED,
+const stepStatusMap: Record<StepStatusEnum, 'passed' | 'failed' | 'blocked' | 'skipped' | 'in_progress'> = {
+  [StepStatusEnum.passed]: 'passed',
+  [StepStatusEnum.failed]: 'failed',
+  [StepStatusEnum.blocked]: 'blocked',
+  [StepStatusEnum.skipped]: 'skipped',
 };
 
 export class ResultTransformer {
@@ -38,7 +43,7 @@ export class ResultTransformer {
   async transform(
     result: TestResultType,
     attachmentUploader: (attachment: Attachment) => Promise<string>,
-  ): Promise<ResultCreate> {
+  ): Promise<TidenResultCreate> {
     const attachments = await this.uploadAttachments(result.attachments, attachmentUploader);
     if (result.preparedAttachments) {
       attachments.push(...result.preparedAttachments);
@@ -46,9 +51,8 @@ export class ResultTransformer {
     const steps = await this.transformSteps(result.steps, result.title, attachmentUploader);
     const params = this.transformParams(result.params);
     const groupParams = this.transformGroupParams(result.group_params, params);
-    const relations = this.getRelation(result.relations);
 
-    const model: ResultCreate = {
+    const model: TidenResultCreate = {
       title: result.title,
       execution: this.getExecution(result.execution),
       testops_ids: Array.isArray(result.testops_id)
@@ -58,7 +62,7 @@ export class ResultTransformer {
       steps: steps,
       params: params,
       param_groups: groupParams,
-      relations: relations,
+      suite_path: this.getSuitePath(result.relations),
       message: result.message,
       fields: result.fields,
       defect: false,
@@ -81,7 +85,7 @@ export class ResultTransformer {
     result: TestResultType,
     attachmentUploader: (attachment: Attachment) => Promise<string>,
     defect: boolean,
-  ): Promise<ResultCreate> {
+  ): Promise<TidenResultCreate> {
     const model = await this.transform(result, attachmentUploader);
     model.defect = defect;
     return model;
@@ -103,7 +107,7 @@ export class ResultTransformer {
     steps: TestStepType[],
     testTitle: string,
     attachmentUploader: (attachment: Attachment) => Promise<string>,
-  ): Promise<ResultStep[]> {
+  ): Promise<TidenResultStep[]> {
     return Promise.all(
       steps.map(step => this.transformStep(step, testTitle, attachmentUploader)),
     );
@@ -113,7 +117,7 @@ export class ResultTransformer {
     step: TestStepType,
     testTitle: string,
     attachmentUploader: (attachment: Attachment) => Promise<string>,
-  ): Promise<ResultStep> {
+  ): Promise<TidenResultStep> {
     const attachmentHashes = await this.uploadAttachments(step.attachments, attachmentUploader);
     const resultStep = this.createBaseResultStep(attachmentHashes, step.execution.status);
 
@@ -132,7 +136,7 @@ export class ResultTransformer {
     return resultStep;
   }
 
-  private createBaseResultStep(attachmentHashes: string[], status: StepStatusEnum): ResultStep {
+  private createBaseResultStep(attachmentHashes: string[], status: StepStatusEnum): TidenResultStep {
     return {
       data: { action: '' },
       execution: {
@@ -142,7 +146,7 @@ export class ResultTransformer {
     };
   }
 
-  private processTextStep(step: TestStepType, resultStep: ResultStep, testTitle: string): void {
+  private processTextStep(step: TestStepType, resultStep: TidenResultStep, testTitle: string): void {
     if (!('action' in step.data) || !resultStep.data) return;
 
     const stepData = step.data;
@@ -161,18 +165,18 @@ export class ResultTransformer {
     }
   }
 
-  private processGherkinStep(step: TestStepType, resultStep: ResultStep): void {
+  private processGherkinStep(step: TestStepType, resultStep: TidenResultStep): void {
     if (!('keyword' in step.data) || !resultStep.data) return;
     resultStep.data.action = step.data.keyword;
   }
 
-  private processRequestStep(step: TestStepType, resultStep: ResultStep): void {
+  private processRequestStep(step: TestStepType, resultStep: TidenResultStep): void {
     if (!('request_method' in step.data) || !resultStep.data) return;
     const stepData = step.data;
     resultStep.data.action = `${stepData.request_method} ${stepData.request_url}`;
   }
 
-  private getExecution(exec: TestExecution): ResultExecution {
+  private getExecution(exec: TestExecution): TidenResultExecution {
     return {
       status: statusMap[exec.status],
       start_time: exec.start_time,
@@ -196,7 +200,7 @@ export class ResultTransformer {
   private transformGroupParams(
     groupParams: Record<string, string>,
     params: Record<string, string>,
-  ): string[][] {
+  ): TidenParamGroup[] {
     const keys = Object.keys(groupParams);
     if (keys.length === 0) return [];
 
@@ -206,37 +210,12 @@ export class ResultTransformer {
       }
     }
 
-    return [keys];
+    return [{ names: keys }];
   }
 
-  private getRelation(relation: Relation | null): ResultRelations {
-    if (!relation?.suite) {
-      return this.getDefaultSuiteRelation();
-    }
-
-    const suiteData = this.buildSuiteData(relation.suite.data);
-    return { suite: { data: suiteData } };
-  }
-
-  private getDefaultSuiteRelation(): ResultRelations {
-    if (!this.rootSuite) return {};
-
-    return {
-      suite: {
-        data: [{ public_id: null, title: this.rootSuite }],
-      },
-    };
-  }
-
-  private buildSuiteData(suiteData: SuiteData[]): SuiteData[] {
-    const result: SuiteData[] = [];
-
-    if (this.rootSuite) {
-      result.push({ public_id: null, title: this.rootSuite });
-    }
-
-    return result.concat(
-      suiteData.map(data => ({ public_id: null, title: data.title })),
-    );
+  private getSuitePath(relation: Relation | null): TidenSuiteSegment[] {
+    const titles = relation?.suite?.data.map(d => d.title) ?? [];
+    const path = this.rootSuite ? [this.rootSuite, ...titles] : titles;
+    return path.map(title => ({ title }));
   }
 }

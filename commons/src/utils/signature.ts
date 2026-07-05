@@ -1,21 +1,23 @@
 /**
- * Generates a signature string from testops IDs, suites and parameters
+ * Generates a signature string from testops IDs and suites.
+ *
+ * Param-free by design: signature is the case-level identity input, kept
+ * stable across every parameter combination of a parametrized case. Params
+ * are hashed separately (at the attempt level) rather than folded in here.
  * @param testopsIds - Array of testops IDs or null
  * @param suites - Array of suite names
- * @param parameters - Map of parameter names to values
  * @returns Formatted signature string
  */
 export const generateSignature = (
   testopsIds: number[] | null,
   suites: string[],
-  parameters: Record<string, string>
 ): string => {
   const parts: string[] = [];
-  
+
   if (testopsIds && testopsIds.length > 0) {
     parts.push(testopsIds.join('-'));
   }
-  
+
   if (suites.length > 0) {
     const processedSuites = suites
       .map(suite => suite.trim())
@@ -30,14 +32,6 @@ export const generateSignature = (
 
     parts.push(processedSuites.join('::'));
   }
-  
-  const paramsString = Object.entries(parameters)
-    .map(([key, value]) => `{'${key.toLowerCase()}':'${value.toLowerCase()}'}`)
-    .join('::');
-  
-  if (paramsString) {
-    parts.push(paramsString);
-  }
 
   return parts.join('::');
-}; 
+};
