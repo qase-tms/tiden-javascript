@@ -190,6 +190,38 @@ Every method other than the bare `tiden(caseId, name)` call returns `this`, so c
 chained. This is the complete set implemented in `playwright/src/playwright.ts` — no other
 methods exist beyond what's listed above.
 
+### Parametrized tests
+
+To group multiple parameter combinations under a single Tiden test case, use Playwright's
+`repeatEach` in your config and select parameter values using `testInfo.repeatEachIndex`.
+**Do not interpolate parameter values into the test title** — each distinct title becomes a
+separate case in Tiden.
+
+**Config** (`playwright.config.ts`):
+```typescript
+export default defineConfig({
+  projects: [
+    { name: 'search', testMatch: /search\.spec\.ts$/, repeatEach: 2 },
+  ],
+});
+```
+
+**Test** (`search.spec.ts`):
+```typescript
+import { test } from '@playwright/test';
+import { tiden } from '@tiden/playwright-reporter';
+
+const browsers = ['chromium', 'firefox'];
+
+test('search works across browsers', ({}, testInfo) => {
+  tiden.parameters({ browser: browsers[testInfo.repeatEachIndex] ?? browsers[0] });
+  // test logic...
+});
+```
+
+This creates one Tiden case with 2 parameter combinations (chromium and firefox), not two
+separate cases. See [examples/playwright](../examples/playwright) for a complete working example.
+
 ### Native Playwright annotations
 
 As an alternative to the `tiden` object, the reporter also reads Playwright's own

@@ -172,15 +172,24 @@ tiden.fields = function(values: Record<string, string>) {
 };
 
 /**
- * Set parameters for the test case
- * @param {Record<string, string>[]} values
+ * Set parameters for the test case.
+ *
+ * To group parameter combinations under a single test case, use `repeatEach` in
+ * your config and access the current repetition via `testInfo.repeatEachIndex`.
+ * Do not interpolate parameter values into the test title — each distinct title
+ * becomes a separate case in Tiden.
+ *
+ * @param {Record<string, string>} values
  * @example
- * for (const value of values) {
- *    test('test', async ({ page }) => {
- *      tiden.parameters({ 'parameter': value });
- *      await page.goto('https://example.com');
- *    });
- * )
+ * // playwright.config.ts
+ * { name: 'search', testMatch: /search\.spec\.ts$/, repeatEach: 2 }
+ *
+ * // search.spec.ts
+ * const browsers = ['chromium', 'firefox'];
+ * test('search works', ({}, testInfo) => {
+ *   tiden.parameters({ browser: browsers[testInfo.repeatEachIndex] ?? browsers[0] });
+ *   // test logic...
+ * });
  */
 tiden.parameters = function(values: Record<string, string>) {
   const stringRecord: Record<string, string> = {};
@@ -197,14 +206,23 @@ tiden.parameters = function(values: Record<string, string>) {
 /**
  * Set group parameters for the test case.
  * All parameters will be grouped as a single entity.
- * @param {Record<string, string>[]} values
+ *
+ * To group parameter combinations under a single test case, use `repeatEach` in
+ * your config and access the current repetition via `testInfo.repeatEachIndex`.
+ * Do not interpolate parameter values into the test title — each distinct title
+ * becomes a separate case in Tiden.
+ *
+ * @param {Record<string, string>} values
  * @example
- * for (const value of values) {
- *    test('test', async ({ page }) => {
- *      tiden.groupParameters({ 'parameter': value });
- *      await page.goto('https://example.com');
- *    });
- * )
+ * // playwright.config.ts
+ * { name: 'search', testMatch: /search\.spec\.ts$/, repeatEach: 2 }
+ *
+ * // search.spec.ts
+ * const configs = ['light', 'dark'];
+ * test('theme switching', ({}, testInfo) => {
+ *   tiden.groupParameters({ theme: configs[testInfo.repeatEachIndex] ?? configs[0] });
+ *   // test logic...
+ * });
  */
 tiden.groupParameters = function(values: Record<string, string>) {
   const stringRecord: Record<string, string> = {};
