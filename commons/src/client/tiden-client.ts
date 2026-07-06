@@ -47,8 +47,9 @@ export class TidenApiClient implements IClient {
   }
 
   /** Public run report links have no Tiden equivalent in v1. */
-  async enablePublicReport(_runId: number): Promise<void> {
+  enablePublicReport(_runId: number): Promise<void> {
     this.logger.logDebug('Public report links are not supported; skipping');
+    return Promise.resolve();
   }
 
   async uploadResults(runId: number, results: TestResultType[]): Promise<void> {

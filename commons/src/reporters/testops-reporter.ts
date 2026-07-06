@@ -67,7 +67,7 @@ export class TestOpsReporter extends AbstractReporter {
    */
   public override async addTestResult(result: TestResultType): Promise<void> {
     if (result.execution.status === TestStatusEnum.failed) {
-      this.logger.log(`Test run #${this.runId}`);
+      this.logger.log(`Test run #${this.runId ?? 'unknown'}`);
     }
 
     const release = await this.mutex.acquire();

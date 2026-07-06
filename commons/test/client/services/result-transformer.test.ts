@@ -178,7 +178,7 @@ describe('ResultTransformer', () => {
 
     it('emits param_groups as [{names}] objects (delta a)', async () => {
       const result = makeResult({ params: {}, group_params: { browser: 'chromium', os: 'mac' } });
-      const model = await transformer.transform(result, async () => '');
+      const model = await transformer.transform(result, () => Promise.resolve(''));
       expect(model.param_groups).toEqual([{ names: ['browser', 'os'] }]);
     });
   });
@@ -210,7 +210,7 @@ describe('ResultTransformer', () => {
     it('emits a flat suite_path with root suite prefix (delta b)', async () => {
       transformer = new ResultTransformer(silentLogger(), 'Root');
       const result = makeResult({ relations: { suite: { data: [{ title: 'Checkout', public_id: null }, { title: 'Cards', public_id: null }] } } });
-      const model = await transformer.transform(result, async () => '');
+      const model = await transformer.transform(result, () => Promise.resolve(''));
       expect(model.suite_path).toEqual([{ title: 'Root' }, { title: 'Checkout' }, { title: 'Cards' }]);
       expect((model as Record<string, unknown>)['relations']).toBeUndefined();
     });
