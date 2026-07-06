@@ -128,6 +128,38 @@ describe('ConfigLoader', () => {
 
       expect(result).toBeNull();
     });
+
+    it('should fall back to next path when first path has ENOENT', () => {
+      const validConfig = {
+        projectCode: 'TEST',
+        apiToken: 'token123',
+      };
+      const configJson = JSON.stringify(validConfig);
+
+      // First call (missing.json) should fail with ENOENT
+      // Second call (present.json) should return valid config
+      mockJoin
+        .mockReturnValueOnce('/path/to/missing.json')
+        .mockReturnValueOnce('/path/to/present.json');
+
+      mockReadFileSync
+        .mockImplementationOnce(() => {
+          const error = new Error('File not found') as NodeJS.ErrnoException;
+          error.code = 'ENOENT';
+          throw error;
+        })
+        .mockReturnValueOnce(configJson);
+
+      const customPaths = ['missing.json', 'present.json'];
+      const loader = new ConfigLoader(undefined, customPaths);
+      const result = loader.load();
+
+      expect(result).toEqual(validConfig);
+      expect(mockJoin).toHaveBeenCalledTimes(2);
+      expect(mockJoin).toHaveBeenNthCalledWith(1, process.cwd(), 'missing.json');
+      expect(mockJoin).toHaveBeenNthCalledWith(2, process.cwd(), 'present.json');
+      expect(mockReadFileSync).toHaveBeenCalledTimes(2);
+    });
   });
 
   describe('with custom validation schema', () => {
