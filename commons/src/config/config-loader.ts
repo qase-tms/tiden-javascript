@@ -16,7 +16,7 @@ export class ConfigLoader<T extends Partial<ConfigType> & Record<string, unknown
 
   constructor(
     validationSchema?: JSONSchemaType<T>,
-    private paths = ['qase.config.json', '.qaserc'],
+    private paths = ['tiden.config.json'],
   ) {
     this.validationSchema = merge({}, configValidationSchema, validationSchema);
   }

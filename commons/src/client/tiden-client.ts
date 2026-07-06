@@ -7,7 +7,7 @@ import { ResultTransformer } from './services/result-transformer';
 import { TidenResultCreate } from './models/tiden-result';
 import { processError } from './services/api-error-handler';
 import { LoggerInterface } from '../utils/logger';
-import { TestOpsOptionsType } from '../models/config/TestOpsOptionsType';
+import { TidenOptionsType } from '../models/config/TidenOptionsType';
 import { Attachment, TestResultType } from '../models';
 
 interface ReportErrorDetail { index?: number; resultId?: string; code?: string; message?: string; ['@type']?: string }
@@ -24,7 +24,7 @@ export class TidenApiClient implements IClient {
 
   constructor(
     private readonly logger: LoggerInterface,
-    private readonly config: TestOpsOptionsType,
+    private readonly config: TidenOptionsType,
     private readonly environment: string | undefined,
     rootSuite: string | undefined,
   ) {
@@ -43,7 +43,7 @@ export class TidenApiClient implements IClient {
   }
 
   async uploadAttachment(attachment: Attachment): Promise<string> {
-    return this.attachmentService.uploadAttachment(this.config.project, attachment);
+    return this.attachmentService.uploadAttachment(this.config.product, attachment);
   }
 
   /** Public run report links have no Tiden equivalent in v1. */
@@ -59,7 +59,7 @@ export class TidenApiClient implements IClient {
           this.resultTransformer.transformWithDefect(
             result,
             (a) => this.attachmentService
-              .uploadAttachments(this.config.project, [a], this.config.uploadAttachments ?? true)
+              .uploadAttachments(this.config.product, [a], this.config.uploadAttachments ?? true)
               .then((hashes) => hashes[0] ?? ''),
             this.config.defect ?? false,
           ),
@@ -78,7 +78,7 @@ export class TidenApiClient implements IClient {
     let delay = 1000;
     for (let attempt = 0; ; attempt++) {
       try {
-        await this.http.post(`/v1/products/${this.config.project}/runs/${runId}/results:report`, { results: models });
+        await this.http.post(`/v1/products/${this.config.product}/runs/${runId}/results:report`, { results: models });
         return;
       } catch (error) {
         if (isAxiosError(error) && error.response?.status === 429 && attempt < maxRetries) {

@@ -16,8 +16,8 @@ import { StateManager } from '../../src/state/state';
 const resetEnv = () => {
   delete process.env[EnvEnum.mode];
   delete process.env[EnvRunEnum.id];
-  delete process.env.QASE_MODE;
-  delete process.env.QASE_TESTOPS_API_TOKEN;
+  delete process.env.TIDEN_MODE;
+  delete process.env.TIDEN_API_TOKEN;
 };
 
 describe('OptionsResolver', () => {
@@ -121,10 +121,10 @@ describe('OptionsResolver', () => {
         frameworkName: 'playwright',
         frameworkPackage: 'playwright',
         reporterName: 'qase-playwright',
-        mode: ModeEnum.testops,
+        mode: ModeEnum.tiden,
         fallback: ModeEnum.report,
       });
-      expect(r.effectiveMode).toBe(ModeEnum.testops);
+      expect(r.effectiveMode).toBe(ModeEnum.tiden);
       expect(r.effectiveFallback).toBe(ModeEnum.report);
     });
   });

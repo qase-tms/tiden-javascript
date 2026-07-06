@@ -5,11 +5,11 @@ import {
 } from '../reporters';
 import { ModeEnum, OptionsType } from '../options';
 import { ConfigType } from '../config';
-import { EnvApiEnum, EnvTestOpsEnum } from '../env';
+import { EnvApiEnum, EnvTidenEnum } from '../env';
 import { LoggerInterface } from '../utils/logger';
 import { DisabledException } from '../utils/disabled-exception';
 import { HostData } from '../models/host-data';
-import { TestOpsOptionsType } from '../models/config/TestOpsOptionsType';
+import { TidenOptionsType } from '../models/config/TidenOptionsType';
 import { TidenApiClient } from '../client/tiden-client';
 import { DriverEnum, FsWriter } from '../writer';
 
@@ -30,7 +30,7 @@ export class ReporterFactory {
     withState: boolean,
   ): InternalReporterInterface {
     switch (mode) {
-      case ModeEnum.testops:
+      case ModeEnum.tiden:
         return this.createTestOps(options, withState);
       case ModeEnum.report:
         return this.createReport(options);
@@ -45,19 +45,19 @@ export class ReporterFactory {
     options: ConfigType & OptionsType,
     withState: boolean,
   ): TestOpsReporter {
-    if (!options.testops?.api?.token) {
+    if (!options.tiden?.api?.token) {
       throw new Error(
-        `Either "testops.api.token" parameter or "${EnvApiEnum.token}" environment variable is required in "testops" mode`,
+        `Either "tiden.api.token" parameter or "${EnvApiEnum.token}" environment variable is required in "tiden" mode`,
       );
     }
-    if (!options.testops.project) {
+    if (!options.tiden.product) {
       throw new Error(
-        `Either "testops.project" parameter or "${EnvTestOpsEnum.project}" environment variable is required in "testops" mode`,
+        `Either "tiden.product" parameter or "${EnvTidenEnum.product}" environment variable is required in "tiden" mode`,
       );
     }
 
-    const testops = options.testops as TestOpsOptionsType;
-    testops.clientMeta = {
+    const tiden = options.tiden as TidenOptionsType;
+    tiden.clientMeta = {
       framework: options.frameworkName ?? '',
       reporter: options.reporterName ?? '',
       framework_version: this.hostData.framework,
@@ -69,7 +69,7 @@ export class ReporterFactory {
 
     const apiClient = new TidenApiClient(
       this.logger,
-      testops,
+      tiden,
       options.environment,
       options.rootSuite,
     );
@@ -78,9 +78,9 @@ export class ReporterFactory {
       this.logger,
       apiClient,
       withState,
-      testops.project,
-      testops.batch?.size,
-      testops.run?.id,
+      tiden.product,
+      tiden.batch?.size,
+      tiden.run?.id,
     );
   }
 
@@ -95,7 +95,7 @@ export class ReporterFactory {
       options.reporterName,
       options.environment,
       options.rootSuite,
-      options.testops?.run?.id,
+      options.tiden?.run?.id,
       this.hostData,
     );
   }

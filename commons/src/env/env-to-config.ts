@@ -1,7 +1,7 @@
 import { EnvType } from './env-type';
 import {
   EnvEnum,
-  EnvTestOpsEnum,
+  EnvTidenEnum,
   EnvApiEnum,
   EnvRunEnum,
   EnvLocalEnum,
@@ -24,7 +24,7 @@ export const envToConfig = (env: EnvType): ConfigType => ({
   environment: env[EnvEnum.environment],
   captureLogs: env[EnvEnum.captureLogs],
   rootSuite: env[EnvEnum.rootSuite],
-  statusMapping: env[EnvEnum.statusMapping] ? 
+  statusMapping: env[EnvEnum.statusMapping] ?
     Object.fromEntries(
       env[EnvEnum.statusMapping].split(',').map(item => {
         const [from, to] = item.split('=');
@@ -32,14 +32,14 @@ export const envToConfig = (env: EnvType): ConfigType => ({
       })
     ) : undefined,
 
-  testops: {
-    project: env[EnvTestOpsEnum.project],
-    uploadAttachments: env[EnvTestOpsEnum.uploadAttachments],
-    statusFilter: env[EnvTestOpsEnum.statusFilter]?.split(',').map(status => status.trim()) ?? undefined,
+  tiden: {
+    product: env[EnvTidenEnum.product],
+    uploadAttachments: env[EnvTidenEnum.uploadAttachments],
+    statusFilter: env[EnvTidenEnum.statusFilter]?.split(',').map(status => status.trim()) ?? undefined,
 
     api: {
       token: env[EnvApiEnum.token],
-      host: env[EnvApiEnum.host],
+      baseUrl: env[EnvApiEnum.baseUrl],
     },
 
     run: {
@@ -47,12 +47,13 @@ export const envToConfig = (env: EnvType): ConfigType => ({
       title: env[EnvRunEnum.title],
       description: env[EnvRunEnum.description],
       complete: env[EnvRunEnum.complete],
+      branch: env[EnvRunEnum.branch],
     },
 
     batch: {
       size: env[EnvBatchEnum.size],
     },
-    defect: env[EnvTestOpsEnum.defect],
+    defect: env[EnvTidenEnum.defect],
     configurations: env[EnvConfigurationsEnum.values] ? {
       values: env[EnvConfigurationsEnum.values].split(',').map(item => {
         const [name, value] = item.split('=');

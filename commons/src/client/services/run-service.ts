@@ -1,7 +1,7 @@
 import { AxiosInstance } from 'axios';
 import { LoggerInterface } from '../../utils/logger';
 import { QaseError } from '../../utils/qase-error';
-import { TestOpsOptionsType } from '../../models/config/TestOpsOptionsType';
+import { TidenOptionsType } from '../../models/config/TidenOptionsType';
 import { processError } from './api-error-handler';
 
 export class RunService {
@@ -15,7 +15,7 @@ export class RunService {
    * `environment` is a slug: the server resolves it and auto-creates
    * unknown slugs. An empty title gets the server-side default.
    */
-  async createRun(config: TestOpsOptionsType, environment?: string): Promise<number> {
+  async createRun(config: TidenOptionsType, environment?: string): Promise<number> {
     if (config.run.id) {
       return config.run.id; // sharded CI: pre-created run
     }
@@ -32,7 +32,7 @@ export class RunService {
       };
       this.logger.logDebug(`Creating test run: ${JSON.stringify(body)}`);
       const { data } = await this.http.post<{ run?: { seqNum?: number } }>(
-        `/v1/products/${config.project}/runs`, body,
+        `/v1/products/${config.product}/runs`, body,
       );
       const seqNum = data.run?.seqNum;
       if (!seqNum) {
@@ -50,12 +50,12 @@ export class RunService {
    * upstream pre-flight GET is gone. No-op when run.complete is false
    * (sharded CI: the orchestrator owns completion).
    */
-  async completeRun(runId: number, config: TestOpsOptionsType): Promise<void> {
+  async completeRun(runId: number, config: TidenOptionsType): Promise<void> {
     if (!config.run.complete) {
       return;
     }
     try {
-      await this.http.post(`/v1/products/${config.project}/runs/${runId}:complete`, {});
+      await this.http.post(`/v1/products/${config.product}/runs/${runId}:complete`, {});
       this.logger.log(`Test run #${runId} completed`);
     } catch (error) {
       throw processError(error, 'Error on completing run');

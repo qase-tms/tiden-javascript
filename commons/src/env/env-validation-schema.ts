@@ -6,7 +6,7 @@ import {
   EnvEnum,
   EnvLocalEnum,
   EnvRunEnum,
-  EnvTestOpsEnum,
+  EnvTidenEnum,
   EnvConfigurationsEnum,
   EnvLoggingEnum,
 } from './env-enum';
@@ -23,12 +23,12 @@ export const envValidationSchema: JSONSchemaType<EnvType> = {
   properties: {
     [EnvEnum.mode]: {
       type: 'string',
-      enum: [ModeEnum.report, ModeEnum.testops, ModeEnum.off],
+      enum: [ModeEnum.report, ModeEnum.tiden, ModeEnum.off],
       nullable: true,
     },
     [EnvEnum.fallback]: {
       type: 'string',
-      enum: [ModeEnum.report, ModeEnum.testops, ModeEnum.off],
+      enum: [ModeEnum.report, ModeEnum.tiden, ModeEnum.off],
       nullable: true,
     },
     [EnvEnum.debug]: {
@@ -52,19 +52,19 @@ export const envValidationSchema: JSONSchemaType<EnvType> = {
       nullable: true,
     },
 
-    [EnvTestOpsEnum.project]: {
+    [EnvTidenEnum.product]: {
       type: 'string',
       nullable: true,
     },
-    [EnvTestOpsEnum.uploadAttachments]: {
+    [EnvTidenEnum.uploadAttachments]: {
       type: 'boolean',
       nullable: true,
     },
-    [EnvTestOpsEnum.defect]: {
+    [EnvTidenEnum.defect]: {
       type: 'boolean',
       nullable: true,
     },
-    [EnvTestOpsEnum.statusFilter]: {
+    [EnvTidenEnum.statusFilter]: {
       type: 'string',
       nullable: true,
     },
@@ -73,7 +73,7 @@ export const envValidationSchema: JSONSchemaType<EnvType> = {
       type: 'string',
       nullable: true,
     },
-    [EnvApiEnum.host]: {
+    [EnvApiEnum.baseUrl]: {
       type: 'string',
       nullable: true,
     },
@@ -92,6 +92,10 @@ export const envValidationSchema: JSONSchemaType<EnvType> = {
     },
     [EnvRunEnum.complete]: {
       type: 'boolean',
+      nullable: true,
+    },
+    [EnvRunEnum.branch]: {
+      type: 'string',
       nullable: true,
     },
 

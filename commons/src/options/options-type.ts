@@ -1,7 +1,7 @@
 import { ModeEnum } from './mode-enum';
 
 import { DriverEnum, FsWriterOptionsType } from '../writer';
-import { TestOpsOptionsType } from '../models/config/TestOpsOptionsType';
+import { TidenOptionsType } from '../models/config/TidenOptionsType';
 
 type RecursivePartial<T> = {
   [K in keyof T]?: RecursivePartial<T[K]> | undefined;
@@ -37,8 +37,8 @@ export type OptionsType = {
   rootSuite?: string | undefined;
   statusMapping?: Record<string, string> | undefined;
   logging?: RecursivePartial<LoggingOptionsType> | undefined;
-  testops?:
-    | RecursivePartial<TestOpsOptionsType>
+  tiden?:
+    | RecursivePartial<TidenOptionsType>
     | undefined;
   report?: RecursivePartial<AdditionalReportOptionsType> | undefined;
   profilers?: string[] | undefined;

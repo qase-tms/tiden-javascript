@@ -103,7 +103,7 @@ describe('TestOpsReporter', () => {
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockApiClient.createRun).toHaveBeenCalled();
       expect(reporter['runId']).toBe(456);
-      expect(process.env['QASE_TESTOPS_RUN_ID']).toBe('456');
+      expect(process.env['TIDEN_RUN_ID']).toBe('456');
       expect(reporter['isTestRunReady']).toBe(true);
     });
 

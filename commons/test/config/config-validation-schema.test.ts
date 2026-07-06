@@ -6,10 +6,10 @@ describe('configValidationSchema', () => {
   const ajv = new Ajv();
   const validate = ajv.compile(configValidationSchema);
 
-  describe('testops.configurations', () => {
+  describe('tiden.configurations', () => {
     it('should validate valid configurations object', () => {
       const validConfig = {
-        testops: {
+        tiden: {
           configurations: {
             values: [
               { name: 'group1', value: 'value1' },
@@ -25,7 +25,7 @@ describe('configValidationSchema', () => {
 
     it('should validate empty values array', () => {
       const validConfig = {
-        testops: {
+        tiden: {
           configurations: {
             values: [],
           },
@@ -38,7 +38,7 @@ describe('configValidationSchema', () => {
 
     it('should reject configurations without values', () => {
       const invalidConfig = {
-        testops: {
+        tiden: {
           configurations: {},
         },
       };
@@ -50,7 +50,7 @@ describe('configValidationSchema', () => {
 
     it('should reject configurations with invalid values structure', () => {
       const invalidConfig = {
-        testops: {
+        tiden: {
           configurations: {
             values: [
               { name: 'group1' }, // missing value
@@ -66,7 +66,7 @@ describe('configValidationSchema', () => {
 
     it('should reject configurations with invalid name type', () => {
       const invalidConfig = {
-        testops: {
+        tiden: {
           configurations: {
             values: [
               { name: 123, value: 'value1' }, // name should be string
@@ -82,7 +82,7 @@ describe('configValidationSchema', () => {
 
     it('should reject configurations with invalid value type', () => {
       const invalidConfig = {
-        testops: {
+        tiden: {
           configurations: {
             values: [
               { name: 'group1', value: 123 }, // value should be string
@@ -98,7 +98,7 @@ describe('configValidationSchema', () => {
 
     it('should validate null configurations', () => {
       const validConfig = {
-        testops: {
+        tiden: {
           configurations: null,
         },
       };

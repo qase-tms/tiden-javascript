@@ -3,6 +3,6 @@
  */
 export enum ModeEnum {
   report = 'report',
-  testops = 'testops',
+  tiden = 'tiden',
   off = 'off',
 }

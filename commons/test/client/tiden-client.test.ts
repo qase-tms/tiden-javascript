@@ -11,7 +11,7 @@ const logger: LoggerInterface = { log: jest.fn(), logError: jest.fn(), logDebug:
 function makeClient(srv: Server): TidenApiClient {
   return new TidenApiClient(
     logger,
-    { project: 'p1', api: { token: 'tfy_t', baseUrl: baseUrl(srv) }, run: { complete: true } } as never,
+    { product: 'p1', api: { token: 'tfy_t', baseUrl: baseUrl(srv) }, run: { complete: true } } as never,
     undefined,
     undefined,
   );

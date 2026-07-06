@@ -104,7 +104,7 @@ describe('StateManager', () => {
     it('should set RunId and save state', () => {
       const mockState: StateModel = {
         RunId: undefined,
-        Mode: ModeEnum.testops,
+        Mode: ModeEnum.tiden,
         IsModeChanged: false,
       };
 
@@ -168,7 +168,7 @@ describe('StateManager', () => {
     it('should write state to file', () => {
       const newState: StateModel = {
         RunId: 789,
-        Mode: ModeEnum.testops,
+        Mode: ModeEnum.tiden,
         IsModeChanged: true,
       };
 
@@ -187,7 +187,7 @@ describe('StateManager', () => {
 
       const newState: StateModel = {
         RunId: 789,
-        Mode: ModeEnum.testops,
+        Mode: ModeEnum.tiden,
         IsModeChanged: true,
       };
 

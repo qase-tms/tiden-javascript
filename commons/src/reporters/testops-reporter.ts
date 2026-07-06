@@ -99,7 +99,7 @@ export class TestOpsReporter extends AbstractReporter {
     const runId = await this.api.createRun();
 
     this.runId = runId;
-    process.env['QASE_TESTOPS_RUN_ID'] = String(runId);
+    process.env['TIDEN_RUN_ID'] = String(runId);
 
     if (this.withState) {
       StateManager.setRunId(runId);

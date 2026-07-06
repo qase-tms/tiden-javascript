@@ -3,7 +3,7 @@ import { expect } from '@jest/globals';
 import { ReporterFactory } from '../../src/qase/reporter-factory';
 import { ModeEnum, OptionsType } from '../../src/options';
 import { ConfigType } from '../../src/config';
-import { EnvApiEnum, EnvTestOpsEnum } from '../../src/env';
+import { EnvApiEnum, EnvTidenEnum } from '../../src/env';
 import { LoggerInterface } from '../../src/utils/logger';
 import { HostData } from '../../src/models/host-data';
 import { DisabledException } from '../../src/utils/disabled-exception';
@@ -41,30 +41,30 @@ describe('ReporterFactory', () => {
     });
   });
 
-  describe('testops mode validation', () => {
+  describe('tiden mode validation', () => {
     it('throws when token missing', () => {
-      const opts = { ...baseOptions(), testops: { project: 'DEMO' } } as any;
-      expect(() => factory.create(ModeEnum.testops, opts, false)).toThrow(
-        new RegExp(`testops.api.token.*${EnvApiEnum.token}`),
+      const opts = { ...baseOptions(), tiden: { product: 'DEMO' } } as any;
+      expect(() => factory.create(ModeEnum.tiden, opts, false)).toThrow(
+        new RegExp(`tiden.api.token.*${EnvApiEnum.token}`),
       );
     });
 
-    it('throws when project missing', () => {
-      const opts = { ...baseOptions(), testops: { api: { token: 't' } } } as any;
-      expect(() => factory.create(ModeEnum.testops, opts, false)).toThrow(
-        new RegExp(`testops.project.*${EnvTestOpsEnum.project}`),
+    it('throws when product missing', () => {
+      const opts = { ...baseOptions(), tiden: { api: { token: 't' } } } as any;
+      expect(() => factory.create(ModeEnum.tiden, opts, false)).toThrow(
+        new RegExp(`tiden.product.*${EnvTidenEnum.product}`),
       );
     });
 
     it('creates TestOpsReporter when options are valid', () => {
       const opts = {
         ...baseOptions(),
-        testops: { api: { token: 't' }, project: 'DEMO' },
+        tiden: { api: { token: 't' }, product: 'DEMO' },
       } as any;
-      const r = factory.create(ModeEnum.testops, opts, false);
+      const r = factory.create(ModeEnum.tiden, opts, false);
       expect(r).toBeInstanceOf(TestOpsReporter);
       // The reporter's api client should be a TidenApiClient wired against the
-      // supplied testops config (private field access, mirrors the client_meta
+      // supplied tiden config (private field access, mirrors the client_meta
       // plumb-through in ReporterFactory.createTestOps).
       expect((r as TestOpsReporter)['api']).toBeInstanceOf(TidenApiClient);
     });
@@ -85,10 +85,10 @@ describe('ReporterFactory', () => {
       const localFactory = new ReporterFactory(silentLogger(), hostData);
       const opts = {
         ...baseOptions(),
-        testops: { api: { token: 't' }, project: 'DEMO' },
+        tiden: { api: { token: 't' }, product: 'DEMO' },
       } as any;
-      localFactory.create(ModeEnum.testops, opts, false);
-      expect(opts.testops.clientMeta).toEqual({
+      localFactory.create(ModeEnum.tiden, opts, false);
+      expect(opts.tiden.clientMeta).toEqual({
         framework: 'playwright',
         reporter: 'qase-playwright',
         framework_version: '1.2.3',

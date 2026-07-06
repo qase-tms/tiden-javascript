@@ -47,50 +47,20 @@ describe('ConfigLoader', () => {
       };
       const configJson = JSON.stringify(validConfig);
 
-      mockJoin.mockReturnValue('/path/to/qase.config.json');
+      mockJoin.mockReturnValue('/path/to/tiden.config.json');
       mockReadFileSync.mockReturnValue(configJson);
 
       const loader = new ConfigLoader();
       const result = loader.load();
 
       expect(result).toEqual(validConfig);
-      expect(mockJoin).toHaveBeenCalledWith(process.cwd(), 'qase.config.json');
-      expect(mockReadFileSync).toHaveBeenCalledWith('/path/to/qase.config.json', 'utf8');
+      expect(mockJoin).toHaveBeenCalledWith(process.cwd(), 'tiden.config.json');
+      expect(mockReadFileSync).toHaveBeenCalledWith('/path/to/tiden.config.json', 'utf8');
     });
 
-    it('should try second path when first fails with ENOENT', () => {
-      const validConfig = {
-        projectCode: 'TEST',
-        apiToken: 'token123',
-      };
-      const configJson = JSON.stringify(validConfig);
+    it('should return null when no config file exists', () => {
+      mockJoin.mockReturnValue('/path/to/tiden.config.json');
 
-      // First path fails
-      mockJoin
-        .mockReturnValueOnce('/path/to/qase.config.json')
-        .mockReturnValueOnce('/path/to/.qaserc');
-      
-      mockReadFileSync
-        .mockImplementationOnce(() => {
-          const error = new Error('File not found') as NodeJS.ErrnoException;
-          error.code = 'ENOENT';
-          throw error;
-        })
-        .mockReturnValueOnce(configJson);
-
-      const loader = new ConfigLoader();
-      const result = loader.load();
-
-      expect(result).toEqual(validConfig);
-      expect(mockJoin).toHaveBeenCalledTimes(2);
-      expect(mockReadFileSync).toHaveBeenCalledTimes(2);
-    });
-
-    it('should return null when no config files exist', () => {
-      mockJoin
-        .mockReturnValueOnce('/path/to/qase.config.json')
-        .mockReturnValueOnce('/path/to/.qaserc');
-      
       mockReadFileSync
         .mockImplementation(() => {
           const error = new Error('File not found') as NodeJS.ErrnoException;
@@ -102,10 +72,12 @@ describe('ConfigLoader', () => {
       const result = loader.load();
 
       expect(result).toBeNull();
+      expect(mockJoin).toHaveBeenCalledTimes(1);
+      expect(mockReadFileSync).toHaveBeenCalledTimes(1);
     });
 
     it('should throw QaseError for non-ENOENT file system errors', () => {
-      mockJoin.mockReturnValue('/path/to/qase.config.json');
+      mockJoin.mockReturnValue('/path/to/tiden.config.json');
       mockReadFileSync.mockImplementation(() => {
         const error = new Error('Permission denied') as NodeJS.ErrnoException;
         error.code = 'EACCES';
@@ -118,7 +90,7 @@ describe('ConfigLoader', () => {
     });
 
     it('should throw error for invalid JSON', () => {
-      mockJoin.mockReturnValue('/path/to/qase.config.json');
+      mockJoin.mockReturnValue('/path/to/tiden.config.json');
       mockReadFileSync.mockReturnValue('invalid json');
 
       const loader = new ConfigLoader();
@@ -128,7 +100,7 @@ describe('ConfigLoader', () => {
 
     it('should throw error for validation failures', () => {
       const invalidConfig = {
-        testops: {
+        tiden: {
           api: {
             token: 123, // Should be string, not number
           },
@@ -136,15 +108,15 @@ describe('ConfigLoader', () => {
       };
       const configJson = JSON.stringify(invalidConfig);
 
-      mockJoin.mockReturnValue('/path/to/qase.config.json');
+      mockJoin.mockReturnValue('/path/to/tiden.config.json');
       mockReadFileSync.mockReturnValue(configJson);
 
       const loader = new ConfigLoader();
-      expect(() => loader.load()).toThrow('Invalid config: "`testops.api/token`" must be string');
+      expect(() => loader.load()).toThrow('Invalid config: "`tiden.api/token`" must be string');
     });
 
     it('should handle EISDIR error code', () => {
-      mockJoin.mockReturnValue('/path/to/qase.config.json');
+      mockJoin.mockReturnValue('/path/to/tiden.config.json');
       mockReadFileSync.mockImplementation(() => {
         const error = new Error('Is a directory') as NodeJS.ErrnoException;
         error.code = 'EISDIR';
@@ -173,7 +145,7 @@ describe('ConfigLoader', () => {
       };
       const configJson = JSON.stringify(validCustomConfig);
 
-      mockJoin.mockReturnValue('/path/to/qase.config.json');
+      mockJoin.mockReturnValue('/path/to/tiden.config.json');
       mockReadFileSync.mockReturnValue(configJson);
 
       const loader = new ConfigLoader(customSchema);
@@ -196,7 +168,7 @@ describe('ConfigLoader', () => {
       };
       const configJson = JSON.stringify(invalidCustomConfig);
 
-      mockJoin.mockReturnValue('/path/to/qase.config.json');
+      mockJoin.mockReturnValue('/path/to/tiden.config.json');
       mockReadFileSync.mockReturnValue(configJson);
 
       const loader = new ConfigLoader(customSchema);

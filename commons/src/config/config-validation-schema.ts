@@ -10,12 +10,12 @@ export const configValidationSchema = {
   properties: {
     mode: {
       type: 'string',
-      enum: [ModeEnum.report, ModeEnum.testops, ModeEnum.off],
+      enum: [ModeEnum.report, ModeEnum.tiden, ModeEnum.off],
       nullable: true,
     },
     fallback: {
       type: 'string',
-      enum: [ModeEnum.report, ModeEnum.testops, ModeEnum.off],
+      enum: [ModeEnum.report, ModeEnum.tiden, ModeEnum.off],
       nullable: true,
     },
     debug: {
@@ -59,7 +59,7 @@ export const configValidationSchema = {
       },
     },
 
-    testops: {
+    tiden: {
       type: 'object',
       nullable: true,
 
@@ -74,11 +74,6 @@ export const configValidationSchema = {
               nullable: true,
             },
 
-            host: {
-              type: 'string',
-              nullable: true,
-            },
-
             baseUrl: {
               type: 'string',
               nullable: true,
@@ -86,7 +81,7 @@ export const configValidationSchema = {
           },
         },
 
-        project: {
+        product: {
           type: 'string',
           nullable: true,
         },
@@ -115,6 +110,10 @@ export const configValidationSchema = {
             },
             complete: {
               type: 'boolean',
+              nullable: true,
+            },
+            branch: {
+              type: 'string',
               nullable: true,
             },
           },

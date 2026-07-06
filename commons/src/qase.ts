@@ -90,7 +90,7 @@ export class QaseReporter implements ReporterInterface {
     this.statusProcessor = new StatusProcessor(
       this.logger,
       resolved.composed.statusMapping,
-      resolved.composed.testops?.statusFilter as string[] | undefined,
+      resolved.composed.tiden?.statusFilter as string[] | undefined,
     );
 
     this.fallback = new FallbackCoordinator(this.logger, upstream, fallback, {

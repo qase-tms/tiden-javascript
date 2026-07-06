@@ -12,7 +12,7 @@ describe('envToConfig', () => {
 
       const result = envToConfig(env);
 
-      expect(result.testops?.configurations).toEqual({
+      expect(result.tiden?.configurations).toEqual({
         values: [
           { name: 'group1', value: 'value1' },
           { name: 'group2', value: 'value2' },
@@ -28,7 +28,7 @@ describe('envToConfig', () => {
 
       const result = envToConfig(env);
 
-      expect(result.testops?.configurations).toEqual({
+      expect(result.tiden?.configurations).toEqual({
         values: [
           { name: 'group1', value: 'value1' },
           { name: 'group2', value: 'value2' },
@@ -44,7 +44,7 @@ describe('envToConfig', () => {
 
       const result = envToConfig(env);
 
-      expect(result.testops?.configurations).toEqual({
+      expect(result.tiden?.configurations).toEqual({
         values: [
           { name: 'group1', value: 'value1' },
           { name: 'group2', value: '' },
@@ -58,7 +58,7 @@ describe('envToConfig', () => {
 
       const result = envToConfig(env);
 
-      expect(result.testops?.configurations).toBeUndefined();
+      expect(result.tiden?.configurations).toBeUndefined();
     });
 
     it('should handle single configurations value', () => {
@@ -68,7 +68,7 @@ describe('envToConfig', () => {
 
       const result = envToConfig(env);
 
-      expect(result.testops?.configurations).toEqual({
+      expect(result.tiden?.configurations).toEqual({
         values: [
           { name: 'group1', value: 'value1' },
         ],

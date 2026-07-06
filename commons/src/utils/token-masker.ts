@@ -11,14 +11,14 @@ export function maskToken(token: string): string {
 }
 
 /**
- * Produce a deep-cloned copy of options with `testops.api.token` masked.
+ * Produce a deep-cloned copy of options with `tiden.api.token` masked.
  * Safe to log — never mutates the input.
  */
 export function sanitizeOptionsForLog<T>(options: T): T {
   const sanitized = JSON.parse(JSON.stringify(options)) as
-    T & { testops?: { api?: { token?: string } } };
-  if (sanitized.testops?.api?.token) {
-    sanitized.testops.api.token = maskToken(sanitized.testops.api.token);
+    T & { tiden?: { api?: { token?: string } } };
+  if (sanitized.tiden?.api?.token) {
+    sanitized.tiden.api.token = maskToken(sanitized.tiden.api.token);
   }
   return sanitized as T;
 }

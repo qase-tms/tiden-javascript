@@ -16,7 +16,7 @@ describe('RunService against Tiden wire', () => {
     const http = createTidenClient(baseUrl(srv), 'tfy_token');
     const service = new RunService(logger, http);
     const runId = await service.createRun({
-      project: 'a0000000-0000-4000-8000-000000000001',
+      product: 'a0000000-0000-4000-8000-000000000001',
       api: { token: 'tfy_token' },
       run: { title: 'nightly', description: 'd', complete: true, branch: 'main' },
       configurations: { values: [{ name: 'browser', value: 'chromium' }] },
@@ -35,7 +35,7 @@ describe('RunService against Tiden wire', () => {
   it('returns config.run.id without any HTTP call when preset (sharded CI)', async () => {
     const http = createTidenClient('http://127.0.0.1:9', 'tfy_token'); // unroutable — must not be called
     const service = new RunService(logger, http);
-    const runId = await service.createRun({ project: 'p', api: { token: 't' }, run: { id: 7, complete: true } } as never, undefined);
+    const runId = await service.createRun({ product: 'p', api: { token: 't' }, run: { id: 7, complete: true } } as never, undefined);
     expect(runId).toBe(7);
   });
 
@@ -48,8 +48,8 @@ describe('RunService against Tiden wire', () => {
     });
     const http = createTidenClient(baseUrl(srv), 'tfy_token');
     const service = new RunService(logger, http);
-    await service.completeRun(42, { project: 'p1', api: { token: 't' }, run: { complete: true } } as never);
-    await service.completeRun(42, { project: 'p1', api: { token: 't' }, run: { complete: false } } as never);
+    await service.completeRun(42, { product: 'p1', api: { token: 't' }, run: { complete: true } } as never);
+    await service.completeRun(42, { product: 'p1', api: { token: 't' }, run: { complete: false } } as never);
     srv.close();
     expect(calls).toEqual(['/v1/products/p1/runs/42:complete']);
   });

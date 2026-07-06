@@ -1,6 +1,6 @@
 import {
   EnvEnum,
-  EnvTestOpsEnum,
+  EnvTidenEnum,
   EnvApiEnum,
   EnvRunEnum,
   EnvLocalEnum,
@@ -21,18 +21,19 @@ export interface EnvType {
   [EnvEnum.rootSuite]?: string;
   [EnvEnum.statusMapping]?: string;
 
-  [EnvTestOpsEnum.project]?: string;
-  [EnvTestOpsEnum.uploadAttachments]?: boolean;
-  [EnvTestOpsEnum.defect]?: boolean;
-  [EnvTestOpsEnum.statusFilter]?: string;
+  [EnvTidenEnum.product]?: string;
+  [EnvTidenEnum.uploadAttachments]?: boolean;
+  [EnvTidenEnum.defect]?: boolean;
+  [EnvTidenEnum.statusFilter]?: string;
 
   [EnvApiEnum.token]?: string;
-  [EnvApiEnum.host]?: string;
+  [EnvApiEnum.baseUrl]?: string;
 
   [EnvRunEnum.id]?: number;
   [EnvRunEnum.title]?: string;
   [EnvRunEnum.description]?: string;
   [EnvRunEnum.complete]?: boolean;
+  [EnvRunEnum.branch]?: string;
 
   [EnvBatchEnum.size]?: number;
 

@@ -2,69 +2,70 @@
  * @enum {string}
  */
 export enum EnvEnum {
-  mode = 'QASE_MODE',
-  fallback = 'QASE_FALLBACK',
-  debug = 'QASE_DEBUG',
-  environment = 'QASE_ENVIRONMENT',
-  captureLogs = 'QASE_CAPTURE_LOGS',
-  rootSuite = 'QASE_ROOT_SUITE',
-  statusMapping = 'QASE_STATUS_MAPPING',
+  mode = 'TIDEN_MODE',
+  fallback = 'TIDEN_FALLBACK',
+  debug = 'TIDEN_DEBUG',
+  environment = 'TIDEN_ENVIRONMENT',
+  captureLogs = 'TIDEN_CAPTURE_LOGS',
+  rootSuite = 'TIDEN_ROOT_SUITE',
+  statusMapping = 'TIDEN_STATUS_MAPPING',
 }
 
 /**
  * @enum {string}
  */
-export enum EnvTestOpsEnum {
-  project = 'QASE_TESTOPS_PROJECT',
-  uploadAttachments = 'QASE_TESTOPS_UPLOAD_ATTACHMENTS',
-  defect = 'QASE_TESTOPS_DEFECT',
-  statusFilter = 'QASE_TESTOPS_STATUS_FILTER',
+export enum EnvTidenEnum {
+  product = 'TIDEN_PRODUCT_ID',
+  uploadAttachments = 'TIDEN_UPLOAD_ATTACHMENTS',
+  defect = 'TIDEN_DEFECT',
+  statusFilter = 'TIDEN_STATUS_FILTER',
 }
 
 /**
  * @enum {string}
  */
 export enum EnvApiEnum {
-  token = 'QASE_TESTOPS_API_TOKEN',
-  host = 'QASE_TESTOPS_API_HOST',
+  token = 'TIDEN_API_TOKEN',
+  baseUrl = 'TIDEN_BASE_URL',
 }
 
 /**
  * @enum {string}
  */
 export enum EnvRunEnum {
-  id = 'QASE_TESTOPS_RUN_ID',
-  title = 'QASE_TESTOPS_RUN_TITLE',
-  description = 'QASE_TESTOPS_RUN_DESCRIPTION',
-  complete = 'QASE_TESTOPS_RUN_COMPLETE',
+  id = 'TIDEN_RUN_ID',
+  title = 'TIDEN_RUN_TITLE',
+  description = 'TIDEN_RUN_DESCRIPTION',
+  complete = 'TIDEN_RUN_COMPLETE',
+  branch = 'TIDEN_BRANCH',
 }
 
 /**
  * @enum {string}
  */
 export enum EnvBatchEnum {
-  size = 'QASE_TESTOPS_BATCH_SIZE',
+  size = 'TIDEN_BATCH_SIZE',
 }
 
 /**
  * @enum {string}
  */
 export enum EnvConfigurationsEnum {
-  values = 'QASE_TESTOPS_CONFIGURATIONS_VALUES',
+  values = 'TIDEN_CONFIGURATIONS_VALUES',
 }
 
 /**
  * @enum {string}
  */
 export enum EnvLocalEnum {
-  path = 'QASE_REPORT_CONNECTION_PATH',
-  format = 'QASE_REPORT_CONNECTION_FORMAT',
+  path = 'TIDEN_REPORT_CONNECTION_PATH',
+  format = 'TIDEN_REPORT_CONNECTION_FORMAT',
 }
 
 /**
  * @enum {string}
  */
 export enum EnvLoggingEnum {
-  console = 'QASE_LOGGING_CONSOLE',
-  file = 'QASE_LOGGING_FILE',
+  console = 'TIDEN_LOGGING_CONSOLE',
+  file = 'TIDEN_LOGGING_FILE',
 }
