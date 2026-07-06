@@ -56,7 +56,7 @@ function defaultArgs(over: Partial<BuildArgs> = {}): BuildArgs {
     test: makeTest('test title'),
     result: makeResult('passed' as TestStatus),
     metadata: emptyMetadata(),
-    annotations: { ids: [], projectMapping: null, suites: [] },
+    annotations: { ids: [], suites: [] },
     options: emptyOptions(),
     isCaptureLogs: false,
     tidenIdsRegistry: new Map<string, number[]>(),
@@ -72,41 +72,29 @@ describe('ResultBuilder precedence chain', () => {
     builder = new ResultBuilder(new StepConverter(stepIndex));
   });
 
-  it('uses metadata.projectMapping when present', () => {
-    const args = defaultArgs({
-      metadata: { ...emptyMetadata(), projectMapping: { PROJ: [1] } },
-    });
-    const r = builder.build(args)!;
-    expect(r.project_case_mapping).toEqual({ PROJ: [1] });
-    expect(r.case_id).toBeNull();
-  });
-
-  it('uses annotation projectMapping when metadata has none', () => {
-    const args = defaultArgs({
-      annotations: { ids: [], projectMapping: { PROJ_A: [1] }, suites: [] },
-    });
-    const r = builder.build(args)!;
-    expect(r.project_case_mapping).toEqual({ PROJ_A: [1] });
-  });
-
-  it('uses title-extracted projectMapping when metadata and annotation have none', () => {
-    const args = defaultArgs({
-      test: makeTest('login (Tiden PROJ_T: 1)'),
-    });
-    const r = builder.build(args)!;
-    expect(r.project_case_mapping).toEqual({ PROJ_T: [1] });
-  });
-
-  it('uses annotation ids when no projectMapping', () => {
-    const args = defaultArgs({ annotations: { ids: [42], projectMapping: null, suites: [] } });
+  it('uses annotation ids when present', () => {
+    const args = defaultArgs({ annotations: { ids: [42], suites: [] } });
     const r = builder.build(args)!;
     expect(r.case_id).toBe(42);
   });
 
-  it('uses metadata.ids when no annotation ids and no mapping', () => {
+  it('always sends a null project_case_mapping (multi-project mode removed)', () => {
+    const args = defaultArgs({ annotations: { ids: [42], suites: [] } });
+    const r = builder.build(args)!;
+    expect(r.project_case_mapping).toBeNull();
+  });
+
+  it('uses metadata.ids when no annotation ids', () => {
     const args = defaultArgs({ metadata: { ...emptyMetadata(), ids: [7] } });
     const r = builder.build(args)!;
     expect(r.case_id).toBe(7);
+  });
+
+  it('uses a title-extracted legacy id when no annotation/metadata ids are present', () => {
+    const args = defaultArgs({ test: makeTest('login (Tiden ID: 7)') });
+    const r = builder.build(args)!;
+    expect(r.case_id).toBe(7);
+    expect(r.title).toBe('login');
   });
 
   it('uses static tidenIds Map fallback when nothing else matches', () => {

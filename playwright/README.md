@@ -11,8 +11,8 @@ See the [root README](../README.md#lineage) for this package's fork lineage.
   annotations)
 - Rich per-test metadata: title, fields, parameters, grouped parameters, suite, comment, tags
 - File and inline attachments, with a step-title helper for expected result / data
-- Multi-project mapping (`tiden.projects()` / `tiden.projectsTitle()`)
-- Configurable via file, environment variables, or `playwright.config.ts` (in that priority order)
+- Configurable via `playwright.config.ts`, a config file, or environment variables (env wins, so CI
+  can always override committed config)
 - Network Profiler fixture for automatic HTTP request capture as reported steps
 - Sharded-CI support via a shared `TIDEN_RUN_ID`
 
@@ -80,9 +80,12 @@ npx playwright test
 
 The reporter is configured via, in order of priority:
 
-1. **`playwright.config.ts`** reporter options (highest priority)
-2. **Environment variables** (`TIDEN_*`)
-3. **Config file** (`tiden.config.json`, project root)
+1. **Environment variables** (`TIDEN_*`) (highest priority)
+2. **Config file** (`tiden.config.json`, project root)
+3. **`playwright.config.ts`** reporter options
+
+Environment variables win last so CI can always override committed config (e.g. swap
+`tiden.api.baseUrl`/`tiden.api.token` per environment) without editing checked-in files.
 
 ### Full `tiden.config.json` example
 
@@ -110,8 +113,9 @@ The reporter is configured via, in order of priority:
 
 ### Environment variables
 
-All options can also be set via environment variables, which take priority over the config file
-but are overridden by explicit `playwright.config.ts` reporter options.
+All options can also be set via environment variables, which take the highest priority — they
+override both the config file and any explicit `playwright.config.ts` reporter options, so CI can
+always override committed config without editing checked-in files.
 
 | Config key                        | Environment variable                | Description                                                                    |
 |------------------------------------|--------------------------------------|----------------------------------------------------------------------------------|
@@ -165,7 +169,7 @@ test(tiden(1, 'User can login'), async ({ page }) => { /* ... */ });
 test(tiden([1, 2, 3], 'Covers multiple cases'), async ({ page }) => { /* ... */ });
 
 test('User can login', async ({ page }) => {
-  tiden.id(1);                                  // link case ID(s), method-based
+  tiden.id(1);                                  // link case ID(s), method-based (deprecated, see below)
   tiden.title('User can login');                // override the reported title
   tiden.fields({ severity: 'critical' });        // custom fields
   tiden.parameters({ browser: 'chromium' });     // parameters (varies per test)
@@ -175,20 +179,20 @@ test('User can login', async ({ page }) => {
   tiden.tags('smoke', 'regression');             // tags
   tiden.ignore();                                // test still runs, result not reported
   tiden.attach({ paths: '/path/to/file' });       // attach a file (or { name, content, contentType })
-  tiden.projects({ PROJ1: [1, 2], PROJ2: [3] });  // multi-project mapping
 
   await test.step(tiden.step('Log in', 'redirected to dashboard'), async () => {
     await page.goto('https://example.com');
   });
 });
-
-// Multi-project mapping via title instead of a method call inside the test
-test(tiden.projectsTitle('Checkout', { PROJ1: [1], PROJ2: [2] }), async ({ page }) => { /* ... */ });
 ```
 
 Every method other than the bare `tiden(caseId, name)` call returns `this`, so calls can be
 chained. This is the complete set implemented in `playwright/src/playwright.ts` — no other
 methods exist beyond what's listed above.
+
+> **Deprecated:** `tiden.id()` is kept only for reverse compatibility. Prefer the `tiden(caseId,
+> name)` title wrapper shown above — it links the case ID(s) via the `(Tiden ID: n)` title suffix
+> instead of a separate method call.
 
 ### Parametrized tests
 
@@ -232,7 +236,6 @@ import in test files. Supported annotation `type`s (case-insensitive):
 test('User can login', {
   annotation: [
     { type: 'TidenId', description: '1,2' },
-    { type: 'TidenProjects', description: '{"PROJ1":[1,2],"PROJ2":[3]}' },
     { type: 'TidenSuite', description: 'Authentication / Login' },
   ],
 }, async ({ page }) => { /* ... */ });

@@ -27,24 +27,6 @@ describe('AnnotationExtractor', () => {
     });
   });
 
-  describe('extractProjectMapping', () => {
-    it('returns null when no tidenProjects annotation is present', () => {
-      expect(extractor.extractProjectMapping([{ type: 'tidenId', description: '1' }])).toBeNull();
-    });
-
-    it('parses a valid JSON description', () => {
-      expect(
-        extractor.extractProjectMapping([{ type: 'tidenProjects', description: '{"PROJ1":[1],"PROJ2":[2]}' }]),
-      ).toEqual({ PROJ1: [1], PROJ2: [2] });
-    });
-
-    it('returns null on invalid JSON', () => {
-      expect(
-        extractor.extractProjectMapping([{ type: 'tidenProjects', description: 'not json' }]),
-      ).toBeNull();
-    });
-  });
-
   describe('extractSuite', () => {
     it('collects tidenSuite descriptions in order', () => {
       expect(

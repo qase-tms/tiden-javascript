@@ -107,7 +107,6 @@ export class PlaywrightTidenReporter implements Reporter {
     const metadata = this.metadataExtractor.transform(result.attachments);
     const annotations = {
       ids: this.annotationExtractor.extractTidenIds(test.annotations),
-      projectMapping: this.annotationExtractor.extractProjectMapping(test.annotations),
       suites: this.annotationExtractor.extractSuite(test.annotations),
     };
 

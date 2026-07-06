@@ -254,25 +254,4 @@ describe('tiden API', () => {
       warn.mockRestore();
     });
   });
-
-  describe('tiden.projects with non-positive ID (regression test)', () => {
-    it('omits a project entirely when all of its IDs are non-positive', () => {
-      const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
-      testInfoMock.attach.mockClear();
-      tiden.projects({ PROJ1: [0], PROJ2: [5] });
-      expect(testInfoMock.attach).toHaveBeenCalledWith('tiden-metadata.json', {
-        contentType: 'application/tiden.metadata+json',
-        body: Buffer.from(JSON.stringify({ projectMapping: { PROJ2: [5] } }), 'utf8'),
-      });
-      warn.mockRestore();
-    });
-
-    it('does not attach metadata when every project is empty after filtering', () => {
-      const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
-      testInfoMock.attach.mockClear();
-      tiden.projects({ PROJ1: [0], PROJ2: [-1] });
-      expect(testInfoMock.attach).not.toHaveBeenCalled();
-      warn.mockRestore();
-    });
-  });
 });

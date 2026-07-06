@@ -56,10 +56,20 @@ describe('ReporterFactory', () => {
       );
     });
 
-    it('creates RunReporter when options are valid', () => {
+    it('throws when baseUrl missing', () => {
       const opts = {
         ...baseOptions(),
         tiden: { api: { token: 't' }, product: 'DEMO' },
+      } as any;
+      expect(() => factory.create(ModeEnum.tiden, opts, false)).toThrow(
+        new RegExp(`tiden.api.baseUrl.*${EnvApiEnum.baseUrl}`),
+      );
+    });
+
+    it('creates RunReporter when options are valid', () => {
+      const opts = {
+        ...baseOptions(),
+        tiden: { api: { token: 't', baseUrl: 'https://api.tiden.example' }, product: 'DEMO' },
       } as any;
       const r = factory.create(ModeEnum.tiden, opts, false);
       expect(r).toBeInstanceOf(RunReporter);
@@ -85,7 +95,7 @@ describe('ReporterFactory', () => {
       const localFactory = new ReporterFactory(silentLogger(), hostData);
       const opts = {
         ...baseOptions(),
-        tiden: { api: { token: 't' }, product: 'DEMO' },
+        tiden: { api: { token: 't', baseUrl: 'https://api.tiden.example' }, product: 'DEMO' },
       } as any;
       localFactory.create(ModeEnum.tiden, opts, false);
       expect(opts.tiden.clientMeta).toEqual({

@@ -55,6 +55,11 @@ export class ReporterFactory {
         `Either "tiden.product" parameter or "${EnvTidenEnum.product}" environment variable is required in "tiden" mode`,
       );
     }
+    if (!options.tiden?.api?.baseUrl) {
+      throw new Error(
+        `Either "tiden.api.baseUrl" parameter or "${EnvApiEnum.baseUrl}" environment variable is required in "tiden" mode`,
+      );
+    }
 
     const tiden = options.tiden as TidenOptionsType;
     tiden.clientMeta = {

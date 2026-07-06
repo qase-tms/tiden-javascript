@@ -65,13 +65,6 @@ describe('MetadataExtractor', () => {
     expect(m.groupParams).toEqual({ region: 'eu' });
   });
 
-  it('parses projectMapping when payload is an object', () => {
-    const m = extractor.transform([
-      makeMetadataAttachment({ projectMapping: { PROJ: [1, 2] } }),
-    ]);
-    expect(m.projectMapping).toEqual({ PROJ: [1, 2] });
-  });
-
   it('appends tags to the existing list', () => {
     const m = extractor.transform([
       makeMetadataAttachment({ tags: ['a', 'b'] }),

@@ -2,6 +2,7 @@ import { test as base } from '@playwright/test';
 import {
   ConfigLoader,
   composeOptions,
+  EnvApiEnum,
 } from '@tiden/reporter-commons';
 import { NetworkProfiler } from '@tiden/reporter-commons/profilers';
 
@@ -11,13 +12,18 @@ export const PROFILER_CONTENT_TYPE = 'application/tiden.profiler-steps+json';
 /**
  * Derives the reporter's own Tiden API host from `tiden.api.baseUrl`, if
  * configured, so network profiling doesn't capture the reporter's own
- * result-upload traffic. Returns undefined when unset or unparsable —
- * callers fall back to the user's explicit `skip_domains` config only.
+ * result-upload traffic. Falls back to the `TIDEN_BASE_URL` environment
+ * variable when the composed config doesn't set a baseUrl — this fixture
+ * only composes `tiden.config.json`, not the env layer, so without this
+ * fallback a CI-only `TIDEN_BASE_URL` would be silently missed. Returns
+ * undefined when both are unset or unparsable — callers fall back to the
+ * user's explicit `skip_domains` config only.
  */
-function getTidenApiHost(baseUrl: string | undefined): string | undefined {
-  if (!baseUrl) return undefined;
+export function getTidenApiHost(baseUrl: string | undefined): string | undefined {
+  const resolvedBaseUrl = baseUrl ?? process.env[EnvApiEnum.baseUrl];
+  if (!resolvedBaseUrl) return undefined;
   try {
-    return new URL(baseUrl).host;
+    return new URL(resolvedBaseUrl).host;
   } catch {
     return undefined;
   }

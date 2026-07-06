@@ -12,8 +12,6 @@ type ArrayItemType<T> = T extends (infer R)[] ? R : never;
 
 export interface TestCaseMetadata {
   ids: number[];
-  /** Multi-project mapping: project code -> test case IDs. */
-  projectMapping?: Record<string, number[]>;
   title: string;
   fields: Record<string, string>;
   parameters: Record<string, string>;
@@ -69,10 +67,6 @@ export class MetadataExtractor {
 
         if (message.ids) {
           metadata.ids = message.ids;
-        }
-
-        if (message.projectMapping && typeof message.projectMapping === 'object') {
-          metadata.projectMapping = message.projectMapping as Record<string, number[]>;
         }
 
         if (message.fields) {

@@ -6,7 +6,7 @@ import {
   TestStepType,
   determineTestStatus,
   generateSignature,
-  parseProjectMappingFromTitle,
+  parseTidenIdFromTitle,
 } from '@tiden/reporter-commons';
 import { removeTidenIdsFromTitle } from '@tiden/reporter-commons/internal';
 import { v4 as uuidv4 } from 'uuid';
@@ -23,7 +23,6 @@ export interface BuildArgs {
   metadata: TestCaseMetadata;
   annotations: {
     ids: number[];
-    projectMapping: Record<string, number[]> | null;
     suites: string[];
   };
   options: ReporterOptionsType;
@@ -74,41 +73,19 @@ export class ResultBuilder {
       metadata.fields['is_flaky'] = 'true';
     }
 
-    const titleParsed = parseProjectMappingFromTitle(test.title);
+    const titleParsed = parseTidenIdFromTitle(test.title);
     const testTitle = titleParsed.cleanedTitle || removeTidenIdsFromTitle(test.title);
 
-    const hasMetadataProjectMapping = metadata.projectMapping != null && Object.keys(metadata.projectMapping).length > 0;
-    const hasAnnotationProjectMapping = annotations.projectMapping != null && Object.keys(annotations.projectMapping).length > 0;
-    const hasTitleProjectMapping = titleParsed.projectMapping != null && Object.keys(titleParsed.projectMapping).length > 0;
-
-    const projectMapping = hasMetadataProjectMapping
-      ? metadata.projectMapping ?? null
-      : hasAnnotationProjectMapping
-        ? annotations.projectMapping
-        : hasTitleProjectMapping
-          ? titleParsed.projectMapping
-          : null;
-
-    const hasProjectMapping = projectMapping != null && Object.keys(projectMapping).length > 0;
-
     let case_id: number | number[] | null;
-    let project_case_mapping: Record<string, number[]> | null;
-    if (hasProjectMapping) {
-      project_case_mapping = projectMapping;
-      case_id = null;
-    } else if (annotations.ids.length > 0) {
+    if (annotations.ids.length > 0) {
       case_id = annotations.ids.length === 1 ? annotations.ids[0]! : annotations.ids;
-      project_case_mapping = null;
     } else if (metadata.ids.length > 0) {
       case_id = metadata.ids.length === 1 ? metadata.ids[0]! : metadata.ids;
-      project_case_mapping = null;
     } else if (titleParsed.legacyIds.length > 0) {
       case_id = titleParsed.legacyIds.length === 1 ? titleParsed.legacyIds[0]! : titleParsed.legacyIds;
-      project_case_mapping = null;
     } else {
       const registryIds = tidenIdsRegistry.get(test.title);
       case_id = registryIds && registryIds.length > 0 ? registryIds : null;
-      project_case_mapping = null;
     }
 
     let errorForStatus: Error | null = null;
@@ -154,7 +131,9 @@ export class ResultBuilder {
       signature: generateSignature(idsForSignature, suites),
       steps: this.stepConverter.transform(result.steps, null),
       case_id,
-      project_case_mapping,
+      // Multi-project mapping was removed; the internal TestResultType model
+      // still carries this field, so it's kept here always-null.
+      project_case_mapping: null,
       title: metadata.title === '' ? testTitle : metadata.title,
     };
 

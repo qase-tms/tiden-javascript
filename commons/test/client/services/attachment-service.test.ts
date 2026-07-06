@@ -71,13 +71,17 @@ describe('AttachmentService', () => {
       const realHttp = createTidenClient(baseUrl(srv), 'tfy_token');
       const realService = new AttachmentService(logger, realHttp);
       const hash = await realService.uploadAttachment('prod-1', {
-        id: 'att-1', file_name: 'a.txt', mime_type: 'text/plain', content: 'hello', file_path: null, size: 5,
+        // Note: content must not be all-base64-alphabet (e.g. a bare "hello"
+        // would be sniffed as base64 and decoded to different bytes); the
+        // space keeps it on the plain-utf8 path so the literal text round-trips.
+        id: 'att-1', file_name: 'a.txt', mime_type: 'text/plain', content: 'hello world', file_path: null, size: 11,
       } as never);
       srv.close();
       expect(hash).toBe('abc123def4567890');
       expect(contentType).toContain('multipart/form-data');
       expect(rawBody.toString()).toContain('name="file[]"');
       expect(rawBody.toString()).toContain('filename="a.txt"');
+      expect(rawBody.toString()).toContain('hello');
     });
 
     it('declares the attachment mime_type as the part Content-Type even when the filename extension would not infer it', async () => {
