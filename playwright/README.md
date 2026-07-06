@@ -105,8 +105,8 @@ The reporter is configured via, in order of priority:
 - `tiden.api.token` / `tiden.api.baseUrl` — Tiden API credentials and endpoint (full URL, e.g.
   `https://api.tiden.example`, not just a host).
 - `tiden.run.complete` — whether this process should mark the run complete when the suite
-  finishes. **Defaults to not completing the run** if omitted — see
-  [Sharded CI](#sharded-ci-recipe) below for why this matters.
+  finishes. **Defaults to `true`** if omitted; set `false` for sharded CI so only the final job
+  completes the run — see [Sharded CI](#sharded-ci-recipe) below.
 
 ### Environment variables
 
@@ -232,9 +232,8 @@ always excluded automatically.
 
 ## Sharded CI recipe
 
-`tiden.run.complete` has **no true-by-default behavior**: if it's left unset, the reporter creates
-(or reuses) a run but never calls the complete endpoint. That's what makes a multi-job sharded run
-possible — every shard except the last can safely skip completion.
+`tiden.run.complete` defaults to `true`, so runs complete by default. For sharded CI, set
+`TIDEN_RUN_COMPLETE=false` on all but the final job so the orchestrator can coordinate completion.
 
 1. **First job** — run a shard with `TIDEN_RUN_COMPLETE=false` and no `TIDEN_RUN_ID` set. The
    reporter creates a new run and, when the suite finishes, leaves it open. To thread the new run

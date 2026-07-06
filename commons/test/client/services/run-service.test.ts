@@ -39,7 +39,7 @@ describe('RunService against Tiden wire', () => {
     expect(runId).toBe(7);
   });
 
-  it('completes a run via POST :complete and no-ops when run.complete is false', async () => {
+  it('completes a run via POST :complete; defaults to true, only skips when explicitly false', async () => {
     const calls: string[] = [];
     const srv = await testServer((req, _body, res) => {
       calls.push(req.url ?? '');
@@ -48,9 +48,13 @@ describe('RunService against Tiden wire', () => {
     });
     const http = createTidenClient(baseUrl(srv), 'tfy_token');
     const service = new RunService(logger, http);
+    // explicit true: POST
     await service.completeRun(42, { product: 'p1', api: { token: 't' }, run: { complete: true } } as never);
+    // explicit false: no-op
     await service.completeRun(42, { product: 'p1', api: { token: 't' }, run: { complete: false } } as never);
+    // undefined (missing complete key): defaults to true, so POST
+    await service.completeRun(42, { product: 'p1', api: { token: 't' }, run: {} } as never);
     srv.close();
-    expect(calls).toEqual(['/v1/products/p1/runs/42:complete']);
+    expect(calls).toEqual(['/v1/products/p1/runs/42:complete', '/v1/products/p1/runs/42:complete']);
   });
 });

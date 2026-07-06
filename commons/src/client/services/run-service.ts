@@ -47,11 +47,13 @@ export class RunService {
 
   /**
    * Completes the run. Server-idempotent for already-completed runs, so the
-   * upstream pre-flight GET is gone. No-op when run.complete is false
-   * (sharded CI: the orchestrator owns completion).
+   * upstream pre-flight GET is gone. Completes by default; only skips when
+   * run.complete is explicitly false (sharded CI: the orchestrator owns completion).
    */
   async completeRun(runId: number, config: TidenOptionsType): Promise<void> {
-    if (!config.run.complete) {
+    // Complete by default; only an explicit `complete: false` (sharded CI:
+    // the orchestrator owns completion) skips it.
+    if (config.run.complete === false) {
       return;
     }
     try {
