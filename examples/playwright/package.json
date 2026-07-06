@@ -1,0 +1,13 @@
+{
+  "name": "@tiden/example-playwright",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Playwright example verified end-to-end against a live Tiden dev stack",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.1",
+    "@tiden/playwright-reporter": "*"
+  }
+}
