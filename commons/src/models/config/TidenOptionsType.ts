@@ -33,6 +33,6 @@ export interface TidenBatchType {
 
 export interface TidenApiType {
   token: string;
-  /** Tiden API base URL, taken verbatim (no qase.io/self-host URL templating). */
+  /** Tiden API base URL, taken verbatim (no self-host URL templating). */
   baseUrl: string;
 }

@@ -1,6 +1,6 @@
 import { AxiosInstance } from 'axios';
 import { LoggerInterface } from '../../utils/logger';
-import { QaseError } from '../../utils/qase-error';
+import { TidenError } from '../../utils/tiden-error';
 import { TidenOptionsType } from '../../models/config/TidenOptionsType';
 import { processError } from './api-error-handler';
 
@@ -36,7 +36,7 @@ export class RunService {
       );
       const seqNum = data.run?.seqNum;
       if (!seqNum) {
-        throw new QaseError('Failed to create test run');
+        throw new TidenError('Failed to create test run');
       }
       this.logger.logDebug(`Test run created: #${seqNum}`);
       return seqNum;

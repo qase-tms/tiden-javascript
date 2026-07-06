@@ -2,13 +2,13 @@ import { filterPositiveIds } from './filter-positive-ids';
 import { LoggerInterface } from '../utils/logger';
 
 /**
- * Parses a comma-separated string of Qase IDs into an array of numbers.
+ * Parses a comma-separated string of Tiden IDs into an array of numbers.
  * Whitespace around each entry is trimmed; non-numeric entries are skipped.
  * IDs that are not positive integers (<= 0) are filtered out with a warning.
  *
  * Examples: "1,2,3" → [1, 2, 3], "42" → [42], "" → [].
  */
-export function parseQaseIdsFromString(
+export function parseTidenIdsFromString(
   value: string,
   logger?: LoggerInterface,
 ): number[] {

@@ -1,6 +1,6 @@
 /**
- * Minimal structural shape compatible with both Mocha's `Suite` (used by
- * qase-mocha) and Cypress's runner Suite (used by qase-cypress).
+ * Minimal structural shape compatible with both Mocha's `Suite` and
+ * Cypress's runner `Suite`.
  */
 export interface FileSuiteNode {
   file?: string;

@@ -2,20 +2,35 @@ import { test as base } from '@playwright/test';
 import {
   ConfigLoader,
   composeOptions,
-} from 'qase-javascript-commons';
-import { NetworkProfiler } from 'qase-javascript-commons/profilers';
+} from '@tiden/reporter-commons';
+import { NetworkProfiler } from '@tiden/reporter-commons/profilers';
 
-export const PROFILER_ATTACHMENT_NAME = 'qase-profiler-steps.json';
-export const PROFILER_CONTENT_TYPE = 'application/qase.profiler-steps+json';
+export const PROFILER_ATTACHMENT_NAME = 'tiden-profiler-steps.json';
+export const PROFILER_CONTENT_TYPE = 'application/tiden.profiler-steps+json';
 
-// Extend the base test with a qaseProfiler fixture that:
+/**
+ * Derives the reporter's own Tiden API host from `tiden.api.baseUrl`, if
+ * configured, so network profiling doesn't capture the reporter's own
+ * result-upload traffic. Returns undefined when unset or unparsable —
+ * callers fall back to the user's explicit `skip_domains` config only.
+ */
+function getTidenApiHost(baseUrl: string | undefined): string | undefined {
+  if (!baseUrl) return undefined;
+  try {
+    return new URL(baseUrl).host;
+  } catch {
+    return undefined;
+  }
+}
+
+// Extend the base test with a tidenProfiler fixture that:
 // 1. Reads config to check if network profiling is enabled
 // 2. Uses snapshot/delta pattern on fallback accumulator (diagnostics_channel
 //    handlers do not inherit AsyncLocalStorage context)
 // 3. Serializes captured steps as a JSON attachment
-export const test = base.extend<{ qaseProfiler: void }>({
+export const test = base.extend<{ tidenProfiler: void }>({
   // eslint-disable-next-line no-empty-pattern
-  qaseProfiler: [async ({}, use, testInfo) => {
+  tidenProfiler: [async ({}, use, testInfo) => {
     const configLoader = new ConfigLoader();
     const config = configLoader.load();
     const options = composeOptions({}, config);
@@ -25,8 +40,14 @@ export const test = base.extend<{ qaseProfiler: void }>({
       return;
     }
 
+    const apiHost = getTidenApiHost(options.tiden?.api?.baseUrl);
+    const skipDomains = [
+      ...(options.networkProfiler?.skip_domains ?? []),
+      ...(apiHost ? [apiHost] : []),
+    ];
+
     const profiler = new NetworkProfiler({
-      skipDomains: options.networkProfiler?.skip_domains,
+      skipDomains,
       trackOnFail: options.networkProfiler?.track_on_fail,
     });
     profiler.enable();

@@ -13,8 +13,8 @@ import { Attachment, TestResultType } from '../models';
 interface ReportErrorDetail { index?: number; resultId?: string; code?: string; message?: string; ['@type']?: string }
 
 /**
- * Facade over the Tiden REST API — replaces the generated Qase
- * `qase-api-client`/`qase-api-v2-client` packages (ClientV1/ClientV2).
+ * Facade over the Tiden REST API — replaces the previously generated
+ * `ClientV1`/`ClientV2` API client packages.
  */
 export class TidenApiClient implements IClient {
   private readonly http: AxiosInstance;

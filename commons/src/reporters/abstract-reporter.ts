@@ -98,7 +98,7 @@ export abstract class AbstractReporter implements InternalReporterInterface {
       result.message = this.removeAnsiEscapeCodes(result.message);
     }
 
-    if (result.testops_id === null || !Array.isArray(result.testops_id)) {
+    if (result.case_id === null || !Array.isArray(result.case_id)) {
       this.results.push(result);
       return;
     }
@@ -106,9 +106,9 @@ export abstract class AbstractReporter implements InternalReporterInterface {
     // if we have multiple ids, we need to create multiple test results and set duration to 0 for all but the first one
     let firstCase = true;
 
-    for (const id of result.testops_id) {
+    for (const id of result.case_id) {
       const testResultCopy = { ...result, execution: { ...result.execution } } as TestResultType;
-      testResultCopy.testops_id = id;
+      testResultCopy.case_id = id;
       testResultCopy.id = uuidv4();
 
       if (!firstCase) {

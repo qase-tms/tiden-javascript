@@ -59,7 +59,7 @@ function defaultArgs(over: Partial<BuildArgs> = {}): BuildArgs {
     annotations: { ids: [], projectMapping: null, suites: [] },
     options: emptyOptions(),
     isCaptureLogs: false,
-    qaseIdsRegistry: new Map<string, number[]>(),
+    tidenIdsRegistry: new Map<string, number[]>(),
     ...over,
   };
 }
@@ -77,8 +77,8 @@ describe('ResultBuilder precedence chain', () => {
       metadata: { ...emptyMetadata(), projectMapping: { PROJ: [1] } },
     });
     const r = builder.build(args)!;
-    expect(r.testops_project_mapping).toEqual({ PROJ: [1] });
-    expect(r.testops_id).toBeNull();
+    expect(r.project_case_mapping).toEqual({ PROJ: [1] });
+    expect(r.case_id).toBeNull();
   });
 
   it('uses annotation projectMapping when metadata has none', () => {
@@ -86,41 +86,41 @@ describe('ResultBuilder precedence chain', () => {
       annotations: { ids: [], projectMapping: { PROJ_A: [1] }, suites: [] },
     });
     const r = builder.build(args)!;
-    expect(r.testops_project_mapping).toEqual({ PROJ_A: [1] });
+    expect(r.project_case_mapping).toEqual({ PROJ_A: [1] });
   });
 
   it('uses title-extracted projectMapping when metadata and annotation have none', () => {
     const args = defaultArgs({
-      test: makeTest('login (Qase PROJ_T: 1)'),
+      test: makeTest('login (Tiden PROJ_T: 1)'),
     });
     const r = builder.build(args)!;
-    expect(r.testops_project_mapping).toEqual({ PROJ_T: [1] });
+    expect(r.project_case_mapping).toEqual({ PROJ_T: [1] });
   });
 
   it('uses annotation ids when no projectMapping', () => {
     const args = defaultArgs({ annotations: { ids: [42], projectMapping: null, suites: [] } });
     const r = builder.build(args)!;
-    expect(r.testops_id).toBe(42);
+    expect(r.case_id).toBe(42);
   });
 
   it('uses metadata.ids when no annotation ids and no mapping', () => {
     const args = defaultArgs({ metadata: { ...emptyMetadata(), ids: [7] } });
     const r = builder.build(args)!;
-    expect(r.testops_id).toBe(7);
+    expect(r.case_id).toBe(7);
   });
 
-  it('uses static qaseIds Map fallback when nothing else matches', () => {
+  it('uses static tidenIds Map fallback when nothing else matches', () => {
     const registry = new Map<string, number[]>([['fallback test', [99]]]);
-    const args = defaultArgs({ test: makeTest('fallback test'), qaseIdsRegistry: registry });
+    const args = defaultArgs({ test: makeTest('fallback test'), tidenIdsRegistry: registry });
     const r = builder.build(args)!;
-    expect(r.testops_id).toEqual([99]);
+    expect(r.case_id).toEqual([99]);
   });
 
-  it('returns null testops_id when registry entry is an empty array (regression: qase(0,...) used to leak [])', () => {
+  it('returns null case_id when registry entry is an empty array (regression: tiden(0,...) used to leak [])', () => {
     const registry = new Map<string, number[]>([['fallback test', []]]);
-    const args = defaultArgs({ test: makeTest('fallback test'), qaseIdsRegistry: registry });
+    const args = defaultArgs({ test: makeTest('fallback test'), tidenIdsRegistry: registry });
     const r = builder.build(args)!;
-    expect(r.testops_id).toBeNull();
+    expect(r.case_id).toBeNull();
   });
 });
 
@@ -176,7 +176,7 @@ describe('ResultBuilder feature flags and merging', () => {
   it('appends profiler steps when a profiler attachment is present', () => {
     const profilerStep = { id: 'p1' } as any;
     const profilerAttachment = {
-      contentType: 'application/qase.profiler-steps+json',
+      contentType: 'application/tiden.profiler-steps+json',
       body: Buffer.from(JSON.stringify([profilerStep])),
       name: 'profiler.json',
     } as any;

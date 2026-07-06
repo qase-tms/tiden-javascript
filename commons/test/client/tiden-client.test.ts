@@ -20,7 +20,7 @@ function makeClient(srv: Server): TidenApiClient {
 function makeResult(overrides: Partial<any> = {}): TestResultType {
   return {
     title: 'Test case',
-    testops_id: 1,
+    case_id: 1,
     execution: {
       status: 'passed',
       start_time: 1000,

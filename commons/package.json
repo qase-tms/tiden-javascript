@@ -1,7 +1,7 @@
 {
-  "name": "qase-javascript-commons",
-  "version": "2.7.5",
-  "description": "Qase JS Reporters",
+  "name": "@tiden/reporter-commons",
+  "version": "0.1.0",
+  "description": "Tiden JS Reporters",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -29,14 +29,14 @@
       ]
     }
   },
-  "homepage": "https://github.com/qase-tms/qase-javascript",
+  "homepage": "https://github.com/qase-tms/tiden-javascript",
   "bugs": {
-    "url": "https://github.com/qase-tms/qase-javascript/issues"
+    "url": "https://github.com/qase-tms/tiden-javascript/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/qase-tms/qase-javascript.git",
-    "directory": "qase-javascript-commons"
+    "url": "git+https://github.com/qase-tms/tiden-javascript.git",
+    "directory": "commons"
   },
   "engines": {
     "node": ">=18"
@@ -47,7 +47,7 @@
     "test": "jest --passWithNoTests",
     "clean": "rm -rf dist"
   },
-  "author": "Qase Team <support@qase.io>",
+  "author": "Tiden Team <support@tiden.ai>",
   "license": "Apache-2.0",
   "dependencies": {
     "ajv": "^8.18.0",

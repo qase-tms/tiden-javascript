@@ -11,9 +11,9 @@ import { getHostInfo } from './utils/hostData';
 import { sanitizeOptionsForLog } from './utils/token-masker';
 import { StateManager, StateModel } from './state/state';
 
-import { OptionsResolver, ResolvedOptions } from './qase/options-resolver';
-import { ReporterFactory } from './qase/reporter-factory';
-import { StatusProcessor } from './qase/status-processor';
+import { OptionsResolver, ResolvedOptions } from './core/options-resolver';
+import { ReporterFactory } from './core/reporter-factory';
+import { StatusProcessor } from './core/status-processor';
 import { FallbackCoordinator } from './reporters/shared/fallback-coordinator';
 
 /**
@@ -49,13 +49,13 @@ export interface ReporterInterface {
 }
 
 /**
- * @class QaseReporter
+ * @class TidenReporter
  *
  * Thin orchestrator: delegates to OptionsResolver, ReporterFactory,
  * StatusProcessor, and FallbackCoordinator. Public API is preserved.
  */
-export class QaseReporter implements ReporterInterface {
-  private static instance: QaseReporter | null;
+export class TidenReporter implements ReporterInterface {
+  private static instance: TidenReporter | null;
 
   private readonly logger: LoggerInterface;
   private readonly options: ConfigType & OptionsType;
@@ -208,11 +208,11 @@ export class QaseReporter implements ReporterInterface {
     StateManager.setState(state);
   }
 
-  public static getInstance(options: OptionsType): QaseReporter {
-    if (!QaseReporter.instance) {
-      QaseReporter.instance = new QaseReporter(options);
+  public static getInstance(options: OptionsType): TidenReporter {
+    if (!TidenReporter.instance) {
+      TidenReporter.instance = new TidenReporter(options);
     }
-    return QaseReporter.instance;
+    return TidenReporter.instance;
   }
 
   public getStatusMapping(): Record<string, string> | undefined {

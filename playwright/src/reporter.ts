@@ -4,10 +4,10 @@ import {
   composeOptions,
   ConfigLoader,
   ConfigType,
-  QaseReporter,
+  TidenReporter,
   ReporterInterface,
   TestStatusEnum,
-} from 'qase-javascript-commons';
+} from '@tiden/reporter-commons';
 import { ReporterOptionsType } from './options';
 import { StepIndex } from './step-index';
 import { AnnotationExtractor } from './annotation-extractor';
@@ -15,15 +15,15 @@ import { StepConverter } from './step-converter';
 import { MetadataExtractor } from './metadata-extractor';
 import { ResultBuilder } from './result-builder';
 
-export type PlaywrightQaseOptionsType = Omit<ConfigType, 'reporterOptions'> & {
+export type PlaywrightTidenOptionsType = Omit<ConfigType, 'reporterOptions'> & {
   framework: ReporterOptionsType;
 };
 
 /**
- * @class PlaywrightQaseReporter
+ * @class PlaywrightTidenReporter
  * @implements Reporter
  */
-export class PlaywrightQaseReporter implements Reporter {
+export class PlaywrightTidenReporter implements Reporter {
   /**
    * @type {Record<TestStatus, TestStatusEnum>}
    */
@@ -39,7 +39,7 @@ export class PlaywrightQaseReporter implements Reporter {
    * @type {Map<string, number[]>}
    * @private
    */
-  private static qaseIds: Map<string, number[]> = new Map<string, number[]>();
+  private static tidenIds: Map<string, number[]> = new Map<string, number[]>();
 
   private stepIndex: StepIndex = new StepIndex();
 
@@ -60,11 +60,11 @@ export class PlaywrightQaseReporter implements Reporter {
   private options: ReporterOptionsType;
 
   /**
-   * @param {PlaywrightQaseOptionsType} options
+   * @param {PlaywrightTidenOptionsType} options
    * @param {ConfigLoaderInterface} configLoader
    */
   public constructor(
-    options: PlaywrightQaseOptionsType,
+    options: PlaywrightTidenOptionsType,
     configLoader = new ConfigLoader(),
   ) {
     const config = configLoader.load();
@@ -72,11 +72,11 @@ export class PlaywrightQaseReporter implements Reporter {
 
     this.options = options.framework ?? {};
 
-    this.reporter = QaseReporter.getInstance({
+    this.reporter = TidenReporter.getInstance({
       ...composedOptions,
       frameworkPackage: '@playwright/test',
       frameworkName: 'playwright',
-      reporterName: 'playwright-qase-reporter',
+      reporterName: '@tiden/playwright-reporter',
     });
   }
 
@@ -106,7 +106,7 @@ export class PlaywrightQaseReporter implements Reporter {
   public async onTestEnd(test: TestCase, result: TestResult) {
     const metadata = this.metadataExtractor.transform(result.attachments);
     const annotations = {
-      ids: this.annotationExtractor.extractQaseIds(test.annotations),
+      ids: this.annotationExtractor.extractTidenIds(test.annotations),
       projectMapping: this.annotationExtractor.extractProjectMapping(test.annotations),
       suites: this.annotationExtractor.extractSuite(test.annotations),
     };
@@ -118,7 +118,7 @@ export class PlaywrightQaseReporter implements Reporter {
       annotations,
       options: this.options,
       isCaptureLogs: this.reporter.isCaptureLogs(),
-      qaseIdsRegistry: PlaywrightQaseReporter.qaseIds,
+      tidenIdsRegistry: PlaywrightTidenReporter.tidenIds,
     });
 
     if (testResult) {
@@ -133,9 +133,9 @@ export class PlaywrightQaseReporter implements Reporter {
     await this.reporter.publish();
   }
 
-  // add this method for supporting old version of qase
+  // add this method for supporting old version of the ID-linking API
   public static addIds(ids: number[], title: string): void {
-    this.qaseIds.set(title, ids);
+    this.tidenIds.set(title, ids);
   }
 
   /**

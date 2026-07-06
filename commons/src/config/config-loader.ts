@@ -4,7 +4,7 @@ import { join } from 'path'
 import { JSONSchemaType } from 'ajv'
 import merge from 'lodash.merge';
 
-import { QaseError } from '../utils/qase-error'
+import { TidenError } from '../utils/tiden-error'
 import { JsonValidationError, validateJson } from '../utils/validate-json'
 
 import { ConfigLoaderInterface } from './config-loader-interface'
@@ -34,7 +34,7 @@ export class ConfigLoader<T extends Partial<ConfigType> & Record<string, unknown
           (error.code === 'ENOENT' || error.code === 'EISDIR');
 
         if (!isNotFound) {
-          throw new QaseError('Cannot read config file', { cause: error });
+          throw new TidenError('Cannot read config file', { cause: error });
         }
       }
     }

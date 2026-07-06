@@ -10,8 +10,6 @@ export interface NetworkProfilerOptions {
   trackOnFail?: boolean | undefined;
 }
 
-const QASE_API_HOST = 'qase.io';
-
 // Module-level ALS store — shared across all NetworkProfiler instances to
 // allow nested run() calls to see the same context.
 const store = new AsyncLocalStorage<TestStepType[]>();
@@ -42,9 +40,6 @@ export class NetworkProfiler extends AbstractProfiler {
   }
 
   shouldSkip(url: string): boolean {
-    if (url.includes(QASE_API_HOST)) {
-      return true;
-    }
     return this.skipDomains.some((domain) => url.includes(domain));
   }
 

@@ -62,16 +62,6 @@ describe('NetworkProfiler', () => {
   });
 
   describe('shouldSkip', () => {
-    it('should return true for Qase API URL (api.qase.io)', () => {
-      const profiler = new NetworkProfiler();
-      expect(profiler.shouldSkip('https://api.qase.io/v1/run')).toBe(true);
-    });
-
-    it('should return true for any qase.io subdomain (app.qase.io)', () => {
-      const profiler = new NetworkProfiler();
-      expect(profiler.shouldSkip('https://app.qase.io/projects')).toBe(true);
-    });
-
     it('should return false for external URLs', () => {
       const profiler = new NetworkProfiler();
       expect(profiler.shouldSkip('https://jsonplaceholder.typicode.com/posts')).toBe(false);
@@ -92,9 +82,17 @@ describe('NetworkProfiler', () => {
       expect(profiler.shouldSkip('https://other.com/api')).toBe(false);
     });
 
-    it('should match any qase.io URL regardless of path', () => {
+    // NetworkProfiler has no hardcoded API host to skip — the reporter's own
+    // configured Tiden API host is supplied by the caller via skipDomains
+    // (see playwright/src/fixture.ts, which derives it from tiden.api.baseUrl).
+    it('should return true when the configured Tiden API host is passed via skipDomains', () => {
+      const profiler = new NetworkProfiler({ skipDomains: ['api.tiden.example.com'] });
+      expect(profiler.shouldSkip('https://api.tiden.example.com/v1/run')).toBe(true);
+    });
+
+    it('should return false for the Tiden API host when it is not in skipDomains', () => {
       const profiler = new NetworkProfiler();
-      expect(profiler.shouldSkip('https://qase.io/')).toBe(true);
+      expect(profiler.shouldSkip('https://api.tiden.example.com/v1/run')).toBe(false);
     });
   });
 

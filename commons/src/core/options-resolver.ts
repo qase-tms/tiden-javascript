@@ -17,7 +17,7 @@ export interface ResolvedOptions {
 }
 
 /**
- * Composes the final options used by QaseReporter:
+ * Composes the final options used by TidenReporter:
  * - restores mode / runId from state (when withState is active)
  * - merges env-derived config with user options
  * - determines effective mode / fallback values

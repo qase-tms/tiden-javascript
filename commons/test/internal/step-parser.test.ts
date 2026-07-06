@@ -11,14 +11,14 @@ describe('extractAndCleanStep', () => {
   });
 
   it('extracts both expected result and data', () => {
-    const result = extractAndCleanStep('click button QaseExpRes: button is highlighted QaseData: blue');
+    const result = extractAndCleanStep('click button TidenExpRes: button is highlighted TidenData: blue');
     expect(result.expectedResult).toBe('button is highlighted');
     expect(result.data).toBe('blue');
     expect(result.cleanedString).toBe('click button');
   });
 
   it('handles double-colon variant', () => {
-    const result = extractAndCleanStep('step QaseExpRes:: yes QaseData:: data');
+    const result = extractAndCleanStep('step TidenExpRes:: yes TidenData:: data');
     expect(result.expectedResult).toBe('yes');
     expect(result.data).toBe('data');
     expect(result.cleanedString).toBe('step');

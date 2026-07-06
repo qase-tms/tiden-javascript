@@ -1,6 +1,6 @@
 import {
   InternalReporterInterface,
-  TestOpsReporter,
+  RunReporter,
   ReportReporter,
 } from '../reporters';
 import { ModeEnum, OptionsType } from '../options';
@@ -31,7 +31,7 @@ export class ReporterFactory {
   ): InternalReporterInterface {
     switch (mode) {
       case ModeEnum.tiden:
-        return this.createTestOps(options, withState);
+        return this.createRunReporter(options, withState);
       case ModeEnum.report:
         return this.createReport(options);
       case ModeEnum.off:
@@ -41,10 +41,10 @@ export class ReporterFactory {
     }
   }
 
-  private createTestOps(
+  private createRunReporter(
     options: ConfigType & OptionsType,
     withState: boolean,
-  ): TestOpsReporter {
+  ): RunReporter {
     if (!options.tiden?.api?.token) {
       throw new Error(
         `Either "tiden.api.token" parameter or "${EnvApiEnum.token}" environment variable is required in "tiden" mode`,
@@ -74,7 +74,7 @@ export class ReporterFactory {
       options.rootSuite,
     );
 
-    return new TestOpsReporter(
+    return new RunReporter(
       this.logger,
       apiClient,
       withState,

@@ -1,7 +1,7 @@
 import { LoggerInterface } from '../utils/logger';
 
 /**
- * Filter a list of Qase test case IDs, dropping non-positive (<= 0) and
+ * Filter a list of Tiden test case IDs, dropping non-positive (<= 0) and
  * non-finite numbers. Each dropped non-positive ID produces a warning so
  * users can spot accidental "0" IDs in their test code.
  *
@@ -12,7 +12,7 @@ import { LoggerInterface } from '../utils/logger';
  * Warning routing:
  *   - if a logger is provided, it goes through logger.log (INFO level, since
  *     the LoggerInterface has no warn level);
- *   - otherwise, it falls back to console.warn with a "[qase] " prefix so the
+ *   - otherwise, it falls back to console.warn with a "[tiden] " prefix so the
  *     message still reaches the user.
  */
 export function filterPositiveIds(
@@ -25,11 +25,11 @@ export function filterPositiveIds(
       continue;
     }
     if (n <= 0) {
-      const message = `Warning: Qase test case ID must be greater than 0, got "${n}". This ID will be ignored and the result will be sent without it.`;
+      const message = `Warning: Tiden test case ID must be greater than 0, got "${n}". This ID will be ignored and the result will be sent without it.`;
       if (logger) {
         logger.log(message);
       } else {
-        console.warn(`[qase] ${message}`);
+        console.warn(`[tiden] ${message}`);
       }
       continue;
     }

@@ -2,16 +2,16 @@ export interface ErrorOptionsType {
   cause?: unknown;
 }
 
-export interface QaseErrorInterface extends Error {
+export interface TidenErrorInterface extends Error {
   cause?: unknown;
 }
 
 /**
- * @class QaseError
+ * @class TidenError
  * @extends Error
- * @implements QaseErrorInterface
+ * @implements TidenErrorInterface
  */
-export class QaseError extends Error implements QaseErrorInterface {
+export class TidenError extends Error implements TidenErrorInterface {
   /**
    * @type {unknown}
    */

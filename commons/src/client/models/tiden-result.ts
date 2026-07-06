@@ -32,6 +32,7 @@ export interface TidenResultCreate {
   title: string;
   signature?: string | null;
   external_id?: string | null;
+  /** Wire field name mirrors api.v1.ResultCreate.testops_ids verbatim — not renamed. */
   testops_ids?: number[] | null;
   execution: TidenResultExecution;
   fields?: Record<string, string>;

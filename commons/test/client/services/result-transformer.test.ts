@@ -12,7 +12,7 @@ const silentLogger = (): any => ({
 function makeResult(overrides: Partial<any> = {}): any {
   return {
     title: 'Test case',
-    testops_id: 1,
+    case_id: 1,
     execution: {
       status: TestStatusEnum.passed,
       start_time: 1000,
@@ -64,18 +64,18 @@ describe('ResultTransformer', () => {
       expect(model.signature).toBe('sig-1');
     });
 
-    it('should handle array testops_id', async () => {
-      const model = await transformer.transform(makeResult({ testops_id: [1, 2, 3] }), mockUploader);
+    it('should handle array case_id', async () => {
+      const model = await transformer.transform(makeResult({ case_id: [1, 2, 3] }), mockUploader);
       expect(model.testops_ids).toEqual([1, 2, 3]);
     });
 
-    it('should handle null testops_id', async () => {
-      const model = await transformer.transform(makeResult({ testops_id: null }), mockUploader);
+    it('should handle null case_id', async () => {
+      const model = await transformer.transform(makeResult({ case_id: null }), mockUploader);
       expect(model.testops_ids).toBeNull();
     });
 
-    it('should map empty-array testops_id to null (API rejects []) ', async () => {
-      const model = await transformer.transform(makeResult({ testops_id: [] }), mockUploader);
+    it('should map empty-array case_id to null (API rejects []) ', async () => {
+      const model = await transformer.transform(makeResult({ case_id: [] }), mockUploader);
       expect(model.testops_ids).toBeNull();
     });
 

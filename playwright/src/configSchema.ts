@@ -1,6 +1,6 @@
 import { JSONSchemaType } from 'ajv'
 
-import { FrameworkOptionsType } from 'qase-javascript-commons'
+import { FrameworkOptionsType } from '@tiden/reporter-commons'
 
 import { ReporterOptionsType } from './options'
 

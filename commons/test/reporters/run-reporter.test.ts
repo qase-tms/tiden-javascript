@@ -1,5 +1,5 @@
 import { expect } from '@jest/globals';
-import { TestOpsReporter } from '../../src/reporters/testops-reporter';
+import { RunReporter } from '../../src/reporters/run-reporter';
 import { TestResultType, TestStatusEnum } from '../../src/models';
 import { LoggerInterface } from '../../src/utils/logger';
 import { IClient } from '../../src/client/interface';
@@ -31,10 +31,10 @@ jest.mock('../../src/state/state', () => ({
   },
 }));
 
-describe('TestOpsReporter', () => {
+describe('RunReporter', () => {
   let mockLogger: jest.Mocked<LoggerInterface>;
   let mockApiClient: jest.Mocked<IClient>;
-  let reporter: TestOpsReporter;
+  let reporter: RunReporter;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -53,7 +53,7 @@ describe('TestOpsReporter', () => {
       enablePublicReport: jest.fn(),
     };
 
-    reporter = new TestOpsReporter(
+    reporter = new RunReporter(
       mockLogger,
       mockApiClient,
       true,
@@ -65,7 +65,7 @@ describe('TestOpsReporter', () => {
 
   describe('constructor', () => {
     it('should initialize with correct parameters', () => {
-      expect(reporter).toBeInstanceOf(TestOpsReporter);
+      expect(reporter).toBeInstanceOf(RunReporter);
       expect(reporter['batchSize']).toBe(100);
       expect(reporter['runId']).toBe(123);
       expect(reporter['projectCode']).toBe('TEST_PROJECT');
@@ -73,7 +73,7 @@ describe('TestOpsReporter', () => {
     });
 
     it('should use defaultChunkSize when batchSize is not provided', () => {
-      const reporterWithoutBatch = new TestOpsReporter(
+      const reporterWithoutBatch = new RunReporter(
         mockLogger,
         mockApiClient,
         false,
@@ -83,7 +83,7 @@ describe('TestOpsReporter', () => {
     });
 
     it('should clamp batchSize to MAX_BATCH_SIZE', () => {
-      const reporterWithHugeBatch = new TestOpsReporter(
+      const reporterWithHugeBatch = new RunReporter(
         mockLogger,
         mockApiClient,
         false,
@@ -125,7 +125,7 @@ describe('TestOpsReporter', () => {
 
       const result = new TestResultType('Test 1');
       result.id = 'test-1';
-      result.testops_id = 1;
+      result.case_id = 1;
       result.execution.status = TestStatusEnum.passed;
       result.execution.duration = 100;
       await reporter.addTestResult(result);
@@ -150,7 +150,7 @@ describe('TestOpsReporter', () => {
 
       const result2 = new TestResultType('Test 2');
       result2.id = 'test-2';
-      result2.testops_id = 2;
+      result2.case_id = 2;
       result2.execution.status = TestStatusEnum.passed;
       result2.execution.duration = 200;
       await reporter.addTestResult(result2);
@@ -174,7 +174,7 @@ describe('TestOpsReporter', () => {
     it('should add successful test without logging the run', async () => {
       const testResult = new TestResultType('Successful Test');
       testResult.id = 'test-1';
-      testResult.testops_id = 1;
+      testResult.case_id = 1;
       testResult.execution.status = TestStatusEnum.passed;
       testResult.execution.duration = 1000;
 
@@ -189,7 +189,7 @@ describe('TestOpsReporter', () => {
     it('should log the test run for a failed test (no dashboard URL — no workspace id)', async () => {
       const testResult = new TestResultType('Failed Test');
       testResult.id = 'test-2';
-      testResult.testops_id = 2;
+      testResult.case_id = 2;
       testResult.execution.status = TestStatusEnum.failed;
       testResult.execution.duration = 1000;
 
@@ -202,7 +202,7 @@ describe('TestOpsReporter', () => {
     it('should log the test run once even for a failed test with multiple IDs', async () => {
       const testResult = new TestResultType('Failed Test Multiple IDs');
       testResult.id = 'test-3';
-      testResult.testops_id = [3, 4, 5];
+      testResult.case_id = [3, 4, 5];
       testResult.execution.status = TestStatusEnum.failed;
       testResult.execution.duration = 1000;
 
@@ -218,7 +218,7 @@ describe('TestOpsReporter', () => {
       const testResults = Array.from({ length: 100 }, (_, i) => {
         const result = new TestResultType(`Test ${i}`);
         result.id = `test-${i}`;
-        result.testops_id = i;
+        result.case_id = i;
         result.execution.status = TestStatusEnum.passed;
         result.execution.duration = 1000;
         return result;
@@ -231,7 +231,7 @@ describe('TestOpsReporter', () => {
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockApiClient.uploadResults).toHaveBeenCalledWith(123, testResults);
       // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(mockLogger.logDebug).toHaveBeenCalledWith('Results sent to Qase: 100');
+      expect(mockLogger.logDebug).toHaveBeenCalledWith('Results sent to Tiden: 100');
     });
   });
 
@@ -242,7 +242,7 @@ describe('TestOpsReporter', () => {
 
       const testResult = new TestResultType('Test');
       testResult.id = 'test-1';
-      testResult.testops_id = 1;
+      testResult.case_id = 1;
       testResult.execution.status = TestStatusEnum.passed;
       testResult.execution.duration = 1000;
 
@@ -269,7 +269,7 @@ describe('TestOpsReporter', () => {
 
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockLogger.log).toHaveBeenCalledWith(
-        expect.stringContaining('{yellow No results to send to Qase}')
+        expect.stringContaining('{yellow No results to send to Tiden}')
       );
     });
 
@@ -277,7 +277,7 @@ describe('TestOpsReporter', () => {
       const testResults = Array.from({ length: 50 }, (_, i) => {
         const result = new TestResultType(`Test ${i}`);
         result.id = `test-${i}`;
-        result.testops_id = i;
+        result.case_id = i;
         result.execution.status = TestStatusEnum.passed;
         result.execution.duration = 1000;
         return result;
@@ -302,7 +302,7 @@ describe('TestOpsReporter', () => {
       const testResults = Array.from({ length: 250 }, (_, i) => {
         const result = new TestResultType(`Test ${i}`);
         result.id = `test-${i}`;
-        result.testops_id = i;
+        result.case_id = i;
         result.execution.status = TestStatusEnum.passed;
         result.execution.duration = 1000;
         return result;
@@ -336,7 +336,7 @@ describe('TestOpsReporter', () => {
     });
 
     it('should throw error when runId is not set', async () => {
-      const reporterWithoutRun = new TestOpsReporter(
+      const reporterWithoutRun = new RunReporter(
         mockLogger,
         mockApiClient,
         false,

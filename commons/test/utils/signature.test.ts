@@ -2,7 +2,7 @@ import { expect } from '@jest/globals';
 import { generateSignature } from '../../src/utils/signature';
 
 describe('generateSignature', () => {
-  it('should generate signature with testopsIds and suites', () => {
+  it('should generate signature with caseIds and suites', () => {
     const result = generateSignature(
       [1, 2, 3],
       ['Suite1', 'Suite2'],
@@ -26,7 +26,7 @@ describe('generateSignature', () => {
     expect(result).toBe('test/fields.spec.js::example:_fields.spec.js::test_cases_with_field:_layer::layer_=_unit');
   });
 
-  it('should generate signature with null testopsIds', () => {
+  it('should generate signature with null caseIds', () => {
     const result = generateSignature(
       null,
       ['suite1', 'suite2'],
@@ -34,7 +34,7 @@ describe('generateSignature', () => {
     expect(result).toBe('suite1::suite2');
   });
 
-  it('should generate signature with empty testopsIds array', () => {
+  it('should generate signature with empty caseIds array', () => {
     const result = generateSignature(
       [],
       ['suite1', 'suite2'],
@@ -42,7 +42,7 @@ describe('generateSignature', () => {
     expect(result).toBe('suite1::suite2');
   });
 
-  it('should generate signature with only testopsIds', () => {
+  it('should generate signature with only caseIds', () => {
     const result = generateSignature(
       [1, 2, 3],
       [],
@@ -50,7 +50,7 @@ describe('generateSignature', () => {
     expect(result).toBe('1-2-3');
   });
 
-  it('should generate signature with testopsIds and a single suite', () => {
+  it('should generate signature with caseIds and a single suite', () => {
     const result = generateSignature(
       [1, 2, 3],
       ['suite1'],

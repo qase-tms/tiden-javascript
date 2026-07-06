@@ -11,13 +11,13 @@ import { LoggerInterface } from '../utils/logger';
 import { StateManager } from '../state/state';
 import { Mutex } from 'async-mutex';
 import { IClient } from '../client/interface';
-import { DEFAULT_BATCH_SIZE, MAX_BATCH_SIZE } from './shared/testops-constants';
+import { DEFAULT_BATCH_SIZE, MAX_BATCH_SIZE } from './shared/run-constants';
 
 /**
- * @class TestOpsReporter
+ * @class RunReporter
  * @extends AbstractReporter
  */
-export class TestOpsReporter extends AbstractReporter {
+export class RunReporter extends AbstractReporter {
   private readonly batchSize: number;
 
   private runId: number | undefined;
@@ -119,7 +119,7 @@ export class TestOpsReporter extends AbstractReporter {
     }
     await this.api.uploadResults(this.runId, testResults);
 
-    this.logger.logDebug(`Results sent to Qase: ${testResults.length}`);
+    this.logger.logDebug(`Results sent to Tiden: ${testResults.length}`);
   }
 
   /**
@@ -140,7 +140,7 @@ export class TestOpsReporter extends AbstractReporter {
    */
   public async sendResults(): Promise<void> {
     if (this.results.length === 0) {
-      this.logger.log(chalk`{yellow No results to send to Qase}`);
+      this.logger.log(chalk`{yellow No results to send to Tiden}`);
       return;
     }
 

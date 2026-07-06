@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { isAxiosError } from './is-axios-error';
-import { QaseError } from './qase-error';
+import { TidenError } from './tiden-error';
 import { AxiosError } from 'axios';
 
 export interface LoggerInterface {
@@ -50,7 +50,7 @@ export class Logger implements LoggerInterface {
   }
 
   public log(message: string): void {
-    const logMessage = `[INFO] qase: ${message}`;
+    const logMessage = `[INFO] tiden: ${message}`;
     if (this.consoleEnabled) {
       console.log(logMessage);
     }
@@ -60,7 +60,7 @@ export class Logger implements LoggerInterface {
   }
 
   public logError(message: string, error?: unknown): void {
-    const logMessage = `[ERROR] qase: ${this.doLogError(message, error)}`;
+    const logMessage = `[ERROR] tiden: ${this.doLogError(message, error)}`;
     if (this.consoleEnabled) {
       console.error(logMessage);
     }
@@ -71,7 +71,7 @@ export class Logger implements LoggerInterface {
 
   public logDebug(message: string): void {
     if (this.debug) {
-      const logMessage = `[DEBUG] qase: ${message}`;
+      const logMessage = `[DEBUG] tiden: ${message}`;
       if (this.consoleEnabled) {
         console.log(logMessage);
       }
@@ -92,7 +92,7 @@ export class Logger implements LoggerInterface {
     if (error instanceof Error) {
       if (isAxiosError(error)) {
         logMessage += this.logApiError(error);
-      } else if (error instanceof QaseError && error.cause) {
+      } else if (error instanceof TidenError && error.cause) {
         logMessage += this.doLogError('\n Caused by:', error.cause);
       }
 

@@ -55,9 +55,11 @@ export class ResultTransformer {
     const model: TidenResultCreate = {
       title: result.title,
       execution: this.getExecution(result.execution),
-      testops_ids: Array.isArray(result.testops_id)
-        ? (result.testops_id.length > 0 ? result.testops_id : null)
-        : result.testops_id !== null ? [result.testops_id] : null,
+      // Wire field name mirrors api.v1.ResultCreate.testops_ids — kept as-is
+      // for API compatibility; see client/models/tiden-result.ts.
+      testops_ids: Array.isArray(result.case_id)
+        ? (result.case_id.length > 0 ? result.case_id : null)
+        : result.case_id !== null ? [result.case_id] : null,
       attachments: attachments,
       steps: steps,
       params: params,

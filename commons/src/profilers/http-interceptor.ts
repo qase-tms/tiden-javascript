@@ -105,7 +105,7 @@ export function headersToRecord(
  *
  * `startTime` / `endTime` are expected as `Date.now()` values (ms since epoch).
  * They are normalized to Unix seconds (with fractional ms) for `step.execution.start_time` /
- * `end_time` per Qase API spec; `duration` stays in ms.
+ * `end_time` per Tiden API spec; `duration` stays in ms.
  */
 export function buildRequestStep(params: {
   method: string;

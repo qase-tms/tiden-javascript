@@ -6,20 +6,20 @@ import { TestExecution } from './test-execution';
  * Project code to test case IDs mapping for multi-project support.
  * Key: project code (string), Value: array of test case IDs (numbers).
  */
-export type TestopsProjectMapping = Record<string, number[]>;
+export type ProjectCaseMapping = Record<string, number[]>;
 
 export class TestResultType {
   id: string;
   title: string;
   signature: string;
   run_id: number | null;
-  testops_id: number | number[] | null;
+  case_id: number | number[] | null;
   /**
    * Multi-project mapping: project code -> array of test case IDs.
-   * When set, overrides testops_id for multi-project mode.
-   * If empty/null, fall back to testops_id for single project.
+   * When set, overrides case_id for multi-project mode.
+   * If empty/null, fall back to case_id for single project.
    */
-  testops_project_mapping: TestopsProjectMapping | null;
+  project_case_mapping: ProjectCaseMapping | null;
   execution: TestExecution;
   fields: Record<string, string>;
   attachments: Attachment[];
@@ -38,8 +38,8 @@ export class TestResultType {
     this.title = title;
     this.signature = '';
     this.run_id = null;
-    this.testops_id = null;
-    this.testops_project_mapping = null;
+    this.case_id = null;
+    this.project_case_mapping = null;
     this.execution = new TestExecution();
     this.fields = {};
     this.attachments = [];
@@ -57,32 +57,32 @@ export class TestResultType {
   /**
    * Set test case IDs for a specific project in multi-project mapping.
    */
-  setTestopsProjectMapping(projectCode: string, testopsIds: number[]): void {
-    if (!this.testops_project_mapping) {
-      this.testops_project_mapping = {};
+  setProjectMapping(projectCode: string, caseIds: number[]): void {
+    if (!this.project_case_mapping) {
+      this.project_case_mapping = {};
     }
-    this.testops_project_mapping[projectCode] = testopsIds;
+    this.project_case_mapping[projectCode] = caseIds;
   }
 
   /**
    * Get the entire project-to-IDs mapping.
    */
-  getTestopsProjectMapping(): TestopsProjectMapping | null {
-    return this.testops_project_mapping;
+  getProjectMapping(): ProjectCaseMapping | null {
+    return this.project_case_mapping;
   }
 
   /**
    * Get test case IDs for a specific project.
    */
-  getTestopsIdsForProject(projectCode: string): number[] | undefined {
-    return this.testops_project_mapping?.[projectCode];
+  getCaseIdsForProject(projectCode: string): number[] | undefined {
+    return this.project_case_mapping?.[projectCode];
   }
 
   /**
    * Get list of all project codes in the mapping.
    */
   getProjects(): string[] {
-    return this.testops_project_mapping ? Object.keys(this.testops_project_mapping) : [];
+    return this.project_case_mapping ? Object.keys(this.project_case_mapping) : [];
   }
 }
 

@@ -1,6 +1,6 @@
 import { AxiosError } from 'axios';
 import { isAxiosError } from '../../utils/is-axios-error';
-import { QaseError } from '../../utils/qase-error';
+import { TidenError } from '../../utils/tiden-error';
 
 export enum ApiErrorCode {
   UNAUTHORIZED = 401,
@@ -16,9 +16,9 @@ interface ApiErrorResponse {
   message?: string;
 }
 
-export function processError(error: unknown, message: string, model?: object): QaseError {
+export function processError(error: unknown, message: string, model?: object): TidenError {
   if (!isAxiosError(error)) {
-    return new QaseError(message, { cause: error });
+    return new TidenError(message, { cause: error });
   }
 
   const err = error as AxiosError<ApiErrorResponse>;
@@ -27,18 +27,18 @@ export function processError(error: unknown, message: string, model?: object): Q
 
   switch (status) {
     case ApiErrorCode.UNAUTHORIZED:
-      return new QaseError(`${message}: Unauthorized. Please check your API token.`);
+      return new TidenError(`${message}: Unauthorized. Please check your API token.`);
     case ApiErrorCode.FORBIDDEN:
-      return new QaseError(`${message}: ${errorData?.errorMessage ?? 'Forbidden'}`);
+      return new TidenError(`${message}: ${errorData?.errorMessage ?? 'Forbidden'}`);
     case ApiErrorCode.NOT_FOUND:
-      return new QaseError(`${message}: Not found.`);
+      return new TidenError(`${message}: Not found.`);
     case ApiErrorCode.BAD_REQUEST:
     case ApiErrorCode.UNPROCESSABLE_ENTITY:
-      return new QaseError(
+      return new TidenError(
         `${message}: Bad request\n${JSON.stringify(errorData)}\nBody: ${JSON.stringify(model)}`,
       );
     default:
-      return new QaseError(message, { cause: err });
+      return new TidenError(message, { cause: err });
   }
 }
 

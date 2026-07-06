@@ -53,7 +53,7 @@ const baseResult = (overrides: Partial<TestResultType>): TestResultType =>
     steps: [],
     params: {},
     group_params: {},
-    testops_id: null,
+    case_id: null,
     relations: null,
     muted: false,
     message: '',
@@ -64,19 +64,19 @@ const baseResult = (overrides: Partial<TestResultType>): TestResultType =>
 describe('ReportSerializer.serializeResult', () => {
   const s = new ReportSerializer();
 
-  it('transforms scalar testops_id → testops_ids array', () => {
-    const out = s.serializeResult(baseResult({ testops_id: 42 as any }));
+  it('transforms scalar case_id → testops_ids array', () => {
+    const out = s.serializeResult(baseResult({ case_id: 42 as any }));
     expect(out.testops_ids).toEqual([42]);
-    expect(out).not.toHaveProperty('testops_id');
+    expect(out).not.toHaveProperty('case_id');
   });
 
-  it('keeps array testops_id as-is under testops_ids', () => {
-    const out = s.serializeResult(baseResult({ testops_id: [1, 2, 3] as any }));
+  it('keeps array case_id as-is under testops_ids', () => {
+    const out = s.serializeResult(baseResult({ case_id: [1, 2, 3] as any }));
     expect(out.testops_ids).toEqual([1, 2, 3]);
   });
 
-  it('maps null testops_id to null testops_ids', () => {
-    const out = s.serializeResult(baseResult({ testops_id: null as any }));
+  it('maps null case_id to null testops_ids', () => {
+    const out = s.serializeResult(baseResult({ case_id: null as any }));
     expect(out.testops_ids).toBeNull();
   });
 
@@ -107,15 +107,15 @@ describe('ReportSerializer.serializeResult', () => {
   it('excludes internal fields', () => {
     const out = s.serializeResult(
       baseResult({
-        testops_id: null as any,
+        case_id: null as any,
         group_params: {},
       }),
     );
-    expect(out).not.toHaveProperty('testops_id');
+    expect(out).not.toHaveProperty('case_id');
     expect(out).not.toHaveProperty('group_params');
     expect(out).not.toHaveProperty('run_id');
     expect(out).not.toHaveProperty('author');
-    expect(out).not.toHaveProperty('testops_project_mapping');
+    expect(out).not.toHaveProperty('project_case_mapping');
     expect(out).not.toHaveProperty('preparedAttachments');
   });
 });

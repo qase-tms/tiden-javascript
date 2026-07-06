@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unnecessary-type-assertion, @typescript-eslint/require-await, @typescript-eslint/unbound-method */
 import { expect } from '@jest/globals';
-import { OptionsResolver } from '../../src/qase/options-resolver';
+import { OptionsResolver } from '../../src/core/options-resolver';
 import { ModeEnum } from '../../src/options';
 import { EnvEnum, EnvRunEnum } from '../../src/env';
 
@@ -32,7 +32,7 @@ describe('OptionsResolver', () => {
       const r = new OptionsResolver().resolve({
         frameworkName: 'cypress',
         frameworkPackage: 'cypress',
-        reporterName: 'qase-cypress',
+        reporterName: 'tiden-cypress',
         mode: ModeEnum.off,
       });
       expect(r.withState).toBe(true);
@@ -54,7 +54,7 @@ describe('OptionsResolver', () => {
       const r = new OptionsResolver().resolve({
         frameworkName: 'playwright',
         frameworkPackage: 'playwright',
-        reporterName: 'qase-playwright',
+        reporterName: 'tiden-playwright',
         mode: ModeEnum.off,
       });
       expect(r.withState).toBe(false);
@@ -72,7 +72,7 @@ describe('OptionsResolver', () => {
       new OptionsResolver().resolve({
         frameworkName: 'cypress',
         frameworkPackage: 'cypress',
-        reporterName: 'qase-cypress',
+        reporterName: 'tiden-cypress',
       });
       expect(process.env[EnvEnum.mode]).toBe(ModeEnum.report.toString());
     });
@@ -87,7 +87,7 @@ describe('OptionsResolver', () => {
       new OptionsResolver().resolve({
         frameworkName: 'cypress',
         frameworkPackage: 'cypress',
-        reporterName: 'qase-cypress',
+        reporterName: 'tiden-cypress',
       });
       expect(process.env[EnvRunEnum.id]).toBe('42');
     });
@@ -97,7 +97,7 @@ describe('OptionsResolver', () => {
       new OptionsResolver().resolve({
         frameworkName: 'playwright',
         frameworkPackage: 'playwright',
-        reporterName: 'qase-playwright',
+        reporterName: 'tiden-playwright',
       });
       expect(StateManager.getState).not.toHaveBeenCalled();
     });
@@ -109,7 +109,7 @@ describe('OptionsResolver', () => {
       const r = new OptionsResolver().resolve({
         frameworkName: 'playwright',
         frameworkPackage: 'playwright',
-        reporterName: 'qase-playwright',
+        reporterName: 'tiden-playwright',
       });
       expect(r.effectiveMode).toBe(ModeEnum.off);
       expect(r.effectiveFallback).toBe(ModeEnum.off);
@@ -120,7 +120,7 @@ describe('OptionsResolver', () => {
       const r = new OptionsResolver().resolve({
         frameworkName: 'playwright',
         frameworkPackage: 'playwright',
-        reporterName: 'qase-playwright',
+        reporterName: 'tiden-playwright',
         mode: ModeEnum.tiden,
         fallback: ModeEnum.report,
       });

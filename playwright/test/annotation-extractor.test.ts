@@ -9,48 +9,48 @@ describe('AnnotationExtractor', () => {
     extractor = new AnnotationExtractor();
   });
 
-  describe('extractQaseIds', () => {
-    it('returns an empty array when no qaseId annotations are present', () => {
-      expect(extractor.extractQaseIds([{ type: 'tag', description: 'smoke' }])).toEqual([]);
+  describe('extractTidenIds', () => {
+    it('returns an empty array when no tidenId annotations are present', () => {
+      expect(extractor.extractTidenIds([{ type: 'tag', description: 'smoke' }])).toEqual([]);
     });
 
     it('parses a single id', () => {
-      expect(extractor.extractQaseIds([{ type: 'qaseId', description: '7' }])).toEqual([7]);
+      expect(extractor.extractTidenIds([{ type: 'tidenId', description: '7' }])).toEqual([7]);
     });
 
     it('parses a comma-separated list', () => {
-      expect(extractor.extractQaseIds([{ type: 'qaseId', description: '1,2,3' }])).toEqual([1, 2, 3]);
+      expect(extractor.extractTidenIds([{ type: 'tidenId', description: '1,2,3' }])).toEqual([1, 2, 3]);
     });
 
     it('is case-insensitive on the annotation type', () => {
-      expect(extractor.extractQaseIds([{ type: 'QASEID', description: '42' }])).toEqual([42]);
+      expect(extractor.extractTidenIds([{ type: 'TIDENID', description: '42' }])).toEqual([42]);
     });
   });
 
   describe('extractProjectMapping', () => {
-    it('returns null when no qaseProjects annotation is present', () => {
-      expect(extractor.extractProjectMapping([{ type: 'qaseId', description: '1' }])).toBeNull();
+    it('returns null when no tidenProjects annotation is present', () => {
+      expect(extractor.extractProjectMapping([{ type: 'tidenId', description: '1' }])).toBeNull();
     });
 
     it('parses a valid JSON description', () => {
       expect(
-        extractor.extractProjectMapping([{ type: 'qaseProjects', description: '{"PROJ1":[1],"PROJ2":[2]}' }]),
+        extractor.extractProjectMapping([{ type: 'tidenProjects', description: '{"PROJ1":[1],"PROJ2":[2]}' }]),
       ).toEqual({ PROJ1: [1], PROJ2: [2] });
     });
 
     it('returns null on invalid JSON', () => {
       expect(
-        extractor.extractProjectMapping([{ type: 'qaseProjects', description: 'not json' }]),
+        extractor.extractProjectMapping([{ type: 'tidenProjects', description: 'not json' }]),
       ).toBeNull();
     });
   });
 
   describe('extractSuite', () => {
-    it('collects qaseSuite descriptions in order', () => {
+    it('collects tidenSuite descriptions in order', () => {
       expect(
         extractor.extractSuite([
-          { type: 'qaseSuite', description: 'A' },
-          { type: 'qaseSuite', description: 'B' },
+          { type: 'tidenSuite', description: 'A' },
+          { type: 'tidenSuite', description: 'B' },
         ]),
       ).toEqual(['A', 'B']);
     });

@@ -1,6 +1,6 @@
 import { expect } from '@jest/globals';
 import { ConfigLoader } from '../../src/config/config-loader';
-import { QaseError } from '../../src/utils/qase-error';
+import { TidenError } from '../../src/utils/tiden-error';
 import { JSONSchemaType } from 'ajv';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -76,7 +76,7 @@ describe('ConfigLoader', () => {
       expect(mockReadFileSync).toHaveBeenCalledTimes(1);
     });
 
-    it('should throw QaseError for non-ENOENT file system errors', () => {
+    it('should throw TidenError for non-ENOENT file system errors', () => {
       mockJoin.mockReturnValue('/path/to/tiden.config.json');
       mockReadFileSync.mockImplementation(() => {
         const error = new Error('Permission denied') as NodeJS.ErrnoException;
@@ -86,7 +86,7 @@ describe('ConfigLoader', () => {
 
       const loader = new ConfigLoader();
 
-      expect(() => loader.load()).toThrow(QaseError);
+      expect(() => loader.load()).toThrow(TidenError);
     });
 
     it('should throw error for invalid JSON', () => {

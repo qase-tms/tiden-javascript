@@ -5,11 +5,11 @@ import { MetadataExtractor } from '../src/metadata-extractor';
 import { StepIndex } from '../src/step-index';
 import { ReporterContentType } from '../src/playwright';
 
-const PROFILER_CONTENT_TYPE = 'application/qase.profiler-steps+json';
+const PROFILER_CONTENT_TYPE = 'application/tiden.profiler-steps+json';
 
 function makeMetadataAttachment(payload: object): TestResult['attachments'][number] {
   return {
-    name: 'qase-metadata',
+    name: 'tiden-metadata',
     contentType: ReporterContentType,
     body: Buffer.from(JSON.stringify(payload)),
   } as any;
@@ -40,7 +40,7 @@ describe('MetadataExtractor', () => {
     });
   });
 
-  it('parses ids/title/fields/parameters from a qase-metadata attachment', () => {
+  it('parses ids/title/fields/parameters from a tiden-metadata attachment', () => {
     const m = extractor.transform([
       makeMetadataAttachment({
         ids: [1, 2],
