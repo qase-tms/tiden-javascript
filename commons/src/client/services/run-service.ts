@@ -38,7 +38,7 @@ export class RunService {
       if (!seqNum) {
         throw new TidenError('Failed to create test run');
       }
-      this.logger.logDebug(`Test run created: #${seqNum}`);
+      this.logger.logDebug(`Run create response: seqNum=${seqNum}`);
       return seqNum;
     } catch (error) {
       throw processError(error, 'Error creating test run');

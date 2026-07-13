@@ -305,9 +305,9 @@ always excluded automatically.
 
 1. **First job** — run a shard with `TIDEN_RUN_COMPLETE=false` and no `TIDEN_RUN_ID` set. The
    reporter creates a new run and, when the suite finishes, leaves it open. To thread the new run
-   ID to later jobs, enable debug logging (`TIDEN_DEBUG=true`) and capture the line
-   `Test run created: #<id>` from the reporter's log output (console or `TIDEN_LOGGING_FILE=true`
-   log file), then publish it as a job output.
+   ID to later jobs, capture the line `Test run created: #<id>` from the reporter's log output
+   (console or `TIDEN_LOGGING_FILE=true` log file) — it's logged unconditionally at info level —
+   then publish it as a job output.
 2. **Middle jobs** — run each remaining shard with `TIDEN_RUN_ID=<id from step 1>` and
    `TIDEN_RUN_COMPLETE=false`. The reporter reuses the existing run instead of creating a new one
    and still doesn't complete it.
@@ -323,7 +323,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: npm ci
-      - run: TIDEN_DEBUG=true TIDEN_RUN_COMPLETE=false npx playwright test --shard=1/3 | tee run.log
+      - run: TIDEN_RUN_COMPLETE=false npx playwright test --shard=1/3 | tee run.log
       - id: extract
         run: echo "run_id=$(grep -o 'Test run created: #[0-9]*' run.log | grep -o '[0-9]*$')" >> "$GITHUB_OUTPUT"
 
