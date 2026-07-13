@@ -42,6 +42,15 @@ See [`playwright/README.md`](playwright/README.md) for the full configuration re
 vars, annotation API, sharded-CI recipe) and [`commons/README.md`](commons/README.md) for the
 shared config/env layer.
 
+## Releasing
+
+Push a `vX.Y.Z` git tag to release: `.github/workflows/release.yml` builds, tests, and
+publishes `@tiden/reporter-commons` then `@tiden/playwright-reporter` to npm at the
+versions already set in each package's `package.json`, using npm's OIDC trusted
+publishing (no `NPM_TOKEN` secret; provenance attached automatically). One-time manual
+prerequisite: the npm `@tiden` scope owner must add this repo as a Trusted Publisher for
+both packages in npm's package settings before the first tag push.
+
 ## Lineage
 
 Forked from [qase-tms/qase-javascript](https://github.com/qase-tms/qase-javascript)
