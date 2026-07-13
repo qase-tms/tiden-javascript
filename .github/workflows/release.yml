@@ -37,6 +37,16 @@ jobs:
       - name: Upgrade npm (OIDC trusted publishing needs >= 11.5.1)
         run: npm install -g npm@latest
       - run: npm ci
+      - name: Verify tag matches package versions
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          for pkg in commons playwright; do
+            V=$(node -p "require('./$pkg/package.json').version")
+            if [ "$V" != "$TAG" ]; then
+              echo "::error::$pkg is at version $V but the tag is v$TAG — bump package versions before tagging"
+              exit 1
+            fi
+          done
       - run: npm run build -ws --if-present
       - run: npm run test -ws --if-present
       - run: npm publish -w commons --provenance --access public
