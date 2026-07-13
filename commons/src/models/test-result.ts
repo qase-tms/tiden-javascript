@@ -53,37 +53,6 @@ export class TestResultType {
     this.tags = [];
     this.preparedAttachments = [];
   }
-
-  /**
-   * Set test case IDs for a specific project in multi-project mapping.
-   */
-  setProjectMapping(projectCode: string, caseIds: number[]): void {
-    if (!this.project_case_mapping) {
-      this.project_case_mapping = {};
-    }
-    this.project_case_mapping[projectCode] = caseIds;
-  }
-
-  /**
-   * Get the entire project-to-IDs mapping.
-   */
-  getProjectMapping(): ProjectCaseMapping | null {
-    return this.project_case_mapping;
-  }
-
-  /**
-   * Get test case IDs for a specific project.
-   */
-  getCaseIdsForProject(projectCode: string): number[] | undefined {
-    return this.project_case_mapping?.[projectCode];
-  }
-
-  /**
-   * Get list of all project codes in the mapping.
-   */
-  getProjects(): string[] {
-    return this.project_case_mapping ? Object.keys(this.project_case_mapping) : [];
-  }
 }
 
 export interface Relation {

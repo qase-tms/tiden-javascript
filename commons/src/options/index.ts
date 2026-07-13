@@ -1,3 +1,3 @@
 export { ModeEnum } from './mode-enum';
-export { type OptionsType, type FrameworkOptionsType } from './options-type';
+export { type OptionsType } from './options-type';
 export { composeOptions } from './composeOptions';

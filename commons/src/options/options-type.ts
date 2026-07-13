@@ -47,8 +47,3 @@ export type OptionsType = {
     track_on_fail?: boolean | undefined;
   } | undefined;
 };
-
-// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
-export type FrameworkOptionsType<F extends string, O> = {
-  framework?: Partial<Record<F, O>>
-}

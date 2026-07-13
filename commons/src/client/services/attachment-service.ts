@@ -11,6 +11,31 @@ const MAX_FILE_SIZE = 32 * 1024 * 1024; // 32 MB per file
 const MAX_REQUEST_SIZE = 128 * 1024 * 1024; // 128 MB per request
 const MAX_FILES_PER_REQUEST = 20; // 20 files per request
 
+const BASE64_PATTERN = /^[A-Za-z0-9+/=]+$/;
+// A single unpadded base64 group (4 chars) always round-trips regardless of
+// content -- 4 valid-alphabet chars decode to exactly 3 bytes with no unused
+// bits, so re-encoding those bytes deterministically reproduces the same 4
+// chars. That makes a bare 4-char match (e.g. "abcd") indistinguishable from
+// genuine base64 by round-trip alone; require at least two groups so the
+// round-trip check has something to actually validate.
+const MIN_BASE64_LENGTH = 8;
+
+/**
+ * Heuristically decide whether a string is base64-encoded content rather
+ * than plain utf8 text. Requires ALL of: base64-alphabet-only characters,
+ * a length that's a multiple of 4, a minimum length (see MIN_BASE64_LENGTH),
+ * and a decode/re-encode round-trip match (catches non-canonical padding).
+ */
+function looksLikeBase64(value: string): boolean {
+  if (!BASE64_PATTERN.test(value)) return false;
+  if (value.length % 4 !== 0) return false;
+  if (value.length < MIN_BASE64_LENGTH) return false;
+
+  const normalize = (s: string): string => s.replace(/=+$/, '');
+  const reencoded = Buffer.from(value, 'base64').toString('base64');
+  return normalize(reencoded) === normalize(value);
+}
+
 interface AttachmentData {
   name: string;
   value: Buffer | Readable;
@@ -246,7 +271,7 @@ export class AttachmentService {
         attachment.size = stats.size;
       } else if (attachment.content) {
         if (typeof attachment.content === 'string') {
-          if (attachment.content.match(/^[A-Za-z0-9+/=]+$/)) {
+          if (looksLikeBase64(attachment.content)) {
             attachment.size = Buffer.from(attachment.content, 'base64').length;
           } else {
             attachment.size = Buffer.byteLength(attachment.content, 'utf8');
@@ -281,7 +306,7 @@ export class AttachmentService {
     return {
       name: attachment.file_name,
       value: typeof attachment.content === 'string'
-        ? Buffer.from(attachment.content, attachment.content.match(/^[A-Za-z0-9+/=]+$/) ? 'base64' : undefined)
+        ? Buffer.from(attachment.content, looksLikeBase64(attachment.content) ? 'base64' : 'utf8')
         : attachment.content,
       ...(contentType ? { contentType } : {}),
     };

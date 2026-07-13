@@ -101,6 +101,48 @@ describe('AttachmentService', () => {
       expect(rawBody.toString()).toContain('filename="shot.bin"');
       expect(rawBody.toString()).toContain('Content-Type: image/png');
     });
+
+    it('keeps plain alphanumeric strings as utf8', async () => {
+      // 'hello' (5 chars) is an invalid base64 length; 'abcd' (4 chars) is a
+      // valid-length plain word. Both are pure base64-alphabet strings that
+      // the old regex-only sniff would have mis-decoded as base64 garbage.
+      for (const content of ['hello', 'abcd']) {
+        let rawBody: Buffer = Buffer.alloc(0);
+        const srv = await testServerRaw((req, body, res) => {
+          rawBody = body;
+          res.setHeader('content-type', 'application/json');
+          res.end(JSON.stringify({ status: true, result: [{ hash: 'h', filename: 'a.txt' }] }));
+        });
+        const realHttp = createTidenClient(baseUrl(srv), 'tfy_token');
+        const realService = new AttachmentService(logger, realHttp);
+        await realService.uploadAttachment('prod-1', {
+          id: 'att-1', file_name: 'a.txt', mime_type: 'text/plain', content, file_path: null, size: content.length,
+        } as never);
+        srv.close();
+        expect(rawBody.toString('latin1')).toContain(content);
+      }
+    });
+
+    it('decodes genuine base64 content', async () => {
+      const original = 'hello world';
+      const encoded = Buffer.from(original, 'utf8').toString('base64');
+      let rawBody: Buffer = Buffer.alloc(0);
+      const srv = await testServerRaw((req, body, res) => {
+        rawBody = body;
+        res.setHeader('content-type', 'application/json');
+        res.end(JSON.stringify({ status: true, result: [{ hash: 'h', filename: 'a.txt' }] }));
+      });
+      const realHttp = createTidenClient(baseUrl(srv), 'tfy_token');
+      const realService = new AttachmentService(logger, realHttp);
+      await realService.uploadAttachment('prod-1', {
+        id: 'att-1', file_name: 'a.txt', mime_type: 'text/plain', content: encoded, file_path: null, size: encoded.length,
+      } as never);
+      srv.close();
+      // The part body should contain the *decoded* bytes ('hello world'), not
+      // the literal base64 text ('aGVsbG8gd29ybGQ=').
+      expect(rawBody.toString('latin1')).toContain(original);
+      expect(rawBody.toString('latin1')).not.toContain(encoded);
+    });
   });
 
   describe('uploadAttachments', () => {
