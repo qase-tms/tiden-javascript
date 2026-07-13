@@ -12,12 +12,14 @@ const MAX_REQUEST_SIZE = 128 * 1024 * 1024; // 128 MB per request
 const MAX_FILES_PER_REQUEST = 20; // 20 files per request
 
 const BASE64_PATTERN = /^[A-Za-z0-9+/=]+$/;
-// A single unpadded base64 group (4 chars) always round-trips regardless of
-// content -- 4 valid-alphabet chars decode to exactly 3 bytes with no unused
-// bits, so re-encoding those bytes deterministically reproduces the same 4
-// chars. That makes a bare 4-char match (e.g. "abcd") indistinguishable from
-// genuine base64 by round-trip alone; require at least two groups so the
-// round-trip check has something to actually validate.
+// The round-trip check only catches malformed/misplaced padding: ANY
+// complete, unpadded base64-alphabet string round-trips regardless of
+// length, so a plain word like "abcd" is indistinguishable from genuine
+// base64 by round-trip alone. This length floor is therefore the sole
+// heuristic separating short plain words from base64; 8 (two full groups)
+// keeps common words as utf8 at the cost of misreading genuinely
+// base64-encoded content shorter than 6 bytes as literal text — an
+// acceptable trade-off since real attachments are far larger.
 const MIN_BASE64_LENGTH = 8;
 
 /**

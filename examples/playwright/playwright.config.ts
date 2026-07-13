@@ -20,10 +20,8 @@ import { defineConfig } from '@playwright/test';
  *   approach but driven by Playwright's own project matrix instead of a
  *   manual `tiden.parameters()` call. (Note: the option is flat under
  *   `framework` in the reporter's own tuple options — NOT nested under an
- *   additional `playwright` key, despite `playwright/src/configSchema.ts`
- *   suggesting otherwise; that schema is dead code, unused by the actual
- *   `reporter.ts`/`result-builder.ts` option-consuming path. Verified live:
- *   the nested form silently no-ops and splits into two cases.)
+ *   additional `playwright` key. Verified live: the nested form silently
+ *   no-ops and splits into two cases.)
  *
  * Each project's `testMatch` is scoped to its own spec file so the new
  * matrix projects don't pick up `example.spec.ts`/`search.spec.ts` and vice
