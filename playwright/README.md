@@ -229,7 +229,7 @@ separate cases. See [examples/playwright](../examples/playwright) for a complete
 ### Browser matrices (Playwright projects)
 
 If your matrix is expressed as separate Playwright **projects** rather than `repeatEach` (e.g. one
-project per browser), enable `framework.playwright.browser.addAsParameter` instead of writing
+project per browser), enable `framework.browser.addAsParameter` instead of writing
 `tiden.parameters()` by hand:
 
 ```typescript
