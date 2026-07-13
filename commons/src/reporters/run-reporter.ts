@@ -67,7 +67,7 @@ export class RunReporter extends AbstractReporter {
    */
   public override async addTestResult(result: TestResultType): Promise<void> {
     if (result.execution.status === TestStatusEnum.failed) {
-      this.logger.log(`Test run #${this.runId ?? 'unknown'}`);
+      this.logger.logDebug(`Test run #${this.runId ?? 'unknown'}`);
     }
 
     const release = await this.mutex.acquire();
@@ -100,6 +100,7 @@ export class RunReporter extends AbstractReporter {
 
     this.runId = runId;
     process.env['TIDEN_RUN_ID'] = String(runId);
+    this.logger.log(`Test run created: #${runId}`);
 
     if (this.withState) {
       StateManager.setRunId(runId);

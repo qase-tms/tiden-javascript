@@ -115,6 +115,15 @@ describe('RunReporter', () => {
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(StateManager.setRunId).toHaveBeenCalledWith(789);
     });
+
+    it('should log the created run id at info level in a stable format', async () => {
+      mockApiClient.createRun.mockResolvedValue(42);
+
+      await reporter.startTestRun();
+
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      expect(mockLogger.log).toHaveBeenCalledWith('Test run created: #42');
+    });
   });
 
   describe('startTestRun resets stale state', () => {
@@ -171,7 +180,7 @@ describe('RunReporter', () => {
       await reporter.startTestRun();
     });
 
-    it('should add successful test without logging the run', async () => {
+    it('should not log run info for successful test', async () => {
       const testResult = new TestResultType('Successful Test');
       testResult.id = 'test-1';
       testResult.case_id = 1;
@@ -186,32 +195,38 @@ describe('RunReporter', () => {
       );
     });
 
-    it('should log the test run for a failed test (no dashboard URL — no workspace id)', async () => {
+    it('should not log per-failed-test run info; run id only logged at startTestRun', async () => {
       const testResult = new TestResultType('Failed Test');
       testResult.id = 'test-2';
       testResult.case_id = 2;
       testResult.execution.status = TestStatusEnum.failed;
       testResult.execution.duration = 1000;
 
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      mockLogger.log.mockClear();
+
       await reporter.addTestResult(testResult);
 
       // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(mockLogger.log).toHaveBeenCalledWith('Test run #123');
+      expect(mockLogger.log).not.toHaveBeenCalledWith(
+        expect.stringContaining('Test run #123')
+      );
     });
 
-    it('should log the test run once even for a failed test with multiple IDs', async () => {
+    it('should not log per-failed-test run info even for multiple case IDs', async () => {
       const testResult = new TestResultType('Failed Test Multiple IDs');
       testResult.id = 'test-3';
       testResult.case_id = [3, 4, 5];
       testResult.execution.status = TestStatusEnum.failed;
       testResult.execution.duration = 1000;
 
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      mockLogger.log.mockClear();
+
       await reporter.addTestResult(testResult);
 
       // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(mockLogger.log).toHaveBeenCalledTimes(1);
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(mockLogger.log).toHaveBeenCalledWith('Test run #123');
+      expect(mockLogger.log).not.toHaveBeenCalled();
     });
 
     it('should publish results when batchSize is reached', async () => {
