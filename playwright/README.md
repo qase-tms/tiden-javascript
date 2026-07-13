@@ -226,6 +226,39 @@ test('search works across browsers', ({}, testInfo) => {
 This creates one Tiden case with 2 parameter combinations (chromium and firefox), not two
 separate cases. See [examples/playwright](../examples/playwright) for a complete working example.
 
+### Browser matrices (Playwright projects)
+
+If your matrix is expressed as separate Playwright **projects** rather than `repeatEach` (e.g. one
+project per browser), enable `framework.playwright.browser.addAsParameter` instead of writing
+`tiden.parameters()` by hand:
+
+```typescript
+export default defineConfig({
+  reporter: [
+    ['@tiden/playwright-reporter', { framework: { browser: { addAsParameter: true } } }],
+  ],
+  projects: [
+    { name: 'chromium-demo', testMatch: /matrix\.spec\.ts$/ },
+    { name: 'firefox-demo', testMatch: /matrix\.spec\.ts$/ },
+  ],
+});
+```
+
+With this enabled, the reporter reads each test's Playwright project name, injects it as a
+`browser` parameter (customize the key with `parameterName`), and drops it from the suite path —
+so one test run under N projects groups as **one** Tiden case with N parameter combos instead of
+splitting per project. See [examples/playwright](../examples/playwright)'s `matrix.spec.ts` /
+`chromium-demo` / `firefox-demo` projects for a complete, live-verified example.
+
+**Without this option, every project becomes a separate Tiden case** (same test title, but a
+different suite path per project, since the project name stays in it) — confirmed live: the same
+spec run under two projects without `addAsParameter` produced two 1-attempt cases instead of one
+2-combo case.
+
+> The option lives directly under `framework` in the reporter's own tuple options
+> (`{ framework: { browser: { addAsParameter: true } } }`), not nested under an additional
+> `playwright` key — same flat shape as `markAsFlaky` above it.
+
 ### Native Playwright annotations
 
 As an alternative to the `tiden` object, the reporter also reads Playwright's own
