@@ -53,6 +53,7 @@ export class ResultTransformer {
     const groupParams = this.transformGroupParams(result.group_params, params);
 
     const model: TidenResultCreate = {
+      id: result.id,
       title: result.title,
       execution: this.getExecution(result.execution),
       // Wire field name mirrors api.v1.ResultCreate.testops_ids — kept as-is

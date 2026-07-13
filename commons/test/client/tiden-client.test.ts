@@ -52,10 +52,15 @@ describe('TidenApiClient', () => {
       res.end(JSON.stringify({ status: true, accepted: '2', duplicates: '0', errors: [] }));
     });
     const client = makeClient(srv);
-    await client.uploadResults(42, [makeResult({}), makeResult({})]);
+    const result1 = makeResult({ id: 'uuid-1' });
+    const result2 = makeResult({ id: 'uuid-2' });
+    await client.uploadResults(42, [result1, result2]);
     srv.close();
     expect(bodies).toHaveLength(1);
-    expect((bodies[0]?.['results'] as unknown[]).length).toBe(2);
+    const results = bodies[0]?.['results'] as unknown[];
+    expect(results.length).toBe(2);
+    expect((results[0] as Record<string, unknown>).id).toBe('uuid-1');
+    expect((results[1] as Record<string, unknown>).id).toBe('uuid-2');
   });
 
   it('retries only on 429 and honors Retry-After', async () => {

@@ -103,6 +103,14 @@ describe('ResultTransformer', () => {
       const model = await transformer.transform(result, mockUploader);
       expect(model.attachments).toEqual(['uploaded-hash', 'existing-hash']);
     });
+
+    it('threads the internal result id as the wire idempotency key', async () => {
+      const transformer = new ResultTransformer(silentLogger(), undefined);
+      const result = makeResult({});
+      result.id = '9b2f8d80-1234-4abc-8def-000000000042';
+      const model = await transformer.transform(result, () => Promise.resolve(''));
+      expect(model.id).toBe('9b2f8d80-1234-4abc-8def-000000000042');
+    });
   });
 
   describe('steps', () => {
