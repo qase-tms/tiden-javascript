@@ -48,7 +48,7 @@
   "scripts": {
     "build": "npm run clean && tsc --project tsconfig.build.json",
     "lint": "eslint .",
-    "test": "jest --passWithNoTests",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --passWithNoTests",
     "clean": "rm -rf dist"
   },
   "author": "Tiden Team <support@tiden.ai>",
