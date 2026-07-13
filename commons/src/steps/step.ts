@@ -3,11 +3,11 @@ import path from 'path';
 import { Attachment, StepStatusEnum, TestStepType } from '../models';
 
 export type StepFunction<T = unknown> = (
-  this: QaseStep,
-  step: QaseStep,
+  this: TidenStep,
+  step: TidenStep,
 ) => T | Promise<T>;
 
-export class QaseStep {
+export class TidenStep {
   name = '';
   attachments: Attachment[] = [];
   steps: TestStepType[] = [];
@@ -57,7 +57,7 @@ export class QaseStep {
   }
 
   async step(name: string, body: StepFunction): Promise<void> {
-    const childStep = new QaseStep(name);
+    const childStep = new TidenStep(name);
     // eslint-disable-next-line @typescript-eslint/require-await
     await childStep.run(body, async (step: TestStepType) => {
       this.steps.push(step);
@@ -73,7 +73,7 @@ export class QaseStep {
       data: null,
     };
 
-    // Per Qase API spec: start_time / end_time are Unix epoch seconds (with
+    // Per Tiden API spec: start_time / end_time are Unix epoch seconds (with
     // fractional ms); duration is milliseconds.
     const buildExecution = (status: StepStatusEnum, endMs: number) => ({
       start_time: startMs / 1000,

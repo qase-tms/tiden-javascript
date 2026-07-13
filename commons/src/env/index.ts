@@ -1,6 +1,6 @@
 export {
   EnvEnum,
-  EnvTestOpsEnum,
+  EnvTidenEnum,
   EnvApiEnum,
   EnvRunEnum,
   EnvLocalEnum,

@@ -1,146 +1,66 @@
-import {
-  RunsApi,
-  EnvironmentsApi,
-  RunCreate,
-  Environment,
-  RunExternalIssuesTypeEnum,
-} from 'qase-api-client';
-import { TestOpsOptionsType } from '../../models/config/TestOpsOptionsType';
+import { AxiosInstance } from 'axios';
 import { LoggerInterface } from '../../utils/logger';
-import { QaseError } from '../../utils/qase-error';
-import { getStartTime } from '../dateUtils';
-import { processError, getErrorMessage } from './api-error-handler';
-import { ConfigurationService } from './configuration-service';
-import chalk from 'chalk';
+import { TidenError } from '../../utils/tiden-error';
+import { TidenOptionsType } from '../../models/config/TidenOptionsType';
+import { processError } from './api-error-handler';
 
 export class RunService {
   constructor(
     private readonly logger: LoggerInterface,
-    private readonly runClient: RunsApi,
-    private readonly environmentClient: EnvironmentsApi,
-    private readonly configurationService: ConfigurationService,
-    private readonly appUrl: string | undefined,
+    private readonly http: AxiosInstance,
   ) {}
 
-  async createRun(config: TestOpsOptionsType, environment?: string): Promise<number> {
+  /**
+   * Creates a Tiden run and returns its per-product seq number (int32).
+   * `environment` is a slug: the server resolves it and auto-creates
+   * unknown slugs. An empty title gets the server-side default.
+   */
+  async createRun(config: TidenOptionsType, environment?: string): Promise<number> {
     if (config.run.id) {
-      return config.run.id;
+      return config.run.id; // sharded CI: pre-created run
     }
-
     try {
-      let configurationIds: number[] = [];
-      if (config.configurations) {
-        configurationIds = await this.configurationService.handleConfigurations(
-          config.project,
-          config.configurations,
-        );
+      const body = {
+        title: config.run.title ?? '',
+        description: config.run.description ?? '',
+        environment: environment ?? '',
+        branch: config.run.branch ?? '',
+        configurations: config.configurations
+          ? Object.fromEntries(config.configurations.values.map((v) => [v.name, v.value]))
+          : {},
+        client_meta: config.clientMeta ?? {},
+      };
+      this.logger.logDebug(`Creating test run: ${JSON.stringify(body)}`);
+      const { data } = await this.http.post<{ run?: { seqNum?: number } }>(
+        `/v1/products/${config.product}/runs`, body,
+      );
+      const seqNum = data.run?.seqNum;
+      if (!seqNum) {
+        throw new TidenError('Failed to create test run');
       }
-
-      const environmentId = await this.getEnvironmentId(config.project, environment);
-      const runObject = this.prepareRunObject(config, environmentId, configurationIds);
-
-      this.logger.logDebug(`Creating test run: ${JSON.stringify(runObject)}`);
-
-      const { data } = await this.runClient.createRun(config.project, runObject);
-
-      if (!data.result?.id) {
-        throw new QaseError('Failed to create test run');
-      }
-
-      this.logger.logDebug(`Test run created: ${JSON.stringify(data)}`);
-
-      if (config.run.externalLink && data.result.id) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-        const apiType = config.run.externalLink.type === 'jiraCloud'
-          ? RunExternalIssuesTypeEnum.JIRA_CLOUD
-          : RunExternalIssuesTypeEnum.JIRA_SERVER;
-
-        await this.runClient.runUpdateExternalIssue(config.project, {
-          type: apiType,
-          links: [{
-            run_id: data.result.id,
-            external_issue: config.run.externalLink.link,
-          }],
-        });
-      }
-
-      return data.result.id;
+      this.logger.logDebug(`Run create response: seqNum=${seqNum}`);
+      return seqNum;
     } catch (error) {
       throw processError(error, 'Error creating test run');
     }
   }
 
-  async completeRun(runId: number, config: TestOpsOptionsType): Promise<void> {
-    if (!config.run.complete) {
+  /**
+   * Completes the run. Server-idempotent for already-completed runs, so the
+   * upstream pre-flight GET is gone. Completes by default; only skips when
+   * run.complete is explicitly false (sharded CI: the orchestrator owns completion).
+   */
+  async completeRun(runId: number, config: TidenOptionsType): Promise<void> {
+    // Complete by default; only an explicit `complete: false` (sharded CI:
+    // the orchestrator owns completion) skips it.
+    if (config.run.complete === false) {
       return;
     }
-
     try {
-      await this.runClient.completeRun(config.project, runId);
+      await this.http.post(`/v1/products/${config.product}/runs/${runId}:complete`, {});
+      this.logger.log(`Test run #${runId} completed`);
     } catch (error) {
       throw processError(error, 'Error on completing run');
     }
-
-    if (this.appUrl) {
-      const runUrl = `${this.appUrl}/run/${config.project}/dashboard/${runId}`;
-      this.logger.log(chalk`{blue Test run link: ${runUrl}}`);
-    }
-  }
-
-  async enablePublicReport(projectCode: string, runId: number): Promise<void> {
-    try {
-      const { data } = await this.runClient.updateRunPublicity(
-        projectCode,
-        runId,
-        { status: true },
-      );
-      if (data.result?.url) {
-        this.logger.log(chalk`{blue Public report link: ${data.result.url}}`);
-      }
-    } catch (error) {
-      this.logger.log(chalk`{yellow Failed to generate public report link: ${getErrorMessage(error)}}`);
-    }
-  }
-
-  private async getEnvironmentId(projectCode: string, environment?: string): Promise<number | undefined> {
-    if (!environment) return undefined;
-
-    const { data } = await this.environmentClient.getEnvironments(
-      projectCode,
-      undefined,
-      environment,
-      100,
-    );
-
-    return data.result?.entities?.find((env: Environment) => env.slug === environment)?.id;
-  }
-
-  private prepareRunObject(
-    config: TestOpsOptionsType,
-    environmentId?: number,
-    configurationIds?: number[],
-  ): RunCreate {
-    const runObject: RunCreate = {
-      title: config.run.title ?? `Automated run ${new Date().toISOString()}`,
-      description: config.run.description ?? '',
-      is_autotest: true,
-      cases: [],
-      start_time: getStartTime(),
-      tags: config.run.tags ?? [],
-    };
-
-    if (environmentId !== undefined) {
-      runObject.environment_id = environmentId;
-    }
-
-    if (config.plan.id) {
-      runObject.plan_id = config.plan.id;
-    }
-
-    if (configurationIds && configurationIds.length > 0) {
-      runObject.configurations = configurationIds;
-    }
-
-    return runObject;
   }
 }

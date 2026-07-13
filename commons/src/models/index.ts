@@ -1,5 +1,5 @@
 export { TestResultType } from './test-result';
-export type { Relation, Suite, SuiteData, TestopsProjectMapping } from './test-result';
+export type { Relation, Suite, SuiteData, ProjectCaseMapping } from './test-result';
 export { TestExecution, TestStatusEnum } from './test-execution';
 export { TestStepType, StepType } from './test-step';
 export type { StepRequestData, StepTextData, StepGherkinData } from './step-data';
@@ -8,5 +8,4 @@ export type { Attachment } from './attachment';
 export type { Report } from './report';
 export { CompoundError } from './error';
 export type { ConfigurationGroup, ConfigurationItem, ConfigurationGroupResponse } from './configuration';
-export { ExternalLinkType } from './config/TestOpsOptionsType';
-export type { TestOpsOptionsType, TestOpsApiType, TestOpsRunType, TestOpsPlanType, TestOpsBatchType, TestOpsConfigurationType, TestOpsConfigurationValueType, TestOpsExternalLinkType, TestOpsProjectConfigType, TestOpsMultiConfigType } from './config/TestOpsOptionsType';
+export type { TidenOptionsType, TidenApiType, TidenRunType, TidenBatchType, TidenConfigurationType, TidenConfigurationValueType } from './config/TidenOptionsType';

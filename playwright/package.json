@@ -1,9 +1,15 @@
 {
-  "name": "playwright-qase-reporter",
-  "version": "2.5.6",
-  "description": "Qase TMS Playwright Reporter",
+  "name": "@tiden/playwright-reporter",
+  "version": "0.1.0",
+  "description": "Tiden Playwright Reporter",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
   "exports": {
     ".": "./dist/index.js",
     "./playwright": "./dist/playwright.js",
@@ -27,14 +33,14 @@
       ]
     }
   },
-  "homepage": "https://github.com/qase-tms/qase-javascript",
+  "homepage": "https://github.com/qase-tms/tiden-javascript",
   "bugs": {
-    "url": "https://github.com/qase-tms/qase-javascript/issues"
+    "url": "https://github.com/qase-tms/tiden-javascript/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/qase-tms/qase-javascript.git",
-    "directory": "qase-playwright"
+    "url": "git+https://github.com/qase-tms/tiden-javascript.git",
+    "directory": "playwright"
   },
   "engines": {
     "node": ">=18"
@@ -42,14 +48,14 @@
   "scripts": {
     "build": "npm run clean && tsc --project tsconfig.build.json",
     "lint": "eslint .",
-    "test": "jest --passWithNoTests",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --passWithNoTests",
     "clean": "rm -rf dist"
   },
-  "author": "Qase Team <support@qase.io>",
+  "author": "Tiden Team <support@tiden.ai>",
   "license": "Apache-2.0",
   "dependencies": {
     "chalk": "^4.1.2",
-    "qase-javascript-commons": "~2.7.5",
+    "@tiden/reporter-commons": "^0.1.0",
     "uuid": "11.1.1"
   },
   "peerDependencies": {
@@ -58,7 +64,6 @@
   "devDependencies": {
     "@jest/globals": "^29.7.0",
     "@types/jest": "^29.5.14",
-    "ajv": "^8.18.0",
     "jest": "^29.7.0",
     "ts-jest": "^29.4.5"
   }

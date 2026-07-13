@@ -1,5 +1,5 @@
 import { TestCase, TestStep } from '@playwright/test/reporter';
-import { Attachment } from 'qase-javascript-commons';
+import { Attachment } from '@tiden/reporter-commons';
 
 /**
  * Per-instance shared state for step caching (used by `onStepBegin` and

@@ -331,7 +331,8 @@ describe('HttpInterceptor', () => {
   });
 
   it('shouldSkip domains are not tracked', async () => {
-    // We can't make actual requests to qase.io, but we can verify shouldSkip is checked
+    // We can't make actual requests to the reporter's own API host, but we can
+    // verify shouldSkip is checked
     // by using a profiler with a skipDomain matching our test server
     const skipProfiler = new NetworkProfiler({ skipDomains: ['127.0.0.1'] });
     const skipInterceptor = new HttpInterceptor(store, skipProfiler);

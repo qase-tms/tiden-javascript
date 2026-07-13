@@ -3,15 +3,6 @@ import { expect } from '@jest/globals';
 import { ResultTransformer } from '../../../src/client/services/result-transformer';
 import { StepStatusEnum, StepType, TestStatusEnum, TestStepType } from '../../../src/models';
 
-jest.mock('qase-api-v2-client', () => ({
-  ResultStepStatus: {
-    PASSED: 'passed',
-    FAILED: 'failed',
-    BLOCKED: 'blocked',
-    SKIPPED: 'skipped',
-  },
-}));
-
 const silentLogger = (): any => ({
   log: jest.fn(),
   logDebug: jest.fn(),
@@ -21,7 +12,7 @@ const silentLogger = (): any => ({
 function makeResult(overrides: Partial<any> = {}): any {
   return {
     title: 'Test case',
-    testops_id: 1,
+    case_id: 1,
     execution: {
       status: TestStatusEnum.passed,
       start_time: 1000,
@@ -73,18 +64,18 @@ describe('ResultTransformer', () => {
       expect(model.signature).toBe('sig-1');
     });
 
-    it('should handle array testops_id', async () => {
-      const model = await transformer.transform(makeResult({ testops_id: [1, 2, 3] }), mockUploader);
+    it('should handle array case_id', async () => {
+      const model = await transformer.transform(makeResult({ case_id: [1, 2, 3] }), mockUploader);
       expect(model.testops_ids).toEqual([1, 2, 3]);
     });
 
-    it('should handle null testops_id', async () => {
-      const model = await transformer.transform(makeResult({ testops_id: null }), mockUploader);
+    it('should handle null case_id', async () => {
+      const model = await transformer.transform(makeResult({ case_id: null }), mockUploader);
       expect(model.testops_ids).toBeNull();
     });
 
-    it('should map empty-array testops_id to null (API rejects []) ', async () => {
-      const model = await transformer.transform(makeResult({ testops_id: [] }), mockUploader);
+    it('should map empty-array case_id to null (API rejects []) ', async () => {
+      const model = await transformer.transform(makeResult({ case_id: [] }), mockUploader);
       expect(model.testops_ids).toBeNull();
     });
 
@@ -111,6 +102,14 @@ describe('ResultTransformer', () => {
       });
       const model = await transformer.transform(result, mockUploader);
       expect(model.attachments).toEqual(['uploaded-hash', 'existing-hash']);
+    });
+
+    it('threads the internal result id as the wire idempotency key', async () => {
+      const transformer = new ResultTransformer(silentLogger(), undefined);
+      const result = makeResult({});
+      result.id = '9b2f8d80-1234-4abc-8def-000000000042';
+      const model = await transformer.transform(result, () => Promise.resolve(''));
+      expect(model.id).toBe('9b2f8d80-1234-4abc-8def-000000000042');
     });
   });
 
@@ -176,38 +175,52 @@ describe('ResultTransformer', () => {
       expect(model.params).toEqual({ key: 'value', num: '42' });
     });
 
-    it('should build param_groups from group_params', async () => {
+    it('should build param_groups from group_params as [{names}] objects', async () => {
       const model = await transformer.transform(
         makeResult({ group_params: { browser: 'chrome', os: 'linux' }, params: {} }),
         mockUploader,
       );
-      expect(model.param_groups).toEqual([['browser', 'os']]);
+      expect(model.param_groups).toEqual([{ names: ['browser', 'os'] }]);
       expect(model.params).toEqual({ browser: 'chrome', os: 'linux' });
+    });
+
+    it('emits param_groups as [{names}] objects (delta a)', async () => {
+      const result = makeResult({ params: {}, group_params: { browser: 'chromium', os: 'mac' } });
+      const model = await transformer.transform(result, () => Promise.resolve(''));
+      expect(model.param_groups).toEqual([{ names: ['browser', 'os'] }]);
     });
   });
 
-  describe('relations', () => {
-    it('should use default suite relation with rootSuite', async () => {
+  describe('suite_path', () => {
+    it('should use just the rootSuite when there is no relation', async () => {
       transformer = new ResultTransformer(silentLogger(), 'Root Suite');
       const model = await transformer.transform(makeResult(), mockUploader);
-      expect(model.relations?.suite?.data).toEqual([{ public_id: null, title: 'Root Suite' }]);
+      expect(model.suite_path).toEqual([{ title: 'Root Suite' }]);
     });
 
-    it('should prepend rootSuite to existing suite relation', async () => {
+    it('should prepend rootSuite to an existing suite relation', async () => {
       transformer = new ResultTransformer(silentLogger(), 'Root');
       const result = makeResult({
         relations: { suite: { data: [{ title: 'Child' }] } },
       });
       const model = await transformer.transform(result, mockUploader);
-      expect(model.relations?.suite?.data).toEqual([
-        { public_id: null, title: 'Root' },
-        { public_id: null, title: 'Child' },
+      expect(model.suite_path).toEqual([
+        { title: 'Root' },
+        { title: 'Child' },
       ]);
     });
 
-    it('should return empty relations when no rootSuite and no relation', async () => {
+    it('should return an empty suite_path when there is no rootSuite and no relation', async () => {
       const model = await transformer.transform(makeResult(), mockUploader);
-      expect(model.relations).toEqual({});
+      expect(model.suite_path).toEqual([]);
+    });
+
+    it('emits a flat suite_path with root suite prefix (delta b)', async () => {
+      transformer = new ResultTransformer(silentLogger(), 'Root');
+      const result = makeResult({ relations: { suite: { data: [{ title: 'Checkout', public_id: null }, { title: 'Cards', public_id: null }] } } });
+      const model = await transformer.transform(result, () => Promise.resolve(''));
+      expect(model.suite_path).toEqual([{ title: 'Root' }, { title: 'Checkout' }, { title: 'Cards' }]);
+      expect((model as Record<string, unknown>)['relations']).toBeUndefined();
     });
   });
 });

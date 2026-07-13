@@ -3,6 +3,54 @@
 Tiden reporters for JavaScript test frameworks. v1 ships the commons layer
 and the Playwright reporter, reporting into Tiden's Test Runs API.
 
+## Packages
+
+| Package | Description | README |
+|---------|-------------|--------|
+| [`commons`](commons) — `@tiden/reporter-commons` | Shared reporter core (config, env, API client, formatting). Not installed directly — a dependency of framework reporters. | [commons/README.md](commons/README.md) |
+| [`playwright`](playwright) — `@tiden/playwright-reporter` | Playwright reporter. Install this in your test project. | [playwright/README.md](playwright/README.md) |
+
+## Quickstart
+
+```sh
+npm install --save-dev @tiden/playwright-reporter
+```
+
+Create `tiden.config.json` in your project root:
+
+```json
+{
+  "mode": "tiden",
+  "tiden": {
+    "product": "<product uuid>",
+    "api": { "token": "tfy_...", "baseUrl": "https://api.tiden.example" }
+  }
+}
+```
+
+Register the reporter in `playwright.config.ts`:
+
+```typescript
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+  reporter: [['list'], ['@tiden/playwright-reporter']],
+});
+```
+
+See [`playwright/README.md`](playwright/README.md) for the full configuration reference (env
+vars, annotation API, sharded-CI recipe) and [`commons/README.md`](commons/README.md) for the
+shared config/env layer.
+
+## Releasing
+
+Push a `vX.Y.Z` git tag to release: `.github/workflows/release.yml` builds, tests, and
+publishes `@tiden/reporter-commons` then `@tiden/playwright-reporter` to npm at the
+versions already set in each package's `package.json`, using npm's OIDC trusted
+publishing (no `NPM_TOKEN` secret; provenance attached automatically). One-time manual
+prerequisite: the npm `@tiden` scope owner must add this repo as a Trusted Publisher for
+both packages in npm's package settings before the first tag push.
+
 ## Lineage
 
 Forked from [qase-tms/qase-javascript](https://github.com/qase-tms/qase-javascript)

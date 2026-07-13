@@ -8,36 +8,32 @@ describe('envToConfig', () => {
     it('should parse configurations values from environment variable', () => {
       const env: EnvType = {
         [EnvConfigurationsEnum.values]: 'group1=value1,group2=value2,group3=value3',
-        [EnvConfigurationsEnum.createIfNotExists]: true,
       };
 
       const result = envToConfig(env);
 
-      expect(result.testops?.configurations).toEqual({
+      expect(result.tiden?.configurations).toEqual({
         values: [
           { name: 'group1', value: 'value1' },
           { name: 'group2', value: 'value2' },
           { name: 'group3', value: 'value3' },
         ],
-        createIfNotExists: true,
       });
     });
 
     it('should handle configurations values with spaces', () => {
       const env: EnvType = {
         [EnvConfigurationsEnum.values]: 'group1=value1, group2 = value2 , group3= value3',
-        [EnvConfigurationsEnum.createIfNotExists]: false,
       };
 
       const result = envToConfig(env);
 
-      expect(result.testops?.configurations).toEqual({
+      expect(result.tiden?.configurations).toEqual({
         values: [
           { name: 'group1', value: 'value1' },
           { name: 'group2', value: 'value2' },
           { name: 'group3', value: 'value3' },
         ],
-        createIfNotExists: false,
       });
     });
 
@@ -48,13 +44,12 @@ describe('envToConfig', () => {
 
       const result = envToConfig(env);
 
-      expect(result.testops?.configurations).toEqual({
+      expect(result.tiden?.configurations).toEqual({
         values: [
           { name: 'group1', value: 'value1' },
           { name: 'group2', value: '' },
           { name: 'group3', value: 'value3' },
         ],
-        createIfNotExists: undefined,
       });
     });
 
@@ -63,22 +58,20 @@ describe('envToConfig', () => {
 
       const result = envToConfig(env);
 
-      expect(result.testops?.configurations).toBeUndefined();
+      expect(result.tiden?.configurations).toBeUndefined();
     });
 
     it('should handle single configurations value', () => {
       const env: EnvType = {
         [EnvConfigurationsEnum.values]: 'group1=value1',
-        [EnvConfigurationsEnum.createIfNotExists]: true,
       };
 
       const result = envToConfig(env);
 
-      expect(result.testops?.configurations).toEqual({
+      expect(result.tiden?.configurations).toEqual({
         values: [
           { name: 'group1', value: 'value1' },
         ],
-        createIfNotExists: true,
       });
     });
   });

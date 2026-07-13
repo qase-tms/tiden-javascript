@@ -30,7 +30,7 @@ describe('getPackageVersion', () => {
 
     mockReadFileSync.mockReturnValue(JSON.stringify(packageJson));
 
-    const version = getPackageVersion('qase-javascript-commons');
+    const version = getPackageVersion('@tiden/reporter-commons');
 
     expect(version).toBe('1.2.3');
     expect(mockReadFileSync).toHaveBeenCalledWith(expect.stringContaining('package.json'), 'utf8');
@@ -41,7 +41,7 @@ describe('getPackageVersion', () => {
       throw new Error('File not found');
     });
 
-    const version = getPackageVersion('qase-javascript-commons');
+    const version = getPackageVersion('@tiden/reporter-commons');
 
     expect(version).toBeUndefined();
   });
@@ -49,7 +49,7 @@ describe('getPackageVersion', () => {
   it('should return undefined when package.json is invalid JSON', () => {
     mockReadFileSync.mockReturnValue('invalid json');
 
-    const version = getPackageVersion('qase-javascript-commons');
+    const version = getPackageVersion('@tiden/reporter-commons');
 
     expect(version).toBeUndefined();
   });
@@ -62,7 +62,7 @@ describe('getPackageVersion', () => {
 
     mockReadFileSync.mockReturnValue(JSON.stringify(packageJson));
 
-    const version = getPackageVersion('qase-javascript-commons');
+    const version = getPackageVersion('@tiden/reporter-commons');
 
     expect(version).toBeUndefined();
   });
@@ -74,7 +74,7 @@ describe('getPackageVersion', () => {
       throw new Error('Cannot find module');
     });
 
-    const result = getPackageVersion('qase-javascript-commons');
+    const result = getPackageVersion('@tiden/reporter-commons');
 
     expect(result).toBeUndefined();
   });
@@ -86,7 +86,7 @@ describe('getPackageVersion', () => {
     mockRequireResolve.mockReturnValue('/path/to/package.json');
     mockReadFileSync.mockReturnValue(mockPackageJson);
 
-    const result = getPackageVersion('qase-javascript-commons');
+    const result = getPackageVersion('@tiden/reporter-commons');
 
     expect(result).toBeUndefined();
   });
@@ -97,7 +97,7 @@ describe('getPackageVersion', () => {
     mockRequireResolve.mockReturnValue('/path/to/package.json');
     mockReadFileSync.mockReturnValue('invalid json');
 
-    const result = getPackageVersion('qase-javascript-commons');
+    const result = getPackageVersion('@tiden/reporter-commons');
 
     expect(result).toBeUndefined();
   });
@@ -109,7 +109,7 @@ describe('getPackageVersion', () => {
     mockRequireResolve.mockReturnValue('/path/to/package.json');
     mockReadFileSync.mockReturnValue(mockPackageJson);
 
-    const result = getPackageVersion('qase-javascript-commons');
+    const result = getPackageVersion('@tiden/reporter-commons');
 
     expect(result).toBe('123');
   });

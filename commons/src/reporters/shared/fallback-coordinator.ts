@@ -10,7 +10,7 @@ export interface FallbackCoordinatorCallbacks {
 
 /**
  * Encapsulates the upstream → fallback → disabled cascade used across all
- * `QaseReporter` lifecycle methods. Keeps both reporters' state (useFallback
+ * `TidenReporter` lifecycle methods. Keeps both reporters' state (useFallback
  * / disabled) in one place instead of spreading try/catch blocks everywhere.
  */
 export class FallbackCoordinator {

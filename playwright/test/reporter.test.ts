@@ -1,13 +1,13 @@
 /* eslint-disable */
 import { expect } from '@jest/globals';
-import { PlaywrightQaseReporter } from '../src/reporter';
+import { PlaywrightTidenReporter } from '../src/reporter';
 import { ReporterContentType } from '../src/playwright';
-import { removeQaseIdsFromTitle, extractAndCleanStep } from 'qase-javascript-commons/internal';
+import { removeTidenIdsFromTitle, extractAndCleanStep } from '@tiden/reporter-commons/internal';
 
 // Mocks for Playwright types
 const testCaseMock = {
-  title: 'Test (Qase ID: 123)',
-  titlePath: jest.fn(() => ['Suite1', 'Suite2', 'Test (Qase ID: 123)']),
+  title: 'Test (Tiden ID: 123)',
+  titlePath: jest.fn(() => ['Suite1', 'Suite2', 'Test (Tiden ID: 123)']),
   annotations: [],
   parent: undefined,
 };
@@ -36,11 +36,11 @@ const reporterMock = {
   isCaptureLogs: jest.fn(() => false),
 };
 
-jest.mock('qase-javascript-commons', () => {
-  const actual = jest.requireActual<typeof import('qase-javascript-commons')>('qase-javascript-commons');
+jest.mock('@tiden/reporter-commons', () => {
+  const actual = jest.requireActual<typeof import('@tiden/reporter-commons')>('@tiden/reporter-commons');
   return {
     ...actual,
-    QaseReporter: {
+    TidenReporter: {
       getInstance: jest.fn(() => reporterMock),
     },
     composeOptions: jest.fn(() => ({})),
@@ -87,30 +87,30 @@ jest.mock('qase-javascript-commons', () => {
   };
 });
 
-describe('PlaywrightQaseReporter', () => {
-  let reporter: PlaywrightQaseReporter;
+describe('PlaywrightTidenReporter', () => {
+  let reporter: PlaywrightTidenReporter;
   const options = { framework: {} } as any;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    reporter = new PlaywrightQaseReporter(options);
+    reporter = new PlaywrightTidenReporter(options);
   });
 
   describe('static statusMap', () => {
     it('should map Playwright statuses to TestStatusEnum correctly', () => {
-      expect(PlaywrightQaseReporter.statusMap.passed).toBe('passed');
-      expect(PlaywrightQaseReporter.statusMap.failed).toBe('failed');
-      expect(PlaywrightQaseReporter.statusMap.skipped).toBe('skipped');
-      expect(PlaywrightQaseReporter.statusMap.timedOut).toBe('failed');
-      expect(PlaywrightQaseReporter.statusMap.interrupted).toBe('failed');
+      expect(PlaywrightTidenReporter.statusMap.passed).toBe('passed');
+      expect(PlaywrightTidenReporter.statusMap.failed).toBe('failed');
+      expect(PlaywrightTidenReporter.statusMap.skipped).toBe('skipped');
+      expect(PlaywrightTidenReporter.statusMap.timedOut).toBe('failed');
+      expect(PlaywrightTidenReporter.statusMap.interrupted).toBe('failed');
     });
   });
 
   describe('static addIds', () => {
     it('should add ids for a test title', () => {
-      PlaywrightQaseReporter.addIds([1, 2, 3], 'Test title');
+      PlaywrightTidenReporter.addIds([1, 2, 3], 'Test title');
       // @ts-ignore
-      expect(PlaywrightQaseReporter.qaseIds.get('Test title')).toEqual([1, 2, 3]);
+      expect(PlaywrightTidenReporter.tidenIds.get('Test title')).toEqual([1, 2, 3]);
     });
   });
 
@@ -151,7 +151,7 @@ describe('PlaywrightQaseReporter', () => {
 
   describe('extractAndCleanStep', () => {
     it('should extract expected result and data from step title', () => {
-      const input = 'Click button QaseExpRes:: Button should be clicked QaseData:: Button data';
+      const input = 'Click button TidenExpRes:: Button should be clicked TidenData:: Button data';
       const result = extractAndCleanStep(input);
       expect(result.expectedResult).toBe('Button should be clicked');
       expect(result.data).toBe('Button data');
@@ -159,7 +159,7 @@ describe('PlaywrightQaseReporter', () => {
     });
 
     it('should handle step with only expected result', () => {
-      const input = 'Click button QaseExpRes:: Button should be clicked QaseData:';
+      const input = 'Click button TidenExpRes:: Button should be clicked TidenData:';
       const result = extractAndCleanStep(input);
       expect(result.expectedResult).toBe('Button should be clicked');
       expect(result.data).toBe(null);
@@ -167,14 +167,14 @@ describe('PlaywrightQaseReporter', () => {
     });
 
     it('should handle step with only data', () => {
-      const input = 'Click button QaseExpRes: QaseData:: Button data';
+      const input = 'Click button TidenExpRes: TidenData:: Button data';
       const result = extractAndCleanStep(input);
       expect(result.expectedResult).toBe('');
       expect(result.data).toBe('Button data');
       expect(result.cleanedString).toBe('Click button');
     });
 
-    it('should return original string if no QaseExpRes or QaseData', () => {
+    it('should return original string if no TidenExpRes or TidenData', () => {
       const input = 'Click button';
       const result = extractAndCleanStep(input);
       expect(result.expectedResult).toBe(null);
@@ -183,17 +183,17 @@ describe('PlaywrightQaseReporter', () => {
     });
   });
 
-  describe('removeQaseIdsFromTitle', () => {
-    it('should remove Qase ID from title', () => {
-      const result = removeQaseIdsFromTitle('Test (Qase ID: 123)');
+  describe('removeTidenIdsFromTitle', () => {
+    it('should remove Tiden ID from title', () => {
+      const result = removeTidenIdsFromTitle('Test (Tiden ID: 123)');
       expect(result).toBe('Test');
     });
-    it('should remove multiple Qase IDs from title', () => {
-      const result = removeQaseIdsFromTitle('Test (Qase ID: 123,456)');
+    it('should remove multiple Tiden IDs from title', () => {
+      const result = removeTidenIdsFromTitle('Test (Tiden ID: 123,456)');
       expect(result).toBe('Test');
     });
-    it('should return original title if no Qase ID', () => {
-      const result = removeQaseIdsFromTitle('Test without ID');
+    it('should return original title if no Tiden ID', () => {
+      const result = removeTidenIdsFromTitle('Test without ID');
       expect(result).toBe('Test without ID');
     });
   });
@@ -306,21 +306,21 @@ describe('PlaywrightQaseReporter', () => {
       expect(call.relations.suite.data).toEqual([{ title: 'Test Suite', public_id: null }]);
     });
 
-    it('should handle test with qaseid annotation', async () => {
+    it('should handle test with tidenid annotation', async () => {
       const testCase = { 
         ...testCaseMock, 
-        annotations: [{ type: 'qaseid', description: '123' }] 
+        annotations: [{ type: 'tidenid', description: '123' }] 
       };
       const result = { ...testResultMock };
       await reporter.onTestEnd(testCase as any, result as any);
       const call = reporterMock.addTestResult.mock.calls[0][0];
-      expect(call.testops_id).toBe(123);
+      expect(call.case_id).toBe(123);
     });
 
-    it('should handle test with qasesuite annotation', async () => {
+    it('should handle test with tidensuite annotation', async () => {
       const testCase = { 
         ...testCaseMock, 
-        annotations: [{ type: 'qasesuite', description: 'Suite from annotation' }] 
+        annotations: [{ type: 'tidensuite', description: 'Suite from annotation' }] 
       };
       const result = { ...testResultMock };
       await reporter.onTestEnd(testCase as any, result as any);

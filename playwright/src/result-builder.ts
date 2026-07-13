@@ -6,15 +6,15 @@ import {
   TestStepType,
   determineTestStatus,
   generateSignature,
-  parseProjectMappingFromTitle,
-} from 'qase-javascript-commons';
-import { removeQaseIdsFromTitle } from 'qase-javascript-commons/internal';
+  parseTidenIdFromTitle,
+} from '@tiden/reporter-commons';
+import { removeTidenIdsFromTitle } from '@tiden/reporter-commons/internal';
 import { v4 as uuidv4 } from 'uuid';
 import { ReporterOptionsType } from './options';
 import { StepConverter } from './step-converter';
 import { TestCaseMetadata } from './metadata-extractor';
 
-const PROFILER_CONTENT_TYPE = 'application/qase.profiler-steps+json';
+const PROFILER_CONTENT_TYPE = 'application/tiden.profiler-steps+json';
 const logMimeType = 'text/plain';
 
 export interface BuildArgs {
@@ -23,19 +23,18 @@ export interface BuildArgs {
   metadata: TestCaseMetadata;
   annotations: {
     ids: number[];
-    projectMapping: Record<string, number[]> | null;
     suites: string[];
   };
   options: ReporterOptionsType;
   isCaptureLogs: boolean;
-  qaseIdsRegistry: ReadonlyMap<string, number[]>;
+  tidenIdsRegistry: ReadonlyMap<string, number[]>;
 }
 
 export class ResultBuilder {
   constructor(private readonly stepConverter: StepConverter) {}
 
   build(args: BuildArgs): TestResultType | null {
-    const { test, result, metadata, annotations, options, isCaptureLogs, qaseIdsRegistry } = args;
+    const { test, result, metadata, annotations, options, isCaptureLogs, tidenIdsRegistry } = args;
 
     if (metadata.ignore) {
       return null;
@@ -74,41 +73,19 @@ export class ResultBuilder {
       metadata.fields['is_flaky'] = 'true';
     }
 
-    const titleParsed = parseProjectMappingFromTitle(test.title);
-    const testTitle = titleParsed.cleanedTitle || removeQaseIdsFromTitle(test.title);
+    const titleParsed = parseTidenIdFromTitle(test.title);
+    const testTitle = titleParsed.cleanedTitle || removeTidenIdsFromTitle(test.title);
 
-    const hasMetadataProjectMapping = metadata.projectMapping != null && Object.keys(metadata.projectMapping).length > 0;
-    const hasAnnotationProjectMapping = annotations.projectMapping != null && Object.keys(annotations.projectMapping).length > 0;
-    const hasTitleProjectMapping = titleParsed.projectMapping != null && Object.keys(titleParsed.projectMapping).length > 0;
-
-    const projectMapping = hasMetadataProjectMapping
-      ? metadata.projectMapping ?? null
-      : hasAnnotationProjectMapping
-        ? annotations.projectMapping
-        : hasTitleProjectMapping
-          ? titleParsed.projectMapping
-          : null;
-
-    const hasProjectMapping = projectMapping != null && Object.keys(projectMapping).length > 0;
-
-    let testops_id: number | number[] | null;
-    let testops_project_mapping: Record<string, number[]> | null;
-    if (hasProjectMapping) {
-      testops_project_mapping = projectMapping;
-      testops_id = null;
-    } else if (annotations.ids.length > 0) {
-      testops_id = annotations.ids.length === 1 ? annotations.ids[0]! : annotations.ids;
-      testops_project_mapping = null;
+    let case_id: number | number[] | null;
+    if (annotations.ids.length > 0) {
+      case_id = annotations.ids.length === 1 ? annotations.ids[0]! : annotations.ids;
     } else if (metadata.ids.length > 0) {
-      testops_id = metadata.ids.length === 1 ? metadata.ids[0]! : metadata.ids;
-      testops_project_mapping = null;
+      case_id = metadata.ids.length === 1 ? metadata.ids[0]! : metadata.ids;
     } else if (titleParsed.legacyIds.length > 0) {
-      testops_id = titleParsed.legacyIds.length === 1 ? titleParsed.legacyIds[0]! : titleParsed.legacyIds;
-      testops_project_mapping = null;
+      case_id = titleParsed.legacyIds.length === 1 ? titleParsed.legacyIds[0]! : titleParsed.legacyIds;
     } else {
-      const registryIds = qaseIdsRegistry.get(test.title);
-      testops_id = registryIds && registryIds.length > 0 ? registryIds : null;
-      testops_project_mapping = null;
+      const registryIds = tidenIdsRegistry.get(test.title);
+      case_id = registryIds && registryIds.length > 0 ? registryIds : null;
     }
 
     let errorForStatus: Error | null = null;
@@ -119,7 +96,7 @@ export class ResultBuilder {
       }
     }
     const testStatus = determineTestStatus(errorForStatus, result.status);
-    const idsForSignature = testops_id == null ? null : (Array.isArray(testops_id) ? testops_id : [testops_id]);
+    const idsForSignature = case_id == null ? null : (Array.isArray(case_id) ? case_id : [case_id]);
 
     const testResult = {
       attachments: metadata.attachments,
@@ -151,10 +128,12 @@ export class ResultBuilder {
         },
       },
       run_id: null,
-      signature: generateSignature(idsForSignature, suites, metadata.parameters),
+      signature: generateSignature(idsForSignature, suites),
       steps: this.stepConverter.transform(result.steps, null),
-      testops_id,
-      testops_project_mapping,
+      case_id,
+      // Multi-project mapping was removed; the internal TestResultType model
+      // still carries this field, so it's kept here always-null.
+      project_case_mapping: null,
       title: metadata.title === '' ? testTitle : metadata.title,
     };
 

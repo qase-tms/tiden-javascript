@@ -5,11 +5,11 @@ import { MetadataExtractor } from '../src/metadata-extractor';
 import { StepIndex } from '../src/step-index';
 import { ReporterContentType } from '../src/playwright';
 
-const PROFILER_CONTENT_TYPE = 'application/qase.profiler-steps+json';
+const PROFILER_CONTENT_TYPE = 'application/tiden.profiler-steps+json';
 
 function makeMetadataAttachment(payload: object): TestResult['attachments'][number] {
   return {
-    name: 'qase-metadata',
+    name: 'tiden-metadata',
     contentType: ReporterContentType,
     body: Buffer.from(JSON.stringify(payload)),
   } as any;
@@ -40,7 +40,7 @@ describe('MetadataExtractor', () => {
     });
   });
 
-  it('parses ids/title/fields/parameters from a qase-metadata attachment', () => {
+  it('parses ids/title/fields/parameters from a tiden-metadata attachment', () => {
     const m = extractor.transform([
       makeMetadataAttachment({
         ids: [1, 2],
@@ -63,13 +63,6 @@ describe('MetadataExtractor', () => {
     expect(m.suite).toBe('mySuite');
     expect(m.comment).toBe('note');
     expect(m.groupParams).toEqual({ region: 'eu' });
-  });
-
-  it('parses projectMapping when payload is an object', () => {
-    const m = extractor.transform([
-      makeMetadataAttachment({ projectMapping: { PROJ: [1, 2] } }),
-    ]);
-    expect(m.projectMapping).toEqual({ PROJ: [1, 2] });
   });
 
   it('appends tags to the existing list', () => {

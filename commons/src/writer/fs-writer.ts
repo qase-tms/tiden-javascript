@@ -28,7 +28,7 @@ export class FsWriter implements WriterInterface {
     options: FsWriterOptionsType | undefined,
   ) {
     const {
-      path: pathOptions = path.join('build', 'qase-report'),
+      path: pathOptions = path.join('build', 'tiden-report'),
       format = options?.format ?? FormatEnum.json,
     } = options ?? {};
 

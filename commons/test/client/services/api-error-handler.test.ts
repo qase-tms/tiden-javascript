@@ -4,31 +4,31 @@ import { processError, getErrorMessage } from '../../../src/client/services/api-
 
 describe('api-error-handler', () => {
   describe('processError', () => {
-    it('should return QaseError with "Unauthorized" message for 401', () => {
+    it('should return TidenError with "Unauthorized" message for 401', () => {
       const error = createAxiosError(401, {});
       const result = processError(error, 'Test message');
       expect(result.message).toBe('Test message: Unauthorized. Please check your API token.');
     });
 
-    it('should return QaseError with errorMessage from response for 403', () => {
+    it('should return TidenError with errorMessage from response for 403', () => {
       const error = createAxiosError(403, { errorMessage: 'Access denied' });
       const result = processError(error, 'Test message');
       expect(result.message).toBe('Test message: Access denied');
     });
 
-    it('should return QaseError with "Forbidden" fallback for 403 without errorMessage', () => {
+    it('should return TidenError with "Forbidden" fallback for 403 without errorMessage', () => {
       const error = createAxiosError(403, {});
       const result = processError(error, 'Test message');
       expect(result.message).toBe('Test message: Forbidden');
     });
 
-    it('should return QaseError with "Not found" for 404', () => {
+    it('should return TidenError with "Not found" for 404', () => {
       const error = createAxiosError(404, {});
       const result = processError(error, 'Test message');
       expect(result.message).toBe('Test message: Not found.');
     });
 
-    it('should return QaseError with JSON body for 400', () => {
+    it('should return TidenError with JSON body for 400', () => {
       const errorData = { field: 'invalid' };
       const error = createAxiosError(400, errorData);
       const result = processError(error, 'Test message', { some: 'model' });
@@ -36,21 +36,21 @@ describe('api-error-handler', () => {
       expect(result.message).toContain(JSON.stringify(errorData));
     });
 
-    it('should return QaseError with JSON body for 422', () => {
+    it('should return TidenError with JSON body for 422', () => {
       const errorData = { field: 'unprocessable' };
       const error = createAxiosError(422, errorData);
       const result = processError(error, 'Test message');
       expect(result.message).toContain('Bad request');
     });
 
-    it('should return QaseError with cause for unknown status codes', () => {
+    it('should return TidenError with cause for unknown status codes', () => {
       const error = createAxiosError(500, {});
       const result = processError(error, 'Test message');
       expect(result.message).toBe('Test message');
       expect(result.cause).toBe(error);
     });
 
-    it('should return QaseError with cause for non-axios errors', () => {
+    it('should return TidenError with cause for non-axios errors', () => {
       const error = new Error('Something broke');
       const result = processError(error, 'Test message');
       expect(result.message).toBe('Test message');

@@ -8,6 +8,11 @@
   "license": "Apache-2.0",
   "workspaces": ["commons", "playwright", "examples/*"],
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
+    "@typescript-eslint/parser": "^5.62.0",
+    "eslint": "^8.57.1",
+    "eslint-import-resolver-typescript": "^3.10.1",
+    "eslint-plugin-import": "^2.32.0",
     "typescript": "^5.9.3"
   }
 }

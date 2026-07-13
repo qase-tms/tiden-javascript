@@ -29,8 +29,8 @@ jest.mock('uuid', () => ({
   v4: jest.fn(() => 'mock-uuid'),
 }));
 
-// Mock qase-javascript-commons
-jest.mock('qase-javascript-commons', () => ({
+// Mock @tiden/reporter-commons
+jest.mock('@tiden/reporter-commons', () => ({
   getMimeTypes: jest.fn(() => 'text/plain'),
   TestStatusEnum: {
     passed: 'passed',
@@ -58,187 +58,187 @@ jest.mock('path', () => ({
   }),
 }));
 
-// Now import the qase function
-import { qase } from '../src/playwright';
+// Now import the tiden function
+import { tiden } from '../src/playwright';
 
-describe('qase API', () => {
+describe('tiden API', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  describe('qase', () => {
+  describe('tiden', () => {
     it('should return test name with single number ID', () => {
-      const result = qase(123, 'Test Name');
-      expect(result).toBe('Test Name (Qase ID: 123)');
+      const result = tiden(123, 'Test Name');
+      expect(result).toBe('Test Name (Tiden ID: 123)');
     });
 
     it('should return test name with multiple number IDs', () => {
-      const result = qase([123, 456], 'Test Name');
-      expect(result).toBe('Test Name (Qase ID: 123,456)');
+      const result = tiden([123, 456], 'Test Name');
+      expect(result).toBe('Test Name (Tiden ID: 123,456)');
     });
 
     it('should return test name with string IDs', () => {
-      const result = qase('123', 'Test Name');
-      expect(result).toBe('Test Name (Qase ID: 123)');
+      const result = tiden('123', 'Test Name');
+      expect(result).toBe('Test Name (Tiden ID: 123)');
     });
 
     it('should log warning for invalid string ID', () => {
       const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-      const result = qase('invalid', 'Test Name');
-      expect(result).toBe('Test Name (Qase ID: invalid)');
-      expect(logSpy).toHaveBeenCalledWith('qase: qase ID invalid should be a number');
+      const result = tiden('invalid', 'Test Name');
+      expect(result).toBe('Test Name (Tiden ID: invalid)');
+      expect(logSpy).toHaveBeenCalledWith('tiden: ID invalid should be a number');
       logSpy.mockRestore();
     });
   });
 
-  describe('qase.title', () => {
+  describe('tiden.title', () => {
     it('should call test.info().attach with title metadata', () => {
-      qase.title('Custom Title');
-      expect(testInfoMock.attach).toHaveBeenCalledWith('qase-metadata.json', {
-        contentType: 'application/qase.metadata+json',
+      tiden.title('Custom Title');
+      expect(testInfoMock.attach).toHaveBeenCalledWith('tiden-metadata.json', {
+        contentType: 'application/tiden.metadata+json',
         body: Buffer.from(JSON.stringify({ title: 'Custom Title' }), 'utf8'),
       });
     });
   });
 
-  describe('qase.fields', () => {
+  describe('tiden.fields', () => {
     it('should call test.info().attach with fields metadata', () => {
-      qase.fields({ field1: 'value1', field2: '2' });
-      expect(testInfoMock.attach).toHaveBeenCalledWith('qase-metadata.json', {
-        contentType: 'application/qase.metadata+json',
+      tiden.fields({ field1: 'value1', field2: '2' });
+      expect(testInfoMock.attach).toHaveBeenCalledWith('tiden-metadata.json', {
+        contentType: 'application/tiden.metadata+json',
         body: Buffer.from(JSON.stringify({ fields: { field1: 'value1', field2: '2' } }), 'utf8'),
       });
     });
   });
 
-  describe('qase.parameters', () => {
+  describe('tiden.parameters', () => {
     it('should call test.info().attach with parameters metadata', () => {
-      qase.parameters({ param1: 'value1', param2: '2' });
-      expect(testInfoMock.attach).toHaveBeenCalledWith('qase-metadata.json', {
-        contentType: 'application/qase.metadata+json',
+      tiden.parameters({ param1: 'value1', param2: '2' });
+      expect(testInfoMock.attach).toHaveBeenCalledWith('tiden-metadata.json', {
+        contentType: 'application/tiden.metadata+json',
         body: Buffer.from(JSON.stringify({ parameters: { param1: 'value1', param2: '2' } }), 'utf8'),
       });
     });
   });
 
-  describe('qase.groupParameters', () => {
+  describe('tiden.groupParameters', () => {
     it('should call test.info().attach with groupParams metadata', () => {
-      qase.groupParameters({ group1: 'value1', group2: '2' });
-      expect(testInfoMock.attach).toHaveBeenCalledWith('qase-metadata.json', {
-        contentType: 'application/qase.metadata+json',
+      tiden.groupParameters({ group1: 'value1', group2: '2' });
+      expect(testInfoMock.attach).toHaveBeenCalledWith('tiden-metadata.json', {
+        contentType: 'application/tiden.metadata+json',
         body: Buffer.from(JSON.stringify({ groupParams: { group1: 'value1', group2: '2' } }), 'utf8'),
       });
     });
   });
 
-  describe('qase.tags', () => {
+  describe('tiden.tags', () => {
     it('should call test.info().attach with tags metadata', () => {
-      qase.tags('smoke', 'regression');
-      expect(testInfoMock.attach).toHaveBeenCalledWith('qase-metadata.json', {
-        contentType: 'application/qase.metadata+json',
+      tiden.tags('smoke', 'regression');
+      expect(testInfoMock.attach).toHaveBeenCalledWith('tiden-metadata.json', {
+        contentType: 'application/tiden.metadata+json',
         body: Buffer.from(JSON.stringify({ tags: ['smoke', 'regression'] }), 'utf8'),
       });
     });
   });
 
-  describe('qase.attach', () => {
+  describe('tiden.attach', () => {
     it('should call test.step and test.info().attach for content', () => {
-      qase.attach({ name: 'file.txt', content: 'data', contentType: 'text/plain' });
+      tiden.attach({ name: 'file.txt', content: 'data', contentType: 'text/plain' });
       expect(testStepMock).toHaveBeenCalledWith('step_attach_body_mock-uuid_file.txt', expect.any(Function));
     });
 
     it('should call test.step and test.info().attach for file path', () => {
-      qase.attach({ paths: '/path/to/file.txt' });
+      tiden.attach({ paths: '/path/to/file.txt' });
       expect(testStepMock).toHaveBeenCalledWith('step_attach_file_mock-uuid_file.txt', expect.any(Function));
     });
 
     it('should call test.step and test.info().attach for multiple file paths', () => {
-      qase.attach({ paths: ['/path/to/file1.txt', '/path/to/file2.pdf'] });
+      tiden.attach({ paths: ['/path/to/file1.txt', '/path/to/file2.pdf'] });
       expect(testStepMock).toHaveBeenCalledWith('step_attach_file_mock-uuid_file1.txt', expect.any(Function));
       expect(testStepMock).toHaveBeenCalledWith('step_attach_file_mock-uuid_file2.pdf', expect.any(Function));
     });
   });
 
-  describe('qase.ignore', () => {
+  describe('tiden.ignore', () => {
     it('should call test.info().attach with ignore metadata', () => {
-      qase.ignore();
-      expect(testInfoMock.attach).toHaveBeenCalledWith('qase-metadata.json', {
-        contentType: 'application/qase.metadata+json',
+      tiden.ignore();
+      expect(testInfoMock.attach).toHaveBeenCalledWith('tiden-metadata.json', {
+        contentType: 'application/tiden.metadata+json',
         body: Buffer.from(JSON.stringify({ ignore: true }), 'utf8'),
       });
     });
   });
 
-  describe('qase.suite', () => {
+  describe('tiden.suite', () => {
     it('should call test.info().attach with suite metadata', () => {
-      qase.suite('Test Suite');
-      expect(testInfoMock.attach).toHaveBeenCalledWith('qase-metadata.json', {
-        contentType: 'application/qase.metadata+json',
+      tiden.suite('Test Suite');
+      expect(testInfoMock.attach).toHaveBeenCalledWith('tiden-metadata.json', {
+        contentType: 'application/tiden.metadata+json',
         body: Buffer.from(JSON.stringify({ suite: 'Test Suite' }), 'utf8'),
       });
     });
   });
 
-  describe('qase.comment', () => {
+  describe('tiden.comment', () => {
     it('should call test.info().attach with comment metadata', () => {
-      qase.comment('Test Comment');
-      expect(testInfoMock.attach).toHaveBeenCalledWith('qase-metadata.json', {
-        contentType: 'application/qase.metadata+json',
+      tiden.comment('Test Comment');
+      expect(testInfoMock.attach).toHaveBeenCalledWith('tiden-metadata.json', {
+        contentType: 'application/tiden.metadata+json',
         body: Buffer.from(JSON.stringify({ comment: 'Test Comment' }), 'utf8'),
       });
     });
   });
 
-  describe('qase.step', () => {
+  describe('tiden.step', () => {
     it('should return formatted step string with action only', () => {
-      const result = qase.step('Click button', undefined, undefined);
-      expect(result).toBe('Click button QaseExpRes: QaseData:');
+      const result = tiden.step('Click button', undefined, undefined);
+      expect(result).toBe('Click button TidenExpRes: TidenData:');
     });
 
     it('should return formatted step string with action and expected result', () => {
-      const result = qase.step('Click button', 'Button should be clicked', undefined);
-      expect(result).toBe('Click button QaseExpRes:: Button should be clicked QaseData:');
+      const result = tiden.step('Click button', 'Button should be clicked', undefined);
+      expect(result).toBe('Click button TidenExpRes:: Button should be clicked TidenData:');
     });
 
     it('should return formatted step string with action, expected result and data', () => {
-      const result = qase.step('Click button', 'Button should be clicked', 'Button data');
-      expect(result).toBe('Click button QaseExpRes:: Button should be clicked QaseData:: Button data');
+      const result = tiden.step('Click button', 'Button should be clicked', 'Button data');
+      expect(result).toBe('Click button TidenExpRes:: Button should be clicked TidenData:: Button data');
     });
 
     it('should accept a single action argument (optional params omitted)', () => {
-      const result = qase.step('Click button');
-      expect(result).toBe('Click button QaseExpRes: QaseData:');
+      const result = tiden.step('Click button');
+      expect(result).toBe('Click button TidenExpRes: TidenData:');
     });
 
     it('should accept action and expected result without data', () => {
-      const result = qase.step('Click button', 'Button should be clicked');
-      expect(result).toBe('Click button QaseExpRes:: Button should be clicked QaseData:');
+      const result = tiden.step('Click button', 'Button should be clicked');
+      expect(result).toBe('Click button TidenExpRes:: Button should be clicked TidenData:');
     });
   });
 
-  describe('qase with non-positive ID (regression test)', () => {
-    it('drops zero before passing to PlaywrightQaseReporter.addIds, title is preserved for back-compat', () => {
+  describe('tiden with non-positive ID (regression test)', () => {
+    it('drops zero before passing to PlaywrightTidenReporter.addIds, title is preserved for back-compat', () => {
       const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
-      const title = qase(0, 'Test Name');
-      expect(title).toBe('Test Name (Qase ID: 0)'); // unchanged
+      const title = tiden(0, 'Test Name');
+      expect(title).toBe('Test Name (Tiden ID: 0)'); // unchanged
       expect(warn).toHaveBeenCalledWith(expect.stringContaining('0'));
       warn.mockRestore();
     });
 
     it('keeps positive IDs and drops zero from a mixed list, title uses original IDs', () => {
       const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
-      const title = qase([1, 0, 2], 'Test Name');
-      expect(title).toBe('Test Name (Qase ID: 1,0,2)');
+      const title = tiden([1, 0, 2], 'Test Name');
+      expect(title).toBe('Test Name (Tiden ID: 1,0,2)');
       expect(warn).toHaveBeenCalledWith(expect.stringContaining('0'));
       warn.mockRestore();
     });
   });
 
-  describe('qase.id with non-positive ID (regression test)', () => {
+  describe('tiden.id with non-positive ID (regression test)', () => {
     it('does not attach metadata when ID is zero', () => {
       const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
       testInfoMock.attach.mockClear();
-      qase.id(0);
+      tiden.id(0);
       expect(testInfoMock.attach).not.toHaveBeenCalled();
       warn.mockRestore();
     });
@@ -246,32 +246,11 @@ describe('qase API', () => {
     it('drops zero from a mixed list and attaches only positive IDs', () => {
       const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
       testInfoMock.attach.mockClear();
-      qase.id([1, 0, 2]);
-      expect(testInfoMock.attach).toHaveBeenCalledWith('qase-metadata.json', {
-        contentType: 'application/qase.metadata+json',
+      tiden.id([1, 0, 2]);
+      expect(testInfoMock.attach).toHaveBeenCalledWith('tiden-metadata.json', {
+        contentType: 'application/tiden.metadata+json',
         body: Buffer.from(JSON.stringify({ ids: [1, 2] }), 'utf8'),
       });
-      warn.mockRestore();
-    });
-  });
-
-  describe('qase.projects with non-positive ID (regression test)', () => {
-    it('omits a project entirely when all of its IDs are non-positive', () => {
-      const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
-      testInfoMock.attach.mockClear();
-      qase.projects({ PROJ1: [0], PROJ2: [5] });
-      expect(testInfoMock.attach).toHaveBeenCalledWith('qase-metadata.json', {
-        contentType: 'application/qase.metadata+json',
-        body: Buffer.from(JSON.stringify({ projectMapping: { PROJ2: [5] } }), 'utf8'),
-      });
-      warn.mockRestore();
-    });
-
-    it('does not attach metadata when every project is empty after filtering', () => {
-      const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
-      testInfoMock.attach.mockClear();
-      qase.projects({ PROJ1: [0], PROJ2: [-1] });
-      expect(testInfoMock.attach).not.toHaveBeenCalled();
       warn.mockRestore();
     });
   });

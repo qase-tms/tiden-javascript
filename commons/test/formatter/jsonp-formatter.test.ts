@@ -28,14 +28,14 @@ describe('JsonpFormatter', () => {
   });
 
   describe('format', () => {
-    it('should format simple object with qaseJsonp wrapper', async () => {
+    it('should format simple object with tidenJsonp wrapper', async () => {
       const formatter = new JsonpFormatter();
       const testObject = { name: 'test', value: 123 };
 
       const result = await formatter.format(testObject);
 
       const expectedJson = JSON.stringify(testObject, null, 4);
-      expect(result).toBe(`qaseJsonp(${expectedJson});`);
+      expect(result).toBe(`tidenJsonp(${expectedJson});`);
     });
 
     it('should format object with custom spacing', async () => {
@@ -45,7 +45,7 @@ describe('JsonpFormatter', () => {
       const result = await formatter.format(testObject);
 
       const expectedJson = JSON.stringify(testObject, null, 2);
-      expect(result).toBe(`qaseJsonp(${expectedJson});`);
+      expect(result).toBe(`tidenJsonp(${expectedJson});`);
     });
 
     it('should strip ANSI codes from Error objects in error property', async () => {
@@ -56,7 +56,7 @@ describe('JsonpFormatter', () => {
       const result = await formatter.format(testObject);
 
       expect(result).toContain('"error": "Error: Error message"');
-      expect(result).toMatch(/^qaseJsonp\([\s\S]*\);$/);
+      expect(result).toMatch(/^tidenJsonp\([\s\S]*\);$/);
     });
 
     it('should not strip ANSI codes from non-error properties', async () => {
@@ -69,7 +69,7 @@ describe('JsonpFormatter', () => {
       const result = await formatter.format(testObject);
 
       expect(result).toContain('"message": "\\u001b[31mColored message\\u001b[0m"');
-      expect(result).toMatch(/^qaseJsonp\([\s\S]*\);$/);
+      expect(result).toMatch(/^tidenJsonp\([\s\S]*\);$/);
     });
 
     it('should handle nested objects with errors', async () => {
@@ -87,7 +87,7 @@ describe('JsonpFormatter', () => {
       const result = await formatter.format(testObject);
 
       expect(result).toContain('"error": "Error: Nested error"');
-      expect(result).toMatch(/^qaseJsonp\([\s\S]*\);$/);
+      expect(result).toMatch(/^tidenJsonp\([\s\S]*\);$/);
     });
 
     it('should handle arrays with errors', async () => {
@@ -104,7 +104,7 @@ describe('JsonpFormatter', () => {
       const result = await formatter.format(testObject);
 
       expect(result).toContain('"error": "Error: Array error"');
-      expect(result).toMatch(/^qaseJsonp\([\s\S]*\);$/);
+      expect(result).toMatch(/^tidenJsonp\([\s\S]*\);$/);
     });
 
     it('should handle null and undefined values', async () => {
@@ -119,7 +119,7 @@ describe('JsonpFormatter', () => {
 
       expect(result).toContain('"nullValue": null');
       expect(result).toContain('"stringValue": "test"');
-      expect(result).toMatch(/^qaseJsonp\([\s\S]*\);$/);
+      expect(result).toMatch(/^tidenJsonp\([\s\S]*\);$/);
     });
 
     it('should handle empty object', async () => {
@@ -128,16 +128,16 @@ describe('JsonpFormatter', () => {
 
       const result = await formatter.format(testObject);
 
-      expect(result).toBe('qaseJsonp({});');
+      expect(result).toBe('tidenJsonp({});');
     });
 
     it('should handle primitive values', async () => {
       const formatter = new JsonpFormatter();
 
-      expect(await formatter.format('string')).toBe('qaseJsonp("string");');
-      expect(await formatter.format(123)).toBe('qaseJsonp(123);');
-      expect(await formatter.format(true)).toBe('qaseJsonp(true);');
-      expect(await formatter.format(null)).toBe('qaseJsonp(null);');
+      expect(await formatter.format('string')).toBe('tidenJsonp("string");');
+      expect(await formatter.format(123)).toBe('tidenJsonp(123);');
+      expect(await formatter.format(true)).toBe('tidenJsonp(true);');
+      expect(await formatter.format(null)).toBe('tidenJsonp(null);');
     });
 
     it('should ensure proper JSONP format with semicolon', async () => {
@@ -146,7 +146,7 @@ describe('JsonpFormatter', () => {
 
       const result = await formatter.format(testObject);
 
-      expect(result).toMatch(/^qaseJsonp\([\s\S]*\);$/);
+      expect(result).toMatch(/^tidenJsonp\([\s\S]*\);$/);
       expect(result.endsWith(';')).toBe(true);
     });
   });

@@ -1,8 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any, @typescript-eslint/unbound-method */
 import { expect } from '@jest/globals';
+import { AxiosInstance } from 'axios';
 import { AttachmentService } from '../../../src/client/services/attachment-service';
+import { createTidenClient } from '../../../src/client/tiden-http';
 import { LoggerInterface } from '../../../src/utils/logger';
 import { Attachment } from '../../../src/models';
+import { testServerRaw, baseUrl } from '../../helpers/test-server';
 
 const silentLogger = (): jest.Mocked<LoggerInterface> => ({
   log: jest.fn(),
@@ -10,9 +13,9 @@ const silentLogger = (): jest.Mocked<LoggerInterface> => ({
   logError: jest.fn(),
 });
 
-function mockAttachmentsApi() {
+function mockHttp() {
   return {
-    uploadAttachment: jest.fn(),
+    post: jest.fn(),
   };
 }
 
@@ -28,18 +31,18 @@ function makeAttachment(overrides: Partial<Attachment> = {}): Attachment {
 
 describe('AttachmentService', () => {
   let logger: jest.Mocked<LoggerInterface>;
-  let api: ReturnType<typeof mockAttachmentsApi>;
+  let http: ReturnType<typeof mockHttp>;
   let service: AttachmentService;
 
   beforeEach(() => {
     logger = silentLogger();
-    api = mockAttachmentsApi();
-    service = new AttachmentService(logger, api as any);
+    http = mockHttp();
+    service = new AttachmentService(logger, http as unknown as AxiosInstance);
   });
 
   describe('uploadAttachment', () => {
     it('should upload a single attachment and return hash', async () => {
-      api.uploadAttachment.mockResolvedValue({
+      http.post.mockResolvedValue({
         data: { result: [{ hash: 'abc123' }] },
       });
 
@@ -48,12 +51,97 @@ describe('AttachmentService', () => {
     });
 
     it('should return empty string when no hash in response', async () => {
-      api.uploadAttachment.mockResolvedValue({
+      http.post.mockResolvedValue({
         data: { result: [{}] },
       });
 
       const result = await service.uploadAttachment('PROJ', makeAttachment());
       expect(result).toBe('');
+    });
+
+    it('uploads multipart file[] parts and returns result[].hash', async () => {
+      let contentType = '';
+      let rawBody: Buffer = Buffer.alloc(0);
+      const srv = await testServerRaw((req, body, res) => {
+        contentType = req.headers['content-type'] ?? '';
+        rawBody = body;
+        res.setHeader('content-type', 'application/json');
+        res.end(JSON.stringify({ status: true, result: [{ hash: 'abc123def4567890', filename: 'a.txt' }] }));
+      });
+      const realHttp = createTidenClient(baseUrl(srv), 'tfy_token');
+      const realService = new AttachmentService(logger, realHttp);
+      const hash = await realService.uploadAttachment('prod-1', {
+        // Note: content must not be all-base64-alphabet (e.g. a bare "hello"
+        // would be sniffed as base64 and decoded to different bytes); the
+        // space keeps it on the plain-utf8 path so the literal text round-trips.
+        id: 'att-1', file_name: 'a.txt', mime_type: 'text/plain', content: 'hello world', file_path: null, size: 11,
+      } as never);
+      srv.close();
+      expect(hash).toBe('abc123def4567890');
+      expect(contentType).toContain('multipart/form-data');
+      expect(rawBody.toString()).toContain('name="file[]"');
+      expect(rawBody.toString()).toContain('filename="a.txt"');
+      expect(rawBody.toString()).toContain('hello');
+    });
+
+    it('declares the attachment mime_type as the part Content-Type even when the filename extension would not infer it', async () => {
+      let rawBody: Buffer = Buffer.alloc(0);
+      const srv = await testServerRaw((req, body, res) => {
+        rawBody = body;
+        res.setHeader('content-type', 'application/json');
+        res.end(JSON.stringify({ status: true, result: [{ hash: 'abc123def4567890', filename: 'shot.bin' }] }));
+      });
+      const realHttp = createTidenClient(baseUrl(srv), 'tfy_token');
+      const realService = new AttachmentService(logger, realHttp);
+      const hash = await realService.uploadAttachment('prod-1', {
+        id: 'att-1', file_name: 'shot.bin', mime_type: 'image/png', content: 'hello', file_path: null, size: 5,
+      } as never);
+      srv.close();
+      expect(hash).toBe('abc123def4567890');
+      expect(rawBody.toString()).toContain('filename="shot.bin"');
+      expect(rawBody.toString()).toContain('Content-Type: image/png');
+    });
+
+    it('keeps plain alphanumeric strings as utf8', async () => {
+      // 'hello' (5 chars) is an invalid base64 length; 'abcd' (4 chars) is a
+      // valid-length plain word. Both are pure base64-alphabet strings that
+      // the old regex-only sniff would have mis-decoded as base64 garbage.
+      for (const content of ['hello', 'abcd']) {
+        let rawBody: Buffer = Buffer.alloc(0);
+        const srv = await testServerRaw((req, body, res) => {
+          rawBody = body;
+          res.setHeader('content-type', 'application/json');
+          res.end(JSON.stringify({ status: true, result: [{ hash: 'h', filename: 'a.txt' }] }));
+        });
+        const realHttp = createTidenClient(baseUrl(srv), 'tfy_token');
+        const realService = new AttachmentService(logger, realHttp);
+        await realService.uploadAttachment('prod-1', {
+          id: 'att-1', file_name: 'a.txt', mime_type: 'text/plain', content, file_path: null, size: content.length,
+        } as never);
+        srv.close();
+        expect(rawBody.toString('latin1')).toContain(content);
+      }
+    });
+
+    it('decodes genuine base64 content', async () => {
+      const original = 'hello world';
+      const encoded = Buffer.from(original, 'utf8').toString('base64');
+      let rawBody: Buffer = Buffer.alloc(0);
+      const srv = await testServerRaw((req, body, res) => {
+        rawBody = body;
+        res.setHeader('content-type', 'application/json');
+        res.end(JSON.stringify({ status: true, result: [{ hash: 'h', filename: 'a.txt' }] }));
+      });
+      const realHttp = createTidenClient(baseUrl(srv), 'tfy_token');
+      const realService = new AttachmentService(logger, realHttp);
+      await realService.uploadAttachment('prod-1', {
+        id: 'att-1', file_name: 'a.txt', mime_type: 'text/plain', content: encoded, file_path: null, size: encoded.length,
+      } as never);
+      srv.close();
+      // The part body should contain the *decoded* bytes ('hello world'), not
+      // the literal base64 text ('aGVsbG8gd29ybGQ=').
+      expect(rawBody.toString('latin1')).toContain(original);
+      expect(rawBody.toString('latin1')).not.toContain(encoded);
     });
   });
 
@@ -61,11 +149,11 @@ describe('AttachmentService', () => {
     it('should return empty array when uploadAttachments disabled', async () => {
       const result = await service.uploadAttachments('PROJ', [makeAttachment()], false);
       expect(result).toEqual([]);
-      expect(api.uploadAttachment).not.toHaveBeenCalled();
+      expect(http.post).not.toHaveBeenCalled();
     });
 
     it('should skip null/undefined attachments', async () => {
-      api.uploadAttachment.mockResolvedValue({
+      http.post.mockResolvedValue({
         data: { result: [{ hash: 'h1' }] },
       });
 
@@ -74,7 +162,7 @@ describe('AttachmentService', () => {
     });
 
     it('should skip oversized attachments (> 32 MB)', async () => {
-      api.uploadAttachment.mockResolvedValue({
+      http.post.mockResolvedValue({
         data: { result: [{ hash: 'h1' }] },
       });
 
@@ -87,7 +175,7 @@ describe('AttachmentService', () => {
     });
 
     it('should batch attachments respecting MAX_FILES_PER_REQUEST limit', async () => {
-      api.uploadAttachment.mockResolvedValue({
+      http.post.mockResolvedValue({
         data: { result: [{ hash: 'h' }] },
       });
 
@@ -97,7 +185,7 @@ describe('AttachmentService', () => {
       );
 
       await service.uploadAttachments('PROJ', attachments, true);
-      expect(api.uploadAttachment).toHaveBeenCalledTimes(2);
+      expect(http.post).toHaveBeenCalledTimes(2);
     });
 
     it('should retry on 429 errors with exponential backoff', async () => {
@@ -105,13 +193,13 @@ describe('AttachmentService', () => {
       axiosError.isAxiosError = true;
       axiosError.response = { status: 429, headers: { 'retry-after': '1' }, data: {} };
 
-      api.uploadAttachment
+      http.post
         .mockRejectedValueOnce(axiosError)
         .mockResolvedValueOnce({ data: { result: [{ hash: 'h1' }] } });
 
       const result = await service.uploadAttachments('PROJ', [makeAttachment()], true);
       expect(result).toEqual(['h1']);
-      expect(api.uploadAttachment).toHaveBeenCalledTimes(2);
+      expect(http.post).toHaveBeenCalledTimes(2);
     });
 
     it('should continue with next batch if current batch fails with non-429 error', async () => {
@@ -119,7 +207,7 @@ describe('AttachmentService', () => {
       nonRetryableError.isAxiosError = true;
       nonRetryableError.response = { status: 500, headers: {}, data: {} };
 
-      api.uploadAttachment
+      http.post
         .mockRejectedValueOnce(nonRetryableError)
         .mockResolvedValueOnce({ data: { result: [{ hash: 'h2' }] } });
 
@@ -135,7 +223,7 @@ describe('AttachmentService', () => {
     });
 
     it('should calculate size from file content when size is 0', async () => {
-      api.uploadAttachment.mockResolvedValue({
+      http.post.mockResolvedValue({
         data: { result: [{ hash: 'h1' }] },
       });
 

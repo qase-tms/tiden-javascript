@@ -1,11 +1,10 @@
 import {
   EnvEnum,
-  EnvTestOpsEnum,
+  EnvTidenEnum,
   EnvApiEnum,
   EnvRunEnum,
   EnvLocalEnum,
-  EnvPlanEnum, 
-  EnvBatchEnum, 
+  EnvBatchEnum,
   EnvConfigurationsEnum,
   EnvLoggingEnum,
 } from './env-enum';
@@ -22,28 +21,23 @@ export interface EnvType {
   [EnvEnum.rootSuite]?: string;
   [EnvEnum.statusMapping]?: string;
 
-  [EnvTestOpsEnum.project]?: string;
-  [EnvTestOpsEnum.uploadAttachments]?: boolean;
-  [EnvTestOpsEnum.defect]?: boolean;
-  [EnvTestOpsEnum.statusFilter]?: string;
-  [EnvTestOpsEnum.showPublicReportLink]?: boolean;
+  [EnvTidenEnum.product]?: string;
+  [EnvTidenEnum.uploadAttachments]?: boolean;
+  [EnvTidenEnum.defect]?: boolean;
+  [EnvTidenEnum.statusFilter]?: string;
 
   [EnvApiEnum.token]?: string;
-  [EnvApiEnum.host]?: string;
+  [EnvApiEnum.baseUrl]?: string;
 
   [EnvRunEnum.id]?: number;
   [EnvRunEnum.title]?: string;
   [EnvRunEnum.description]?: string;
   [EnvRunEnum.complete]?: boolean;
-  [EnvRunEnum.tags]?: string;
-  [EnvRunEnum.externalLink]?: string;
-
-  [EnvPlanEnum.id]?: number;
+  [EnvRunEnum.branch]?: string;
 
   [EnvBatchEnum.size]?: number;
 
   [EnvConfigurationsEnum.values]?: string;
-  [EnvConfigurationsEnum.createIfNotExists]?: boolean;
 
   [EnvLocalEnum.path]?: string;
   [EnvLocalEnum.format]?: `${FormatEnum}`;

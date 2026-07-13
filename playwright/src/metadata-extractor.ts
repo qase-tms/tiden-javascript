@@ -1,19 +1,17 @@
 import { TestResult } from '@playwright/test/reporter';
-import { Attachment } from 'qase-javascript-commons';
+import { Attachment } from '@tiden/reporter-commons';
 import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
 import { MetadataMessage, ReporterContentType } from './playwright';
 import { StepIndex } from './step-index';
 
-const PROFILER_CONTENT_TYPE = 'application/qase.profiler-steps+json';
+const PROFILER_CONTENT_TYPE = 'application/tiden.profiler-steps+json';
 const stepAttachRegexp = /^step_attach_(body|file)_(\w{8}-\w{4}-\w{4}-\w{4}-\w{12})_/i;
 
 type ArrayItemType<T> = T extends (infer R)[] ? R : never;
 
 export interface TestCaseMetadata {
   ids: number[];
-  /** Multi-project mapping: project code -> test case IDs. */
-  projectMapping?: Record<string, number[]>;
   title: string;
   fields: Record<string, string>;
   parameters: Record<string, string>;
@@ -30,7 +28,7 @@ export interface TestCaseMetadata {
  * as a side effect, routes per-step attachments into the supplied `StepIndex`.
  *
  * Recognised attachment shapes:
- *  - `qase-metadata` content type — JSON metadata payload (ids/title/fields/...).
+ *  - `tiden-metadata` content type — JSON metadata payload (ids/title/fields/...).
  *  - profiler steps content type — skipped here; merged later in onTestEnd.
  *  - `step_attach_(body|file)_<uuid>_<name>` — routed to the parent step's
  *    attachment list inside `StepIndex`.
@@ -69,10 +67,6 @@ export class MetadataExtractor {
 
         if (message.ids) {
           metadata.ids = message.ids;
-        }
-
-        if (message.projectMapping && typeof message.projectMapping === 'object') {
-          metadata.projectMapping = message.projectMapping as Record<string, number[]>;
         }
 
         if (message.fields) {

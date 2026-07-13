@@ -5,7 +5,7 @@ export interface ExtractedStep {
 }
 
 /**
- * Parses a step string for inline `QaseExpRes:` (expected result) and `QaseData:`
+ * Parses a step string for inline `TidenExpRes:` (expected result) and `TidenData:`
  * (data) markers. Returns the extracted parts and the input string with markers
  * removed. If no markers are present, returns nulls and the original string.
  */
@@ -14,11 +14,11 @@ export function extractAndCleanStep(input: string): ExtractedStep {
   let data: string | null = null;
   let cleanedString = input;
 
-  const hasExpectedResult = input.includes('QaseExpRes:');
-  const hasData = input.includes('QaseData:');
+  const hasExpectedResult = input.includes('TidenExpRes:');
+  const hasData = input.includes('TidenData:');
 
   if (hasExpectedResult || hasData) {
-    const regex = /QaseExpRes:\s*:?\s*(.*?)\s*(?=QaseData:|$)QaseData:\s*:?\s*(.*)?/;
+    const regex = /TidenExpRes:\s*:?\s*(.*?)\s*(?=TidenData:|$)TidenData:\s*:?\s*(.*)?/;
     const match = input.match(regex);
 
     if (match) {
@@ -26,8 +26,8 @@ export function extractAndCleanStep(input: string): ExtractedStep {
       data = match[2]?.trim() ?? null;
 
       cleanedString = input
-        .replace(/QaseExpRes:\s*:?\s*.*?(?=QaseData:|$)/, '')
-        .replace(/QaseData:\s*:?\s*.*/, '')
+        .replace(/TidenExpRes:\s*:?\s*.*?(?=TidenData:|$)/, '')
+        .replace(/TidenData:\s*:?\s*.*/, '')
         .trim();
     }
   }

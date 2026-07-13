@@ -5,9 +5,8 @@ import {
   EnvApiEnum, EnvBatchEnum,
   EnvEnum,
   EnvLocalEnum,
-  EnvPlanEnum,
   EnvRunEnum,
-  EnvTestOpsEnum, 
+  EnvTidenEnum,
   EnvConfigurationsEnum,
   EnvLoggingEnum,
 } from './env-enum';
@@ -24,12 +23,12 @@ export const envValidationSchema: JSONSchemaType<EnvType> = {
   properties: {
     [EnvEnum.mode]: {
       type: 'string',
-      enum: [ModeEnum.report, ModeEnum.testops, ModeEnum.testops_multi, ModeEnum.off],
+      enum: [ModeEnum.report, ModeEnum.tiden, ModeEnum.off],
       nullable: true,
     },
     [EnvEnum.fallback]: {
       type: 'string',
-      enum: [ModeEnum.report, ModeEnum.testops, ModeEnum.testops_multi, ModeEnum.off],
+      enum: [ModeEnum.report, ModeEnum.tiden, ModeEnum.off],
       nullable: true,
     },
     [EnvEnum.debug]: {
@@ -53,24 +52,20 @@ export const envValidationSchema: JSONSchemaType<EnvType> = {
       nullable: true,
     },
 
-    [EnvTestOpsEnum.project]: {
+    [EnvTidenEnum.product]: {
       type: 'string',
       nullable: true,
     },
-    [EnvTestOpsEnum.uploadAttachments]: {
+    [EnvTidenEnum.uploadAttachments]: {
       type: 'boolean',
       nullable: true,
     },
-    [EnvTestOpsEnum.defect]: {
+    [EnvTidenEnum.defect]: {
       type: 'boolean',
       nullable: true,
     },
-    [EnvTestOpsEnum.statusFilter]: {
+    [EnvTidenEnum.statusFilter]: {
       type: 'string',
-      nullable: true,
-    },
-    [EnvTestOpsEnum.showPublicReportLink]: {
-      type: 'boolean',
       nullable: true,
     },
 
@@ -78,7 +73,7 @@ export const envValidationSchema: JSONSchemaType<EnvType> = {
       type: 'string',
       nullable: true,
     },
-    [EnvApiEnum.host]: {
+    [EnvApiEnum.baseUrl]: {
       type: 'string',
       nullable: true,
     },
@@ -99,17 +94,8 @@ export const envValidationSchema: JSONSchemaType<EnvType> = {
       type: 'boolean',
       nullable: true,
     },
-    [EnvRunEnum.tags]: {
+    [EnvRunEnum.branch]: {
       type: 'string',
-      nullable: true,
-    },
-    [EnvRunEnum.externalLink]: {
-      type: 'string',
-      nullable: true,
-    },
-
-    [EnvPlanEnum.id]: {
-      type: 'number',
       nullable: true,
     },
 
@@ -120,10 +106,6 @@ export const envValidationSchema: JSONSchemaType<EnvType> = {
 
     [EnvConfigurationsEnum.values]: {
       type: 'string',
-      nullable: true,
-    },
-    [EnvConfigurationsEnum.createIfNotExists]: {
-      type: 'boolean',
       nullable: true,
     },
 

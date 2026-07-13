@@ -51,11 +51,11 @@ interface SerializedResult {
   relations: unknown;
   muted: boolean;
   message: string | null;
-  testops_id?: unknown;
+  case_id?: unknown;
   group_params?: unknown;
   run_id?: unknown;
   author?: unknown;
-  testops_project_mapping?: unknown;
+  project_case_mapping?: unknown;
   preparedAttachments?: unknown;
 }
 
@@ -205,10 +205,10 @@ describe('ReportReporter', () => {
   });
 
   describe('serialization transformation', () => {
-    it('should serialize testops_id as testops_ids array when single number', async () => {
-      const testResult = new TestResultType('Test with single testops_id');
+    it('should serialize case_id as testops_ids array when single number', async () => {
+      const testResult = new TestResultType('Test with single case_id');
       testResult.id = 't1';
-      testResult.testops_id = 42;
+      testResult.case_id = 42;
       testResult.execution.status = TestStatusEnum.passed;
       reporter['results'] = [testResult];
 
@@ -216,13 +216,13 @@ describe('ReportReporter', () => {
 
       const serialized = writer.writeTestResult.mock.calls[0]?.[0] as unknown as SerializedResult;
       expect(serialized.testops_ids).toEqual([42]);
-      expect(serialized.testops_id).toBeUndefined();
+      expect(serialized.case_id).toBeUndefined();
     });
 
-    it('should serialize testops_id as testops_ids when already array', async () => {
-      const testResult = new TestResultType('Test with array testops_id');
+    it('should serialize case_id as testops_ids when already array', async () => {
+      const testResult = new TestResultType('Test with array case_id');
       testResult.id = 't2';
-      testResult.testops_id = [1, 2, 3];
+      testResult.case_id = [1, 2, 3];
       testResult.execution.status = TestStatusEnum.passed;
       reporter['results'] = [testResult];
 
@@ -230,13 +230,13 @@ describe('ReportReporter', () => {
 
       const serialized = writer.writeTestResult.mock.calls[0]?.[0] as unknown as SerializedResult;
       expect(serialized.testops_ids).toEqual([1, 2, 3]);
-      expect(serialized.testops_id).toBeUndefined();
+      expect(serialized.case_id).toBeUndefined();
     });
 
-    it('should serialize testops_id as testops_ids null when null', async () => {
-      const testResult = new TestResultType('Test with null testops_id');
+    it('should serialize case_id as testops_ids null when null', async () => {
+      const testResult = new TestResultType('Test with null case_id');
       testResult.id = 't3';
-      testResult.testops_id = null;
+      testResult.case_id = null;
       testResult.execution.status = TestStatusEnum.passed;
       reporter['results'] = [testResult];
 
@@ -244,7 +244,7 @@ describe('ReportReporter', () => {
 
       const serialized = writer.writeTestResult.mock.calls[0]?.[0] as unknown as SerializedResult;
       expect(serialized.testops_ids).toBeNull();
-      expect(serialized.testops_id).toBeUndefined();
+      expect(serialized.case_id).toBeUndefined();
     });
 
     it('should serialize group_params as param_groups array of arrays', async () => {
@@ -353,7 +353,7 @@ describe('ReportReporter', () => {
       testResult.execution.status = TestStatusEnum.passed;
       testResult.run_id = 42;
       testResult.author = 'test-author';
-      testResult.testops_project_mapping = { proj1: [1, 2] };
+      testResult.project_case_mapping = { proj1: [1, 2] };
       testResult.preparedAttachments = ['att1', 'att2'];
 
       reporter['results'] = [testResult];
@@ -363,7 +363,7 @@ describe('ReportReporter', () => {
 
       expect(serialized.run_id).toBeUndefined();
       expect(serialized.author).toBeUndefined();
-      expect(serialized.testops_project_mapping).toBeUndefined();
+      expect(serialized.project_case_mapping).toBeUndefined();
       expect(serialized.preparedAttachments).toBeUndefined();
 
       // These fields should be present

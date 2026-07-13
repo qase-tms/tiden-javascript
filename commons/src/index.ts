@@ -1,4 +1,4 @@
-export * from './qase';
+export * from './tiden';
 export * from './config';
 export * from './env';
 export * from './formatter';

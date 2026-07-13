@@ -3,5 +3,4 @@ export {
   type InternalReporterInterface,
 } from './abstract-reporter';
 export { ReportReporter } from './report-reporter';
-export { TestOpsReporter } from './testops-reporter';
-export { TestOpsMultiReporter } from './testops-multi-reporter';
+export { RunReporter } from './run-reporter';

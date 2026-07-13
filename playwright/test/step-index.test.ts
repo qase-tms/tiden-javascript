@@ -1,7 +1,7 @@
 /* eslint-disable */
 import { describe, expect, it, beforeEach } from '@jest/globals';
 import { TestCase, TestStep } from '@playwright/test/reporter';
-import { Attachment } from 'qase-javascript-commons';
+import { Attachment } from '@tiden/reporter-commons';
 import { StepIndex } from '../src/step-index';
 
 describe('StepIndex', () => {

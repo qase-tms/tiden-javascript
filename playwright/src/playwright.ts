@@ -1,20 +1,15 @@
 import test from '@playwright/test';
 import { v4 as uuidv4 } from 'uuid';
-import { PlaywrightQaseReporter } from './reporter';
+import { PlaywrightTidenReporter } from './reporter';
 import * as path from 'path';
-import { getMimeTypes, formatTitleWithProjectMapping } from 'qase-javascript-commons';
-import { filterPositiveIds } from 'qase-javascript-commons/internal';
+import { getMimeTypes } from '@tiden/reporter-commons';
+import { filterPositiveIds } from '@tiden/reporter-commons/internal';
 
-export const ReporterContentType = 'application/qase.metadata+json';
+export const ReporterContentType = 'application/tiden.metadata+json';
 const defaultContentType = 'application/octet-stream';
-
-/** Project code -> test case IDs for multi-project (testops_multi) mode. */
-export type ProjectMapping = Record<string, number[]>;
 
 export interface MetadataMessage {
   ids?: number[];
-  /** Multi-project mapping: project code -> list of test case IDs. */
-  projectMapping?: ProjectMapping;
   title?: string;
   fields?: Record<string, string>;
   parameters?: Record<string, string>;
@@ -31,12 +26,12 @@ export interface MetadataMessage {
  * @param caseId
  * @param name
  * @example
- * test(qase(1, 'test'), async ({ page }) => {
+ * test(tiden(1, 'test'), async ({ page }) => {
  *  await page.goto('https://example.com');
  * });
  * @returns {string}
  */
-export const qase = (
+export const tiden = (
   caseId: number | string | number[] | string[],
   name: string,
 ): string => {
@@ -56,14 +51,14 @@ export const qase = (
       continue;
     }
 
-    console.log(`qase: qase ID ${id} should be a number`);
+    console.log(`tiden: ID ${id} should be a number`);
   }
 
-  const newName = `${name} (Qase ID: ${caseIds.join(',')})`;
+  const newName = `${name} (Tiden ID: ${caseIds.join(',')})`;
 
   const filteredIds = filterPositiveIds(ids);
   if (filteredIds.length > 0) {
-    PlaywrightQaseReporter.addIds(filteredIds, newName);
+    PlaywrightTidenReporter.addIds(filteredIds, newName);
   }
 
   return newName;
@@ -71,18 +66,18 @@ export const qase = (
 
 /**
  * Set IDs for the test case
- * Use `qase()` instead. This method is deprecated and kept for reverse compatibility.
+ * Use `tiden()` instead. This method is deprecated and kept for reverse compatibility.
  *
  * @param {number | number[]} value
  *
  * @example
  * test('test', async ({ page }) => {
- *    qase.id(1);
+ *    tiden.id(1);
  *    await page.goto('https://example.com');
  * });
  *
  */
-qase.id = function(value: number | number[]) {
+tiden.id = function(value: number | number[]) {
   const ids = filterPositiveIds(Array.isArray(value) ? value : [value]);
   if (ids.length > 0) {
     addMetadata({ ids });
@@ -91,59 +86,15 @@ qase.id = function(value: number | number[]) {
 };
 
 /**
- * Set multi-project mapping: project code -> test case IDs (for testops_multi mode).
- * @param mapping — e.g. { PROJ1: [1, 2], PROJ2: [3] }
- * @example
- * test('test', async ({ page }) => {
- *   qase.projects({ PROJ1: [1, 2], PROJ2: [3] });
- *   await page.goto('https://example.com');
- * });
- */
-qase.projects = function(mapping: ProjectMapping) {
-  const normalized: ProjectMapping = {};
-  for (const [code, ids] of Object.entries(mapping)) {
-    if (Array.isArray(ids) && ids.length > 0) {
-      const parsed = ids
-        .map((id) => (typeof id === 'number' ? id : parseInt(String(id), 10)))
-        .filter((n) => !Number.isNaN(n));
-      const filtered = filterPositiveIds(parsed);
-      if (filtered.length > 0) {
-        normalized[code] = filtered;
-      }
-    }
-  }
-  if (Object.keys(normalized).length > 0) {
-    addMetadata({ projectMapping: normalized });
-  }
-  return this;
-};
-
-/**
- * Return test title with multi-project markers (for testops_multi mode).
- * Use as the test name: test(qase.projectsTitle('Test name', { PROJ1: [1], PROJ2: [2] }), () => { ... }).
- * @param name — base test title
- * @param mapping — project code → test case IDs, e.g. { PROJ1: [1], PROJ2: [2] }
- */
-qase.projectsTitle = function(name: string, mapping: ProjectMapping): string {
-  const normalized: ProjectMapping = {};
-  for (const [code, ids] of Object.entries(mapping)) {
-    if (Array.isArray(ids) && ids.length > 0) {
-      normalized[code] = ids.map((id) => (typeof id === 'number' ? id : parseInt(String(id), 10))).filter((n) => !Number.isNaN(n));
-    }
-  }
-  return Object.keys(normalized).length > 0 ? formatTitleWithProjectMapping(name, normalized) : name;
-};
-
-/**
  * Set a title for the test case
  * @param {string} value
  * @example
  * test('test', async ({ page }) => {
- *    qase.title("Title");
+ *    tiden.title("Title");
  *    await page.goto('https://example.com');
  * });
  */
-qase.title = function(value: string) {
+tiden.title = function(value: string) {
   addMetadata({
     title: value,
   });
@@ -155,11 +106,11 @@ qase.title = function(value: string) {
  * @param {Record<string, string>[]} values
  * @example
  * test('test', async ({ page }) => {
- *    qase.fields({ 'severity': 'high', 'priority': 'medium' });
+ *    tiden.fields({ 'severity': 'high', 'priority': 'medium' });
  *    await page.goto('https://example.com');
  * });
  */
-qase.fields = function(values: Record<string, string>) {
+tiden.fields = function(values: Record<string, string>) {
   const stringRecord: Record<string, string> = {};
   for (const [key, value] of Object.entries(values)) {
     stringRecord[String(key)] = String(value);
@@ -172,17 +123,26 @@ qase.fields = function(values: Record<string, string>) {
 };
 
 /**
- * Set parameters for the test case
- * @param {Record<string, string>[]} values
+ * Set parameters for the test case.
+ *
+ * To group parameter combinations under a single test case, use `repeatEach` in
+ * your config and access the current repetition via `testInfo.repeatEachIndex`.
+ * Do not interpolate parameter values into the test title — each distinct title
+ * becomes a separate case in Tiden.
+ *
+ * @param {Record<string, string>} values
  * @example
- * for (const value of values) {
- *    test('test', async ({ page }) => {
- *      qase.parameters({ 'parameter': value });
- *      await page.goto('https://example.com');
- *    });
- * )
+ * // playwright.config.ts
+ * { name: 'search', testMatch: /search\.spec\.ts$/, repeatEach: 2 }
+ *
+ * // search.spec.ts
+ * const browsers = ['chromium', 'firefox'];
+ * test('search works', ({}, testInfo) => {
+ *   tiden.parameters({ browser: browsers[testInfo.repeatEachIndex] ?? browsers[0] });
+ *   // test logic...
+ * });
  */
-qase.parameters = function(values: Record<string, string>) {
+tiden.parameters = function(values: Record<string, string>) {
   const stringRecord: Record<string, string> = {};
   for (const [key, value] of Object.entries(values)) {
     stringRecord[String(key)] = String(value);
@@ -197,16 +157,25 @@ qase.parameters = function(values: Record<string, string>) {
 /**
  * Set group parameters for the test case.
  * All parameters will be grouped as a single entity.
- * @param {Record<string, string>[]} values
+ *
+ * To group parameter combinations under a single test case, use `repeatEach` in
+ * your config and access the current repetition via `testInfo.repeatEachIndex`.
+ * Do not interpolate parameter values into the test title — each distinct title
+ * becomes a separate case in Tiden.
+ *
+ * @param {Record<string, string>} values
  * @example
- * for (const value of values) {
- *    test('test', async ({ page }) => {
- *      qase.groupParameters({ 'parameter': value });
- *      await page.goto('https://example.com');
- *    });
- * )
+ * // playwright.config.ts
+ * { name: 'search', testMatch: /search\.spec\.ts$/, repeatEach: 2 }
+ *
+ * // search.spec.ts
+ * const configs = ['light', 'dark'];
+ * test('theme switching', ({}, testInfo) => {
+ *   tiden.groupParameters({ theme: configs[testInfo.repeatEachIndex] ?? configs[0] });
+ *   // test logic...
+ * });
  */
-qase.groupParameters = function(values: Record<string, string>) {
+tiden.groupParameters = function(values: Record<string, string>) {
   const stringRecord: Record<string, string> = {};
   for (const [key, value] of Object.entries(values)) {
     stringRecord[String(key)] = String(value);
@@ -223,13 +192,13 @@ qase.groupParameters = function(values: Record<string, string>) {
  * @param attach
  * @example
  * test('test', async ({ page }) => {
- *   qase.attach({ name: 'attachment.txt', content: 'Hello, world!', contentType: 'text/plain' });
- *   qase.attach({ paths: '/path/to/file'});
- *   qase.attach({ paths: ['/path/to/file', '/path/to/another/file']});
+ *   tiden.attach({ name: 'attachment.txt', content: 'Hello, world!', contentType: 'text/plain' });
+ *   tiden.attach({ paths: '/path/to/file'});
+ *   tiden.attach({ paths: ['/path/to/file', '/path/to/another/file']});
  *   await page.goto('https://example.com');
  *  });
  */
-qase.attach = function(attach: {
+tiden.attach = function(attach: {
   name?: string,
   paths?: string | string[],
   content?: Buffer | string,
@@ -254,14 +223,14 @@ qase.attach = function(attach: {
 };
 
 /**
- * Ignore the test case result in Qase
+ * Ignore the test case result in Tiden
  * @example
  * test('test', async ({ page }) => {
- *   qase.ignore();
+ *   tiden.ignore();
  *   await page.goto('https://example.com');
  * });
  */
-qase.ignore = function() {
+tiden.ignore = function() {
   addMetadata({
     ignore: true,
   });
@@ -273,11 +242,11 @@ qase.ignore = function() {
  * @param {string} value
  * @example
  * test('test', async ({ page }) => {
- *    qase.suite("Suite");
+ *    tiden.suite("Suite");
  *    await page.goto('https://example.com');
  * });
  */
-qase.suite = function(value: string) {
+tiden.suite = function(value: string) {
   addMetadata({
     suite: value,
   });
@@ -289,11 +258,11 @@ qase.suite = function(value: string) {
  * @param {string} value
  * @example
  * test('test', async ({ page }) => {
- *    qase.comment("Comment");
+ *    tiden.comment("Comment");
  *    await page.goto('https://example.com');
  * });
  */
-qase.comment = function(value: string) {
+tiden.comment = function(value: string) {
   addMetadata({
     comment: value,
   });
@@ -305,11 +274,11 @@ qase.comment = function(value: string) {
  * @param {...string} values
  * @example
  * test('test', async ({ page }) => {
- *    qase.tags('smoke', 'regression');
+ *    tiden.tags('smoke', 'regression');
  *    await page.goto('https://example.com');
  * });
  */
-qase.tags = function(...values: string[]) {
+tiden.tags = function(...values: string[]) {
   addMetadata({
     tags: values,
   });
@@ -327,21 +296,21 @@ qase.tags = function(...values: string[]) {
  * @param data — optional step data
  * @example
  * test('test', async ({ page }) => {
- *    await test.step(qase.step('action'), async () => {
+ *    await test.step(tiden.step('action'), async () => {
  *      await page.goto('https://example.com');
  *    });
- *    await test.step(qase.step('action', 'expected result', 'data'), async () => {
+ *    await test.step(tiden.step('action', 'expected result', 'data'), async () => {
  *      await page.goto('https://example.com');
  *    });
  * });
  */
-qase.step = function(action: string, expectedResult?: string, data?: string): string {
-  return `${action} QaseExpRes:${expectedResult ? `: ${expectedResult}` : ''} QaseData:${data ? `: ${data}` : ''}`;
+tiden.step = function(action: string, expectedResult?: string, data?: string): string {
+  return `${action} TidenExpRes:${expectedResult ? `: ${expectedResult}` : ''} TidenData:${data ? `: ${data}` : ''}`;
 };
 
 
 const addMetadata = (metadata: MetadataMessage): void => {
-  test.info().attach('qase-metadata.json', {
+  test.info().attach('tiden-metadata.json', {
     contentType: ReporterContentType,
     body: Buffer.from(JSON.stringify(metadata), 'utf8'),
   }).catch(() => {/**/

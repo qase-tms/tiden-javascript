@@ -1,7 +1,7 @@
 import { ModeEnum } from './mode-enum';
 
 import { DriverEnum, FsWriterOptionsType } from '../writer';
-import { TestOpsOptionsType, TestOpsMultiConfigType } from '../models/config/TestOpsOptionsType';
+import { TidenOptionsType } from '../models/config/TidenOptionsType';
 
 type RecursivePartial<T> = {
   [K in keyof T]?: RecursivePartial<T[K]> | undefined;
@@ -37,11 +37,9 @@ export type OptionsType = {
   rootSuite?: string | undefined;
   statusMapping?: Record<string, string> | undefined;
   logging?: RecursivePartial<LoggingOptionsType> | undefined;
-  testops?:
-    | RecursivePartial<TestOpsOptionsType>
+  tiden?:
+    | RecursivePartial<TidenOptionsType>
     | undefined;
-  /** Multi-project configuration (used when mode is testops_multi). */
-  testops_multi?: TestOpsMultiConfigType | undefined;
   report?: RecursivePartial<AdditionalReportOptionsType> | undefined;
   profilers?: string[] | undefined;
   networkProfiler?: {
@@ -49,8 +47,3 @@ export type OptionsType = {
     track_on_fail?: boolean | undefined;
   } | undefined;
 };
-
-// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
-export type FrameworkOptionsType<F extends string, O> = {
-  framework?: Partial<Record<F, O>>
-}

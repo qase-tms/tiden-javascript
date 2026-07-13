@@ -1,7 +1,7 @@
 /* eslint-disable */
 import { describe, expect, it, beforeEach } from '@jest/globals';
 import { TestStep } from '@playwright/test/reporter';
-import { StepStatusEnum, StepType } from 'qase-javascript-commons';
+import { StepStatusEnum, StepType } from '@tiden/reporter-commons';
 import { StepConverter } from '../src/step-converter';
 import { StepIndex } from '../src/step-index';
 

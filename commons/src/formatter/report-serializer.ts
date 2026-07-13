@@ -8,14 +8,14 @@ export interface ReportSerializerInterface {
 }
 
 /**
- * Transforms internal TestResultType / TestStepType into Qase Report
+ * Transforms internal TestResultType / TestStepType into the Tiden Report
  * spec-compliant JSON (RSLT-01/02, STEP-01/02/03 rules).
  *
  * Pure: no I/O, no logger, no state. Suitable for golden-testing.
  */
 export class ReportSerializer implements ReportSerializerInterface {
   serializeResult(result: TestResultType): Record<string, unknown> {
-    const testopsIds = this.transformTestopsIds(result.testops_id);
+    const caseIds = this.transformCaseIds(result.case_id);
     const paramGroups = this.transformGroupParams(result.group_params);
 
     return {
@@ -28,7 +28,9 @@ export class ReportSerializer implements ReportSerializerInterface {
       steps: result.steps.map((s) => this.serializeStep(s)),
       params: result.params,
       param_groups: paramGroups,
-      testops_ids: testopsIds,
+      // Wire field name mirrors api.v1.ResultCreate.testops_ids — kept as-is
+      // for report/API compatibility; see client/models/tiden-result.ts.
+      testops_ids: caseIds,
       relations: result.relations,
       muted: result.muted,
       message: result.message,
@@ -59,11 +61,11 @@ export class ReportSerializer implements ReportSerializerInterface {
     };
   }
 
-  private transformTestopsIds(testopsId: unknown): number[] | null {
-    if (testopsId === null) return null;
-    return Array.isArray(testopsId)
-      ? (testopsId as number[])
-      : [testopsId as number];
+  private transformCaseIds(caseId: unknown): number[] | null {
+    if (caseId === null) return null;
+    return Array.isArray(caseId)
+      ? (caseId as number[])
+      : [caseId as number];
   }
 
   private transformGroupParams(

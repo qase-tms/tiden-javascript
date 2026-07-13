@@ -1,12 +1,11 @@
 import { EnvType } from './env-type';
 import {
   EnvEnum,
-  EnvTestOpsEnum,
+  EnvTidenEnum,
   EnvApiEnum,
   EnvRunEnum,
   EnvLocalEnum,
-  EnvPlanEnum, 
-  EnvBatchEnum, 
+  EnvBatchEnum,
   EnvConfigurationsEnum,
   EnvLoggingEnum,
 } from './env-enum';
@@ -14,7 +13,6 @@ import {
 import { DriverEnum } from '../writer';
 import { ConfigType } from '../config';
 import { FormatEnum } from '../writer/driver-enum';
-import { ExternalLinkType } from '../models/config/TestOpsOptionsType';
 
 /**
  * @param {EnvType} env
@@ -26,7 +24,7 @@ export const envToConfig = (env: EnvType): ConfigType => ({
   environment: env[EnvEnum.environment],
   captureLogs: env[EnvEnum.captureLogs],
   rootSuite: env[EnvEnum.rootSuite],
-  statusMapping: env[EnvEnum.statusMapping] ? 
+  statusMapping: env[EnvEnum.statusMapping] ?
     Object.fromEntries(
       env[EnvEnum.statusMapping].split(',').map(item => {
         const [from, to] = item.split('=');
@@ -34,15 +32,14 @@ export const envToConfig = (env: EnvType): ConfigType => ({
       })
     ) : undefined,
 
-  testops: {
-    project: env[EnvTestOpsEnum.project],
-    uploadAttachments: env[EnvTestOpsEnum.uploadAttachments],
-    statusFilter: env[EnvTestOpsEnum.statusFilter]?.split(',').map(status => status.trim()) ?? undefined,
-    showPublicReportLink: env[EnvTestOpsEnum.showPublicReportLink],
+  tiden: {
+    product: env[EnvTidenEnum.product],
+    uploadAttachments: env[EnvTidenEnum.uploadAttachments],
+    statusFilter: env[EnvTidenEnum.statusFilter]?.split(',').map(status => status.trim()) ?? undefined,
 
     api: {
       token: env[EnvApiEnum.token],
-      host: env[EnvApiEnum.host],
+      baseUrl: env[EnvApiEnum.baseUrl],
     },
 
     run: {
@@ -50,43 +47,18 @@ export const envToConfig = (env: EnvType): ConfigType => ({
       title: env[EnvRunEnum.title],
       description: env[EnvRunEnum.description],
       complete: env[EnvRunEnum.complete],
-      tags: env[EnvRunEnum.tags]?.split(',').map(tag => tag.trim()) ?? [],
-      externalLink: env[EnvRunEnum.externalLink] ? (() => {
-        try {
-          const externalLinkValue = env[EnvRunEnum.externalLink];
-          if (!externalLinkValue) return undefined;
-          
-          const parsed = JSON.parse(externalLinkValue) as { type: string; link: string };
-          
-          // Validate that type is a valid ExternalLinkType value
-          if (parsed.type !== 'jiraCloud' && parsed.type !== 'jiraServer') {
-            return undefined;
-          }
-          
-          return {
-            type: parsed.type as ExternalLinkType,
-            link: parsed.link,
-          };
-        } catch {
-          return undefined;
-        }
-      })() : undefined,
-    },
-
-    plan: {
-      id: env[EnvPlanEnum.id],
+      branch: env[EnvRunEnum.branch],
     },
 
     batch: {
       size: env[EnvBatchEnum.size],
     },
-    defect: env[EnvTestOpsEnum.defect],
+    defect: env[EnvTidenEnum.defect],
     configurations: env[EnvConfigurationsEnum.values] ? {
       values: env[EnvConfigurationsEnum.values].split(',').map(item => {
         const [name, value] = item.split('=');
         return { name: (name ?? '').trim(), value: value ? value.trim() : '' };
       }),
-      createIfNotExists: env[EnvConfigurationsEnum.createIfNotExists],
     } : undefined,
   },
 

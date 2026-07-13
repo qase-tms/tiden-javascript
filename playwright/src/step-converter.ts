@@ -3,8 +3,8 @@ import {
   StepStatusEnum,
   StepType,
   TestStepType,
-} from 'qase-javascript-commons';
-import { extractAndCleanStep } from 'qase-javascript-commons/internal';
+} from '@tiden/reporter-commons';
+import { extractAndCleanStep } from '@tiden/reporter-commons/internal';
 import { v4 as uuidv4 } from 'uuid';
 import { StepIndex } from './step-index';
 

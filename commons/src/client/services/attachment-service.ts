@@ -1,5 +1,5 @@
-import { AxiosError } from 'axios';
-import { AttachmentsApi } from 'qase-api-client';
+import { AxiosError, AxiosInstance } from 'axios';
+import FormData from 'form-data';
 import { createReadStream, statSync } from 'fs';
 import { Readable } from 'stream';
 import { Attachment } from '../../models';
@@ -11,21 +11,49 @@ const MAX_FILE_SIZE = 32 * 1024 * 1024; // 32 MB per file
 const MAX_REQUEST_SIZE = 128 * 1024 * 1024; // 128 MB per request
 const MAX_FILES_PER_REQUEST = 20; // 20 files per request
 
+const BASE64_PATTERN = /^[A-Za-z0-9+/=]+$/;
+// The round-trip check only catches malformed/misplaced padding: ANY
+// complete, unpadded base64-alphabet string round-trips regardless of
+// length, so a plain word like "abcd" is indistinguishable from genuine
+// base64 by round-trip alone. This length floor is therefore the sole
+// heuristic separating short plain words from base64; 8 (two full groups)
+// keeps common words as utf8 at the cost of misreading genuinely
+// base64-encoded content shorter than 6 bytes as literal text — an
+// acceptable trade-off since real attachments are far larger.
+const MIN_BASE64_LENGTH = 8;
+
+/**
+ * Heuristically decide whether a string is base64-encoded content rather
+ * than plain utf8 text. Requires ALL of: base64-alphabet-only characters,
+ * a length that's a multiple of 4, a minimum length (see MIN_BASE64_LENGTH),
+ * and a decode/re-encode round-trip match (catches non-canonical padding).
+ */
+function looksLikeBase64(value: string): boolean {
+  if (!BASE64_PATTERN.test(value)) return false;
+  if (value.length % 4 !== 0) return false;
+  if (value.length < MIN_BASE64_LENGTH) return false;
+
+  const normalize = (s: string): string => s.replace(/=+$/, '');
+  const reencoded = Buffer.from(value, 'base64').toString('base64');
+  return normalize(reencoded) === normalize(value);
+}
+
 interface AttachmentData {
   name: string;
   value: Buffer | Readable;
+  contentType?: string;
 }
 
 export class AttachmentService {
   constructor(
     private readonly logger: LoggerInterface,
-    private readonly attachmentClient: AttachmentsApi,
+    private readonly http: AxiosInstance,
   ) {}
 
   async uploadAttachment(projectCode: string, attachment: Attachment): Promise<string> {
     try {
       const data = this.prepareAttachmentData(attachment);
-      const response = await this.attachmentClient.uploadAttachment(projectCode, [data]);
+      const response = await this.postAttachmentBatch(projectCode, [data]);
       return response.data.result?.[0]?.hash ?? '';
     } catch (error) {
       throw processError(error, 'Error on uploading attachment');
@@ -148,6 +176,27 @@ export class AttachmentService {
     return batches;
   }
 
+  /** POST one multipart batch to Tiden. Returns the upstream-shaped
+   *  `{data: {result: [{hash}]}}` envelope so callers stay unchanged
+   *  (Tiden's response body is `{status, result: [{hash, ...}]}`). */
+  private async postAttachmentBatch(
+    projectCode: string,
+    data: AttachmentData[],
+  ): Promise<{ data: { result?: { hash?: string }[] } }> {
+    const form = new FormData();
+    for (const item of data) {
+      form.append('file[]', item.value, {
+        filename: item.name,
+        ...(item.contentType ? { contentType: item.contentType } : {}),
+      });
+    }
+    const response = await this.http.post<{ result?: { hash?: string }[] }>(
+      `/v1/products/${projectCode}/attachments:upload`, form,
+      { headers: form.getHeaders(), maxBodyLength: Infinity, maxContentLength: Infinity },
+    );
+    return { data: response.data };
+  }
+
   private async uploadWithRetry(
     projectCode: string,
     data: AttachmentData[],
@@ -160,7 +209,7 @@ export class AttachmentService {
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
-        return await this.attachmentClient.uploadAttachment(projectCode, data);
+        return await this.postAttachmentBatch(projectCode, data);
       } catch (error) {
         lastError = error;
 
@@ -224,7 +273,7 @@ export class AttachmentService {
         attachment.size = stats.size;
       } else if (attachment.content) {
         if (typeof attachment.content === 'string') {
-          if (attachment.content.match(/^[A-Za-z0-9+/=]+$/)) {
+          if (looksLikeBase64(attachment.content)) {
             attachment.size = Buffer.from(attachment.content, 'base64').length;
           } else {
             attachment.size = Buffer.byteLength(attachment.content, 'utf8');
@@ -244,18 +293,24 @@ export class AttachmentService {
   }
 
   private prepareAttachmentData(attachment: Attachment): AttachmentData {
+    const contentType = typeof attachment.mime_type === 'string' && attachment.mime_type.length > 0
+      ? attachment.mime_type
+      : undefined;
+
     if (attachment.file_path) {
       return {
         name: attachment.file_name,
         value: createReadStream(attachment.file_path),
+        ...(contentType ? { contentType } : {}),
       };
     }
 
     return {
       name: attachment.file_name,
       value: typeof attachment.content === 'string'
-        ? Buffer.from(attachment.content, attachment.content.match(/^[A-Za-z0-9+/=]+$/) ? 'base64' : undefined)
+        ? Buffer.from(attachment.content, looksLikeBase64(attachment.content) ? 'base64' : 'utf8')
         : attachment.content,
+      ...(contentType ? { contentType } : {}),
     };
   }
 }

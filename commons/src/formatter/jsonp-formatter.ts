@@ -33,6 +33,6 @@ export class JsonpFormatter implements FormatterInterface {
       this.space,
     );
 
-    return `qaseJsonp(${json});`;
+    return `tidenJsonp(${json});`;
   }
 }

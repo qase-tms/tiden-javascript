@@ -35,11 +35,11 @@ describe('filterPositiveIds', () => {
     expect(log).toHaveBeenCalledTimes(2);
     expect(log).toHaveBeenNthCalledWith(
       1,
-      'Warning: Qase test case ID must be greater than 0, got "0". This ID will be ignored and the result will be sent without it.',
+      'Warning: Tiden test case ID must be greater than 0, got "0". This ID will be ignored and the result will be sent without it.',
     );
     expect(log).toHaveBeenNthCalledWith(
       2,
-      'Warning: Qase test case ID must be greater than 0, got "-3". This ID will be ignored and the result will be sent without it.',
+      'Warning: Tiden test case ID must be greater than 0, got "-3". This ID will be ignored and the result will be sent without it.',
     );
   });
 
@@ -58,7 +58,7 @@ describe('filterPositiveIds', () => {
       filterPositiveIds([1, 0, 2]);
       expect(warnSpy).toHaveBeenCalledTimes(1);
       expect(warnSpy).toHaveBeenCalledWith(
-        '[qase] Warning: Qase test case ID must be greater than 0, got "0". This ID will be ignored and the result will be sent without it.',
+        '[tiden] Warning: Tiden test case ID must be greater than 0, got "0". This ID will be ignored and the result will be sent without it.',
       );
     } finally {
       warnSpy.mockRestore();

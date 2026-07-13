@@ -86,6 +86,11 @@ CLAUDE.md
 # Example package locks (managed by root workspace)
 examples/**/package-lock.json
 
+# Playwright example run artifacts
+examples/**/test-results/
+examples/**/playwright-report/
+examples/**/blob-report/
+
 # Integration test report output
 build/
 **/build/report/

@@ -85,9 +85,7 @@ export function getHostInfo(framework: string, reporterName: string): HostData {
       packageManager: getNpmVersion(),
       framework: getPackageVersion(framework) ?? '',
       reporter: getPackageVersion(reporterName) ?? '',
-      commons: getPackageVersion('qase-javascript-commons') ?? '',
-      apiClientV1: getPackageVersion('qase-api-client') ?? '',
-      apiClientV2: getPackageVersion('qase-api-v2-client') ?? '',
+      commons: getPackageVersion('@tiden/reporter-commons') ?? '',
     };
   } catch (error) {
     return {
@@ -101,8 +99,6 @@ export function getHostInfo(framework: string, reporterName: string): HostData {
       framework: '',
       reporter: '',
       commons: '',
-      apiClientV1: '',
-      apiClientV2: '',
     };
   }
 }
