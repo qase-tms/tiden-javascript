@@ -1,0 +1,42 @@
+# Component
+
+
+## Properties
+
+Name | Type | Description | Notes
+------------ | ------------- | ------------- | -------------
+**id** | **string** |  | [optional] [default to undefined]
+**productId** | **string** |  | [optional] [default to undefined]
+**name** | **string** |  | [optional] [default to undefined]
+**description** | **string** |  | [optional] [default to undefined]
+**createdAt** | **string** |  | [optional] [default to undefined]
+**updatedAt** | **string** |  | [optional] [default to undefined]
+**branchId** | **string** |  | [optional] [default to undefined]
+**sourceId** | **string** |  | [optional] [default to undefined]
+**branchStatus** | **string** |  | [optional] [default to undefined]
+**repository** | **string** | Shift-left v3: repository-aware components.  canonical repo id (e.g. \&quot;github.com/qase-tms/tiden-cli\&quot;); unset &#x3D; unscoped/main repo | [optional] [default to undefined]
+**componentPaths** | **Array&lt;string&gt;** |  | [optional] [default to undefined]
+**repositoryAliases** | **Array&lt;string&gt;** |  | [optional] [default to undefined]
+
+## Example
+
+```typescript
+import { Component } from '@tiden/api-client';
+
+const instance: Component = {
+    id,
+    productId,
+    name,
+    description,
+    createdAt,
+    updatedAt,
+    branchId,
+    sourceId,
+    branchStatus,
+    repository,
+    componentPaths,
+    repositoryAliases,
+};
+```
+
+[[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
