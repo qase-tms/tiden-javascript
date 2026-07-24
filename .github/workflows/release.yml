@@ -1,7 +1,9 @@
 # Release
 #
 # Tag-triggered npm publish for the tiden-javascript workspaces: builds,
-# tests, then publishes `commons` before `playwright` (which depends on it).
+# tests, then publishes `commons` before `playwright` (which depends on it),
+# plus `api-client` (the generated OpenAPI client; no dependency on the
+# other two, so publish order relative to them doesn't matter).
 # Push a `vX.Y.Z` tag matching the versions already set in each package's
 # package.json to publish.
 #
@@ -10,9 +12,10 @@
 # publish token and attaches provenance to each published package.
 #
 # Manual prerequisite (one-time, done by the npm `@tiden` scope owner): add
-# this repo (qase-tms/tiden-javascript) as a Trusted Publisher for both
-# @tiden/reporter-commons and @tiden/playwright-reporter under each package's
-# npm "Trusted Publishers" settings, before the first tag push.
+# this repo (qase-tms/tiden-javascript) as a Trusted Publisher for
+# @tiden/reporter-commons, @tiden/playwright-reporter, and @tiden/api-client
+# under each package's npm "Trusted Publishers" settings, before the first
+# tag push that includes it.
 name: Release
 
 on:
@@ -40,7 +43,7 @@ jobs:
       - name: Verify tag matches package versions
         run: |
           TAG="${GITHUB_REF_NAME#v}"
-          for pkg in commons playwright; do
+          for pkg in commons playwright api-client; do
             V=$(node -p "require('./$pkg/package.json').version")
             if [ "$V" != "$TAG" ]; then
               echo "::error::$pkg is at version $V but the tag is v$TAG — bump package versions before tagging"
@@ -51,3 +54,4 @@ jobs:
       - run: npm run test -ws --if-present
       - run: npm publish -w commons --provenance --access public
       - run: npm publish -w playwright --provenance --access public
+      - run: npm publish -w api-client --provenance --access public
