@@ -30,6 +30,9 @@ const emptyMeta = (): MetadataShape => ({
   attachments: [],
 });
 
+// api.v1.ResultCreate.id is an idempotency key the API validates as a UUID.
+const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 describe('ResultBuilder.build', () => {
   it('builds a passed result with default execution shape', () => {
     const result = ResultBuilder.build({
@@ -43,11 +46,51 @@ describe('ResultBuilder.build', () => {
     expect(result.execution.start_time).toBe(1_700_000_000);
     expect(result.execution.end_time).toBe(1_700_000_000.1);
     expect(result.execution.duration).toBe(100);
-    expect(result.id).toBe('test-id');
     // Identity is commons' generateSignature() over the structural path,
     // matching the Playwright reporter — not the raw Vitest fullName.
     expect(result.signature).toBe('suite::test');
     expect(result.steps).toEqual([]);
+  });
+
+  describe('id (API idempotency key)', () => {
+    it('reports a generated UUID, never Vitest\'s own testCase.id', () => {
+      const result = ResultBuilder.build({
+        testCase: mkTestCase({ id: '1971115177_8_1' }),
+        metadata: undefined,
+        currentSuite: undefined,
+        profilerSteps: [],
+      });
+      // Regression guard: the API rejects a non-UUID id with
+      // INVALID_RESULT_ID, which silently drops every result in the run.
+      expect(result.id).toMatch(UUID_V4);
+      expect(result.id).not.toBe('1971115177_8_1');
+    });
+
+    it('generates a distinct id per built result', () => {
+      const a = ResultBuilder.build({
+        testCase: mkTestCase(), metadata: undefined, currentSuite: undefined, profilerSteps: [],
+      });
+      const b = ResultBuilder.build({
+        testCase: mkTestCase(), metadata: undefined, currentSuite: undefined, profilerSteps: [],
+      });
+      expect(a.id).not.toBe(b.id);
+    });
+
+    it('uses UUIDs for internal step and attachment ids too', () => {
+      const meta = emptyMeta();
+      meta.steps = [{ name: 'do thing', status: 'end' }];
+      meta.attachments = [{ name: 'a.txt', content: 'hello', contentType: 'text/plain' }];
+      const result = ResultBuilder.build({
+        testCase: mkTestCase(),
+        metadata: meta,
+        currentSuite: undefined,
+        profilerSteps: [],
+      });
+      // Neither reaches the wire (commons rebuilds steps; attachments upload by
+      // name/content), but they must not regress to truncated Math.random().
+      expect(result.steps[0]?.id).toMatch(UUID_V4);
+      expect(result.attachments[0]?.id).toMatch(UUID_V4);
+    });
   });
 
   describe('signature (case identity)', () => {

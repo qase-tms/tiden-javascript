@@ -9,6 +9,7 @@ import {
   parseTidenIdFromTitle,
 } from '@tiden/reporter-commons';
 import { extractAndCleanStep } from '@tiden/reporter-commons/internal';
+import { v4 as uuidv4 } from 'uuid';
 import { MetadataShape } from './metadataAccumulator';
 
 export interface BuildArgs {
@@ -29,7 +30,12 @@ export class ResultBuilder {
 
     const testTitle = metadata?.title ?? (parsed.cleanedTitle.replace(/\s+/g, ' ').trim() || testCase.name);
     const testResult = new TestResultType(testTitle);
-    testResult.id = testCase.id;
+    // The reported id is the API's idempotency key (api.v1.ResultCreate.id) and
+    // is validated as a UUID, so it must be generated — same as the Playwright
+    // reporter (playwright/src/result-builder.ts). Vitest's own `testCase.id`
+    // ("1971115177_8_1") is NOT a UUID; it stays a purely internal key, used by
+    // MetadataAccumulator to correlate annotations with this test.
+    testResult.id = uuidv4();
 
     // Multi-project reporting was dropped in the Tiden fork: the internal
     // TestResultType model still carries project_case_mapping, and it stays at
@@ -123,7 +129,11 @@ export class ResultBuilder {
       if (metadata.steps.length > 0) {
         testResult.steps = metadata.steps.map((step) => {
           const stepObj = new TestStepType();
-          stepObj.id = Math.random().toString(36).substr(2, 9);
+          // Step ids are internal only — commons' ResultTransformer rebuilds
+          // every step for the wire (TidenResultStep has no id field), so this
+          // is just a local handle. uuidv4() to match the Playwright reporter's
+          // step-converter instead of a truncated Math.random().
+          stepObj.id = uuidv4();
           const stepData = extractAndCleanStep(step.name);
           stepObj.data = {
             action: stepData.cleanedString,
@@ -142,7 +152,11 @@ export class ResultBuilder {
             file_path: attachment.path ?? null,
             content: attachment.content ?? '',
             size: attachment.content ? Buffer.byteLength(attachment.content) : 0,
-            id: Math.random().toString(36).substr(2, 9),
+            // Also internal only: attachments go to the API through
+            // AttachmentService, which uploads by name/content/path and reports
+            // back a hash — this id is never sent. uuidv4() for consistency
+            // with the Playwright reporter's metadata-extractor.
+            id: uuidv4(),
           };
           return attachmentModel;
         });

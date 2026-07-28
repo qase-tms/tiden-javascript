@@ -104,13 +104,31 @@ Environment variables win last so CI can always override committed config (e.g. 
 }
 ```
 
-- `mode` — `report | tiden | off`. Use `tiden` to report to Tiden's Test Runs API.
+- `mode` — see [Modes](#modes) below. **`tiden` is the one that uploads.**
 - `tiden.product` — your Tiden product ID.
 - `tiden.api.token` / `tiden.api.baseUrl` — Tiden API credentials and endpoint (full URL, e.g.
   `https://api.tiden.example`, not just a host).
 - `tiden.run.complete` — whether this process should mark the run complete when the suite
   finishes. **Defaults to `true`** if omitted; set `false` for sharded CI so only the final job
   completes the run — see [Sharded CI](#sharded-ci) below.
+
+### Modes
+
+`mode` / `TIDEN_MODE` takes exactly three values, and only one of them uploads anything:
+
+| Value | What it does |
+|---|---|
+| `tiden` | **Uploads results to Tiden's Test Runs API.** This is what you want in CI. Requires `tiden.product` + `tiden.api.token` (+ `baseUrl`). |
+| `report` | Writes a local report file instead of uploading — default `build/tiden-report/`, tunable with `report.connections.local.{path,format}`. Nothing reaches Tiden. |
+| `off` | Reporter is inert: no upload, no file. |
+
+> [!WARNING]
+> `report` does **not** mean "report to Tiden" — it means "write a report file locally". Picking
+> it when you meant `tiden` produces a green run with no data in Tiden. Set `TIDEN_MODE=tiden`.
+
+`fallback` / `TIDEN_FALLBACK` takes the same values and is used only if the primary mode fails to
+initialize (e.g. `mode: 'tiden'` with `fallback: 'report'` keeps results on disk when the API is
+unreachable).
 
 ### Environment variables
 
@@ -120,7 +138,7 @@ override both the config file and any explicit `vitest.config.ts` reporter optio
 | Config key                        | Environment variable                | Description                                                                    |
 |------------------------------------|--------------------------------------|----------------------------------------------------------------------------------|
 | **Common**                         |                                       |                                                                                    |
-| `mode`                              | `TIDEN_MODE`                         | Reporter mode: `report`, `tiden`, or `off`                                       |
+| `mode`                              | `TIDEN_MODE`                         | `tiden` = upload to Tiden, `report` = local file only, `off` = inert — see [Modes](#modes) |
 | `fallback`                          | `TIDEN_FALLBACK`                     | Mode to fall back to if the primary mode fails to initialize                     |
 | `debug`                             | `TIDEN_DEBUG`                        | Enable debug logging                                                             |
 | `environment`                       | `TIDEN_ENVIRONMENT`                  | Environment slug attached to the run (auto-created server-side if unknown)       |

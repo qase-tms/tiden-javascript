@@ -11,6 +11,15 @@ Initial Tiden fork release of `@tiden/vitest-reporter`.
 - Public API renamed to the Tiden vocabulary: `VitestTidenReporter` / `VitestTidenOptionsType`,
   `withTiden`, `addTidenId`, `Tiden <field>:` annotation messages, `(Tiden ID: n)` title markers,
   `TidenExpRes:` / `TidenData:` step markers.
+- **Fixed: results were rejected by the API.** Upstream assigns Vitest's own `testCase.id`
+  (e.g. `1971115177_8_1`) to the reported result `id`, but that field is
+  `api.v1.ResultCreate.id` — an idempotency key the API validates as a UUID — so every result in
+  a run was rejected with `INVALID_RESULT_ID` and the run stayed at `total=0`. Now generated with
+  `uuidv4()`, matching the Playwright reporter (`uuid` pinned to `11.1.1` likewise).
+  `testCase.id` remains the internal key for correlating annotations. Internal step/attachment
+  ids moved to `uuidv4()` too (neither is sent to the API — commons rebuilds steps for the wire
+  and uploads attachments by name/content — but the deprecated
+  `Math.random().toString(36).substr(2, 9)` is gone).
 - **Case identity aligned with `@tiden/playwright-reporter`:** `signature` is now built by
   commons' `generateSignature(caseIds | null, structuralPath)` — the `fullName` path split on
   `' > '`, leaf test title included, param-free — instead of upstream's raw Vitest `fullName`.
@@ -23,5 +32,7 @@ Initial Tiden fork release of `@tiden/vitest-reporter`.
 - Added `./setup` to the package's `exports` map, so the documented
   `@tiden/vitest-reporter/setup` network-profiler entry point actually resolves (it was
   unreachable upstream).
+- README documents the three `TIDEN_MODE` values explicitly (`tiden` uploads, `report` only
+  writes a local file, `off` is inert) — `report` reads like "report to Tiden" and is not.
 - See the [root README](../README.md#lineage) for full fork lineage, and this package's
   [README](./README.md) for the current feature set and configuration reference.
