@@ -44,8 +44,80 @@ describe('ResultBuilder.build', () => {
     expect(result.execution.end_time).toBe(1_700_000_000.1);
     expect(result.execution.duration).toBe(100);
     expect(result.id).toBe('test-id');
-    expect(result.signature).toBe('Suite > Test');
+    // Identity is commons' generateSignature() over the structural path,
+    // matching the Playwright reporter — not the raw Vitest fullName.
+    expect(result.signature).toBe('suite::test');
     expect(result.steps).toEqual([]);
+  });
+
+  describe('signature (case identity)', () => {
+    it('joins a nested suite path with :: and keeps the leaf test title', () => {
+      const result = ResultBuilder.build({
+        testCase: mkTestCase({
+          name: 'search works across browsers',
+          fullName: 'search.spec > Search > search works across browsers',
+        }),
+        metadata: undefined,
+        currentSuite: undefined,
+        profilerSteps: [],
+      });
+      expect(result.signature).toBe('search.spec::search::search_works_across_browsers');
+    });
+
+    it('prefixes the parsed Tiden id when the title carries one', () => {
+      const result = ResultBuilder.build({
+        testCase: mkTestCase({
+          name: 'user can login (Tiden ID: 7)',
+          fullName: 'Auth > user can login (Tiden ID: 7)',
+        }),
+        metadata: undefined,
+        currentSuite: undefined,
+        profilerSteps: [],
+      });
+      expect(result.case_id).toBe(7);
+      expect(result.signature).toBe('7::auth::user_can_login_(tiden_id:_7)');
+    });
+
+    it('joins multiple parsed ids with - before the path', () => {
+      const result = ResultBuilder.build({
+        testCase: mkTestCase({
+          name: 'covers two cases (Tiden ID: 1,2)',
+          fullName: 'Auth > covers two cases (Tiden ID: 1,2)',
+        }),
+        metadata: undefined,
+        currentSuite: undefined,
+        profilerSteps: [],
+      });
+      expect(result.signature).toBe('1-2::auth::covers_two_cases_(tiden_id:_1,2)');
+    });
+
+    it('is param-free: parameters do not change identity', () => {
+      const withParams = emptyMeta();
+      withParams.parameters = { browser: 'firefox' };
+      const base = ResultBuilder.build({
+        testCase: mkTestCase({ fullName: 'Suite > Test' }),
+        metadata: undefined,
+        currentSuite: undefined,
+        profilerSteps: [],
+      });
+      const parametrized = ResultBuilder.build({
+        testCase: mkTestCase({ fullName: 'Suite > Test' }),
+        metadata: withParams,
+        currentSuite: undefined,
+        profilerSteps: [],
+      });
+      expect(parametrized.signature).toBe(base.signature);
+    });
+
+    it('falls back to the test name alone when fullName has no suite path', () => {
+      const result = ResultBuilder.build({
+        testCase: mkTestCase({ name: 'standalone test', fullName: 'standalone test' }),
+        metadata: undefined,
+        currentSuite: undefined,
+        profilerSteps: [],
+      });
+      expect(result.signature).toBe('standalone_test');
+    });
   });
 
   it('extracts single legacy id from name (Tiden ID: 123)', () => {
@@ -257,6 +329,18 @@ describe('ResultBuilder.build', () => {
     });
     expect(result.steps.length).toBe(2);
     expect(result.steps[1]).toEqual({ id: 'prof-1' });
+  });
+});
+
+describe('ResultBuilder.splitFullName', () => {
+  it('splits a nested fullName into path segments, leaf title last', () => {
+    const tc = mkTestCase({ fullName: 'A > B > Test', name: 'Test' });
+    expect(ResultBuilder.splitFullName(tc)).toEqual(['A', 'B', 'Test']);
+  });
+
+  it('returns a single segment when there is no suite path', () => {
+    const tc = mkTestCase({ fullName: 'Test', name: 'Test' });
+    expect(ResultBuilder.splitFullName(tc)).toEqual(['Test']);
   });
 });
 

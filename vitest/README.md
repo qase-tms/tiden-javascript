@@ -218,6 +218,38 @@ Failures are classified by the shared commons status logic: assertion failures r
 `failed`, while errors that look like infrastructure problems (network, syntax, type errors)
 report as `invalid`.
 
+### Case identity (`signature`)
+
+Each reported result carries a `signature` — the stable, param-free key Tiden uses to recognise
+the same logical test case across runs. It is produced by `generateSignature()` from
+`@tiden/reporter-commons`, from two inputs:
+
+1. the linked case IDs parsed out of the title (`(Tiden ID: n)`), or nothing when there are none;
+2. the test's full structural path from Vitest's `fullName`, split on `' > '`, **including** the
+   leaf test title.
+
+Each segment is lowercased with whitespace collapsed to `_`, and segments are joined with `::`;
+IDs are joined with `-` and prefixed. Parameters are deliberately excluded — they are hashed
+separately, per attempt, so every parameter combination of one case shares one identity.
+
+```
+Search > search works across browsers          → search::search_works_across_browsers
+Auth > user can login (Tiden ID: 7)            → 7::auth::user_can_login_(tiden_id:_7)
+```
+
+> [!IMPORTANT]
+> **Deliberate divergence from upstream `vitest-qase-reporter`,** which assigns the raw Vitest
+> `fullName` to `signature`. This package uses `generateSignature()` with the same argument
+> semantics as [`@tiden/playwright-reporter`](../playwright/README.md) so that a given logical
+> case keys identically in both reporters. **Do not revert this to `fullName` when re-syncing
+> with upstream** — see the comment on `testResult.signature` in
+> `src/modules/resultBuilder.ts`.
+>
+> One residual difference from the Playwright reporter: there, an explicit suite override feeds
+> the signature, and the path starts at the spec file name. Here the signature always comes from
+> the structural `fullName` path (Vitest's `fullName` has no file-name segment), so
+> `tiden.suite()` changes the reported suite tree without moving the case's identity.
+
 ## Network Profiler
 
 The Network Profiler captures outgoing HTTP requests made during test execution and reports them

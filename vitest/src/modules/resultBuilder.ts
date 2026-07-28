@@ -5,6 +5,7 @@ import {
   TestResultType,
   TestStepType,
   determineTestStatus,
+  generateSignature,
   parseTidenIdFromTitle,
 } from '@tiden/reporter-commons';
 import { extractAndCleanStep } from '@tiden/reporter-commons/internal';
@@ -29,7 +30,6 @@ export class ResultBuilder {
     const testTitle = metadata?.title ?? (parsed.cleanedTitle.replace(/\s+/g, ' ').trim() || testCase.name);
     const testResult = new TestResultType(testTitle);
     testResult.id = testCase.id;
-    testResult.signature = testCase.fullName;
 
     // Multi-project reporting was dropped in the Tiden fork: the internal
     // TestResultType model still carries project_case_mapping, and it stays at
@@ -39,6 +39,24 @@ export class ResultBuilder {
     } else {
       testResult.case_id = null;
     }
+
+    // Case identity, aligned with the Playwright reporter (see
+    // playwright/src/result-builder.ts): commons' generateSignature() over the
+    // parsed case ids (null when there are none) plus the full structural path
+    // *including* the leaf test title, param-free — params are hashed
+    // separately at attempt level.
+    //
+    // DELIBERATE DIVERGENCE from upstream vitest-qase-reporter, which assigns
+    // the raw Vitest `fullName` here. Do not revert this on an upstream
+    // re-sync: it would make the same logical case key differently in the
+    // Vitest and Playwright reporters.
+    const idsForSignature = testResult.case_id == null
+      ? null
+      : (Array.isArray(testResult.case_id) ? testResult.case_id : [testResult.case_id]);
+    testResult.signature = generateSignature(
+      idsForSignature,
+      ResultBuilder.splitFullName(testCase).filter(Boolean),
+    );
 
     const suiteToUse = metadata?.suite ?? currentSuite ?? ResultBuilder.extractSuiteFromTestCase(testCase);
     if (suiteToUse) {
@@ -142,10 +160,19 @@ export class ResultBuilder {
     return testResult;
   }
 
-  static extractSuiteFromTestCase(testCase: TestCase): string | undefined {
+  /**
+   * Splits a Vitest `fullName` ("Outer > Inner > test title") into its path
+   * segments, leaf test title last. Single source of truth for both the
+   * reported suite path and the case signature — do not add a second parser.
+   */
+  static splitFullName(testCase: TestCase): string[] {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     const fullName = testCase.fullName ?? testCase.name;
-    const parts = fullName.split(' > ');
+    return fullName.split(' > ');
+  }
+
+  static extractSuiteFromTestCase(testCase: TestCase): string | undefined {
+    const parts = ResultBuilder.splitFullName(testCase);
     if (parts.length > 1) {
       return parts.slice(0, -1).join(' > ');
     }
