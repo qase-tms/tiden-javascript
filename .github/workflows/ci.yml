@@ -13,7 +13,7 @@ jobs:
         # CI gate is the `npm run build -ws --if-present` step below, which
         # already compiles it (via its own tsconfig.json/tsconfig.esm.json)
         # in every matrix job. Do not "fix" this by adding it here.
-        package: [commons, playwright]
+        package: [commons, playwright, vitest]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
