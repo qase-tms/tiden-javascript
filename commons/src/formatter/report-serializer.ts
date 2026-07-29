@@ -28,8 +28,9 @@ export class ReportSerializer implements ReportSerializerInterface {
       steps: result.steps.map((s) => this.serializeStep(s)),
       params: result.params,
       param_groups: paramGroups,
-      // Wire field name mirrors api.v1.ResultCreate.testops_ids — kept as-is
-      // for report/API compatibility; see client/models/tiden-result.ts.
+      // The local `report` file format keeps snake_case field names (its own
+      // contract, locked by tests) — deliberately independent of the API wire
+      // format, which now follows the generated @tiden/api-client models.
       testops_ids: caseIds,
       relations: result.relations,
       muted: result.muted,

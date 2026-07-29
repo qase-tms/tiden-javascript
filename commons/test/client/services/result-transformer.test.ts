@@ -59,24 +59,24 @@ describe('ResultTransformer', () => {
     it('should transform a basic result', async () => {
       const model = await transformer.transform(makeResult(), mockUploader);
       expect(model.title).toBe('Test case');
-      expect(model.execution.status).toBe('passed');
-      expect(model.testops_ids).toEqual([1]);
+      expect(model.execution!.status).toBe('passed');
+      expect(model.testopsIds).toEqual([1]);
       expect(model.signature).toBe('sig-1');
     });
 
     it('should handle array case_id', async () => {
       const model = await transformer.transform(makeResult({ case_id: [1, 2, 3] }), mockUploader);
-      expect(model.testops_ids).toEqual([1, 2, 3]);
+      expect(model.testopsIds).toEqual([1, 2, 3]);
     });
 
     it('should handle null case_id', async () => {
       const model = await transformer.transform(makeResult({ case_id: null }), mockUploader);
-      expect(model.testops_ids).toBeNull();
+      expect(model.testopsIds).toBeUndefined();
     });
 
     it('should map empty-array case_id to null (API rejects []) ', async () => {
       const model = await transformer.transform(makeResult({ case_id: [] }), mockUploader);
-      expect(model.testops_ids).toBeNull();
+      expect(model.testopsIds).toBeUndefined();
     });
 
     it('should handle undefined tags', async () => {
@@ -121,7 +121,7 @@ describe('ResultTransformer', () => {
       const model = await transformer.transform(result, mockUploader);
       expect(model.steps).toHaveLength(1);
       expect(model.steps![0]!.data!.action).toBe('Click button');
-      expect(model.steps![0]!.data!.expected_result).toBe('Button clicked');
+      expect(model.steps![0]!.data!.expectedResult).toBe('Button clicked');
     });
 
     it('should transform GHERKIN step', async () => {
@@ -175,27 +175,27 @@ describe('ResultTransformer', () => {
       expect(model.params).toEqual({ key: 'value', num: '42' });
     });
 
-    it('should build param_groups from group_params as [{names}] objects', async () => {
+    it('should build paramGroups from group_params as [{names}] objects', async () => {
       const model = await transformer.transform(
         makeResult({ group_params: { browser: 'chrome', os: 'linux' }, params: {} }),
         mockUploader,
       );
-      expect(model.param_groups).toEqual([{ names: ['browser', 'os'] }]);
+      expect(model.paramGroups).toEqual([{ names: ['browser', 'os'] }]);
       expect(model.params).toEqual({ browser: 'chrome', os: 'linux' });
     });
 
-    it('emits param_groups as [{names}] objects (delta a)', async () => {
+    it('emits paramGroups as [{names}] objects (delta a)', async () => {
       const result = makeResult({ params: {}, group_params: { browser: 'chromium', os: 'mac' } });
       const model = await transformer.transform(result, () => Promise.resolve(''));
-      expect(model.param_groups).toEqual([{ names: ['browser', 'os'] }]);
+      expect(model.paramGroups).toEqual([{ names: ['browser', 'os'] }]);
     });
   });
 
-  describe('suite_path', () => {
+  describe('suitePath', () => {
     it('should use just the rootSuite when there is no relation', async () => {
       transformer = new ResultTransformer(silentLogger(), 'Root Suite');
       const model = await transformer.transform(makeResult(), mockUploader);
-      expect(model.suite_path).toEqual([{ title: 'Root Suite' }]);
+      expect(model.suitePath).toEqual([{ title: 'Root Suite' }]);
     });
 
     it('should prepend rootSuite to an existing suite relation', async () => {
@@ -204,22 +204,22 @@ describe('ResultTransformer', () => {
         relations: { suite: { data: [{ title: 'Child' }] } },
       });
       const model = await transformer.transform(result, mockUploader);
-      expect(model.suite_path).toEqual([
+      expect(model.suitePath).toEqual([
         { title: 'Root' },
         { title: 'Child' },
       ]);
     });
 
-    it('should return an empty suite_path when there is no rootSuite and no relation', async () => {
+    it('should return an empty suitePath when there is no rootSuite and no relation', async () => {
       const model = await transformer.transform(makeResult(), mockUploader);
-      expect(model.suite_path).toEqual([]);
+      expect(model.suitePath).toEqual([]);
     });
 
-    it('emits a flat suite_path with root suite prefix (delta b)', async () => {
+    it('emits a flat suitePath with root suite prefix (delta b)', async () => {
       transformer = new ResultTransformer(silentLogger(), 'Root');
       const result = makeResult({ relations: { suite: { data: [{ title: 'Checkout', public_id: null }, { title: 'Cards', public_id: null }] } } });
       const model = await transformer.transform(result, () => Promise.resolve(''));
-      expect(model.suite_path).toEqual([{ title: 'Root' }, { title: 'Checkout' }, { title: 'Cards' }]);
+      expect(model.suitePath).toEqual([{ title: 'Root' }, { title: 'Checkout' }, { title: 'Cards' }]);
       expect((model as Record<string, unknown>)['relations']).toBeUndefined();
     });
   });

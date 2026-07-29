@@ -43,6 +43,85 @@ function makeResult(overrides: Partial<any> = {}): TestResultType {
   } as unknown as TestResultType;
 }
 
+describe('TidenApiClient wire contract (generated @tiden/api-client over the shared axios instance)', () => {
+  /**
+   * These lock the request the generated client actually puts on the wire:
+   * the same path/auth the hand-written layer used, and the generated
+   * `ResultCreate` field names/types (lowerCamelCase, int64 `duration` as a
+   * string). Verified against the live API before the switch.
+   */
+  it('reports to the same path with the instance Bearer auth, and only that one auth header', async () => {
+    let captured: { url?: string; auth?: unknown; method?: string; contentType?: unknown } = {};
+    const srv = await testServer((req, _body, res) => {
+      captured = {
+        url: req.url ?? '',
+        auth: req.headers.authorization,
+        method: req.method ?? '',
+        contentType: req.headers['content-type'],
+      };
+      res.setHeader('content-type', 'application/json');
+      res.end(JSON.stringify({ status: true, accepted: '1', duplicates: '0', errors: [] }));
+    });
+    await makeClient(srv).uploadResults(7, [makeResult({ id: 'uuid-a' })]);
+    srv.close();
+    expect(captured.method).toBe('POST');
+    expect(captured.url).toBe('/v1/products/p1/runs/7/results:report');
+    // Auth comes from the axios instance only — the generated Configuration is
+    // built without an accessToken, so the token lives in exactly one place.
+    expect(captured.auth).toBe('Bearer tfy_t');
+    expect(String(captured.contentType)).toContain('application/json');
+  });
+
+  it('serializes results with the generated camelCase field names and int64 duration as a string', async () => {
+    let sent: any;
+    const srv = await testServer((_req, body, res) => {
+      sent = JSON.parse(body);
+      res.setHeader('content-type', 'application/json');
+      res.end(JSON.stringify({ status: true, accepted: '1', duplicates: '0', errors: [] }));
+    });
+    await makeClient(srv).uploadResults(7, [makeResult({
+      id: 'uuid-shape',
+      case_id: [4, 5],
+      params: { browser: 'chromium' },
+      group_params: { browser: 'chromium' },
+      relations: { suite: { data: [{ title: 'Checkout', public_id: null }] } },
+      steps: [{
+        id: 's1',
+        step_type: 'text',
+        data: { action: 'Click', expected_result: 'opened', data: 'input' },
+        execution: { status: 'passed' },
+        attachments: [],
+        steps: [],
+      }],
+    })]);
+    srv.close();
+    const r = sent.results[0];
+    expect(r.testopsIds).toEqual([4, 5]);
+    expect(r.suitePath).toEqual([{ title: 'Checkout' }]);
+    expect(r.paramGroups).toEqual([{ names: ['browser'] }]);
+    expect(r.execution.duration).toBe('1000');   // int64 → string
+    expect(r.execution.startTime).toBe(1000);    // double stays a number
+    expect(r.steps[0].data.expectedResult).toBe('opened');
+    expect(r.steps[0].data.inputData).toBe('input');
+    // Nothing snake_case leaks onto the API wire any more.
+    expect(Object.keys(r)).not.toContain('testops_ids');
+    expect(Object.keys(r)).not.toContain('param_groups');
+    expect(Object.keys(r)).not.toContain('suite_path');
+  });
+
+  it('logs the server-side accepted/duplicates counts (idempotency: dedupe is the server recognising a repeated result id)', async () => {
+    const srv = await testServer((_req, _body, res) => {
+      res.setHeader('content-type', 'application/json');
+      res.end(JSON.stringify({ status: true, accepted: '0', duplicates: '2', errors: [] }));
+    });
+    (logger.logDebug as jest.Mock).mockClear();
+    await makeClient(srv).uploadResults(7, [makeResult({ id: 'dup-1' }), makeResult({ id: 'dup-2' })]);
+    srv.close();
+    expect((logger.logDebug as jest.Mock).mock.calls.flat().join('\n'))
+      .toContain('accepted=0 duplicates=2');
+  });
+});
+
 describe('TidenApiClient', () => {
   it('posts results to results:report and parses string accepted counts', async () => {
     const bodies: Record<string, unknown>[] = [];
