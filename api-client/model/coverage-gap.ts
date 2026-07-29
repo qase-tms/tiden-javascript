@@ -17,6 +17,9 @@
 // @ts-ignore
 import type { Requirement } from './requirement';
 
+/**
+ * CoverageGap is one under-covered requirement with its coverage counters, the reason for its status, and the signals that ranked it.
+ */
 export interface CoverageGap {
     'requirement'?: Requirement;
     'coverageStatus'?: string;

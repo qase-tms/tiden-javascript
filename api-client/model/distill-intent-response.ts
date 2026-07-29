@@ -14,6 +14,9 @@
 
 
 
+/**
+ * DistillIntentResponse reports where the distilled changes were written and the per-kind change counts, or why distillation was skipped.
+ */
 export interface DistillIntentResponse {
     /**
      * Name of the intent branch the changes were written to (empty when skipped).

@@ -4,15 +4,16 @@ All URIs are relative to *https://api.tiden.ai*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
-|[**qualityGateServiceAcceptRisk**](#qualitygateserviceacceptrisk) | **POST** /v1/products/{productId}/quality-gate:accept-risk | Record a sign-off on a 🟡 (soft-signal) verdict so it becomes shippable. Hard-blocked (🔴) verdicts can\&#39;t be accepted. High-severity components need a distinct 2nd approver (ApproveRisk); low-severity self-approve.|
-|[**qualityGateServiceApproveRisk**](#qualitygateserviceapproverisk) | **POST** /v1/products/{productId}/quality-gate:approve-risk | Second-approver sign-off for a pending acceptance (must differ from the recorder).|
-|[**qualityGateServiceComputeVerdict**](#qualitygateservicecomputeverdict) | **POST** /v1/products/{productId}/quality-gate:compute | Compute (or recompute) the verdict for a release or branch scope and persist an immutable snapshot. Side-effecting; the engine is idempotent on the current data state (CAS on publish).|
-|[**qualityGateServiceGetTraceability**](#qualitygateservicegettraceability) | **GET** /v1/products/{productId}/quality-gate/traceability | The traceability-matrix slice the verdict was computed over (req x case by component), for the matrix page and audit.|
-|[**qualityGateServiceGetVerdict**](#qualitygateservicegetverdict) | **GET** /v1/products/{productId}/quality-gate | Latest non-invalidated verdict for a (scope, ref). On no-go the agent reads the structured component/criterion breakdown + fix hints from here.|
+|[**qualityGateServiceAcceptRisk**](#qualitygateserviceacceptrisk) | **POST** /v1/products/{productId}/quality-gate:accept-risk | Signs off the residual risk on a soft-signal verdict.|
+|[**qualityGateServiceApproveRisk**](#qualitygateserviceapproverisk) | **POST** /v1/products/{productId}/quality-gate:approve-risk | Second-approver sign-off for a pending risk acceptance.|
+|[**qualityGateServiceComputeVerdict**](#qualitygateservicecomputeverdict) | **POST** /v1/products/{productId}/quality-gate:compute | Computes and persists a quality-gate verdict.|
+|[**qualityGateServiceGetTraceability**](#qualitygateservicegettraceability) | **GET** /v1/products/{productId}/quality-gate/traceability | Returns the traceability matrix behind a verdict.|
+|[**qualityGateServiceGetVerdict**](#qualitygateservicegetverdict) | **GET** /v1/products/{productId}/quality-gate | Fetches the latest verdict for a scope.|
 
 # **qualityGateServiceAcceptRisk**
 > AcceptRiskResponse qualityGateServiceAcceptRisk(acceptRiskBody)
 
+Records a risk acceptance (reason required) for the whole verdict or one component, so a verdict failing only soft signals becomes shippable. Hard-blocked verdicts cannot be accepted. High-severity components need a distinct second approver via ApproveRisk; low-severity ones self-approve. Returns the recomputed verdict reflecting the acceptance.
 
 ### Example
 
@@ -68,6 +69,7 @@ const { status, data } = await apiInstance.qualityGateServiceAcceptRisk(
 # **qualityGateServiceApproveRisk**
 > ApproveRiskResponse qualityGateServiceApproveRisk(approveRiskBody)
 
+Approves the acceptance identified by acceptance_id; the approver must be a different user than the one who recorded it. Returns the recomputed verdict.
 
 ### Example
 
@@ -123,6 +125,7 @@ const { status, data } = await apiInstance.qualityGateServiceApproveRisk(
 # **qualityGateServiceComputeVerdict**
 > ComputeVerdictResponse qualityGateServiceComputeVerdict(computeVerdictBody)
 
+Computes (or recomputes) the go/no-go verdict for a scope — RELEASE (release_id required), BRANCH (branch name required), or MAIN — and persists an immutable snapshot. Side-effecting, but idempotent on the current data state (CAS on publish): recomputing unchanged data yields the same verdict. subject_type/subject_id narrow the returned breakdown to one component/feature/product subject.
 
 ### Example
 
@@ -178,6 +181,7 @@ const { status, data } = await apiInstance.qualityGateServiceComputeVerdict(
 # **qualityGateServiceGetTraceability**
 > GetTraceabilityResponse qualityGateServiceGetTraceability()
 
+Returns the requirement-by-test-case slice (grouped by component) the verdict was computed over, for the matrix page and audit. subject_type/subject_id filter the matrix to one component or feature.
 
 ### Example
 
@@ -244,6 +248,7 @@ const { status, data } = await apiInstance.qualityGateServiceGetTraceability(
 # **qualityGateServiceGetVerdict**
 > GetVerdictResponse qualityGateServiceGetVerdict()
 
+Returns the latest non-invalidated verdict for the (scope, ref). On a blocked verdict, clients read the structured per-subject criterion breakdown and agent-actionable fix hints from here.
 
 ### Example
 

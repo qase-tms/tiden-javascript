@@ -43,7 +43,8 @@ import type { UpdateRequirementResponse } from '../model';
 export const RequirementServiceApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * 
+         * Creates the requirement under parent_id (empty = root) on branch (empty = main; a missing branch name is auto-created and edits stay copy-on-write until merge). Optional status/priority/type classify it; sources attach provenance (repo files, documentation URLs, manual input). Returns the requirement with its product-wide seq_num.
+         * @summary Creates a requirement.
          * @param {string} productId 
          * @param {CreateRequirementBody} createRequirementBody 
          * @param {*} [options] Override http request option.
@@ -84,7 +85,8 @@ export const RequirementServiceApiAxiosParamCreator = function (configuration?: 
             };
         },
         /**
-         * 
+         * On a branch (branch set, non-main) a main-row delete records a copy-on-write deletion marker that applies at merge; on main the row is deleted directly. Returns history_id, which the web-only RestoreRequirement RPC accepts to undo the delete.
+         * @summary Deletes a requirement.
          * @param {string} id 
          * @param {string} [branch] 
          * @param {*} [options] Override http request option.
@@ -125,7 +127,8 @@ export const RequirementServiceApiAxiosParamCreator = function (configuration?: 
             };
         },
         /**
-         * 
+         * Returns the requirement including its sources and branch status.
+         * @summary Fetches one requirement by id.
          * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -161,7 +164,8 @@ export const RequirementServiceApiAxiosParamCreator = function (configuration?: 
             };
         },
         /**
-         * 
+         * Returns the flat requirement list (parent_id encodes the tree) in the branch view (empty = main), paginated. Set include_sources to embed each requirement\'s full provenance sources — agents need them for source-based identity matching; otherwise only source_count is populated.
+         * @summary Lists a product\'s requirements.
          * @param {string} productId 
          * @param {number} [paginationPageSize] 
          * @param {string} [paginationPageToken] 
@@ -217,7 +221,8 @@ export const RequirementServiceApiAxiosParamCreator = function (configuration?: 
             };
         },
         /**
-         * 
+         * Only fields present on the request change; omitted optional fields keep their stored value. branch (empty = main) applies the edit copy-on-write. sources_update replaces the requirement\'s source set, or unions it with anchor-key dedup when merge=true (the agent-write mode).
+         * @summary Updates a requirement.
          * @param {string} id 
          * @param {UpdateRequirementBody} updateRequirementBody 
          * @param {*} [options] Override http request option.
@@ -267,7 +272,8 @@ export const RequirementServiceApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = RequirementServiceApiAxiosParamCreator(configuration)
     return {
         /**
-         * 
+         * Creates the requirement under parent_id (empty = root) on branch (empty = main; a missing branch name is auto-created and edits stay copy-on-write until merge). Optional status/priority/type classify it; sources attach provenance (repo files, documentation URLs, manual input). Returns the requirement with its product-wide seq_num.
+         * @summary Creates a requirement.
          * @param {string} productId 
          * @param {CreateRequirementBody} createRequirementBody 
          * @param {*} [options] Override http request option.
@@ -280,7 +286,8 @@ export const RequirementServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * On a branch (branch set, non-main) a main-row delete records a copy-on-write deletion marker that applies at merge; on main the row is deleted directly. Returns history_id, which the web-only RestoreRequirement RPC accepts to undo the delete.
+         * @summary Deletes a requirement.
          * @param {string} id 
          * @param {string} [branch] 
          * @param {*} [options] Override http request option.
@@ -293,7 +300,8 @@ export const RequirementServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Returns the requirement including its sources and branch status.
+         * @summary Fetches one requirement by id.
          * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -305,7 +313,8 @@ export const RequirementServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Returns the flat requirement list (parent_id encodes the tree) in the branch view (empty = main), paginated. Set include_sources to embed each requirement\'s full provenance sources — agents need them for source-based identity matching; otherwise only source_count is populated.
+         * @summary Lists a product\'s requirements.
          * @param {string} productId 
          * @param {number} [paginationPageSize] 
          * @param {string} [paginationPageToken] 
@@ -321,7 +330,8 @@ export const RequirementServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Only fields present on the request change; omitted optional fields keep their stored value. branch (empty = main) applies the edit copy-on-write. sources_update replaces the requirement\'s source set, or unions it with anchor-key dedup when merge=true (the agent-write mode).
+         * @summary Updates a requirement.
          * @param {string} id 
          * @param {UpdateRequirementBody} updateRequirementBody 
          * @param {*} [options] Override http request option.
@@ -343,7 +353,8 @@ export const RequirementServiceApiFactory = function (configuration?: Configurat
     const localVarFp = RequirementServiceApiFp(configuration)
     return {
         /**
-         * 
+         * Creates the requirement under parent_id (empty = root) on branch (empty = main; a missing branch name is auto-created and edits stay copy-on-write until merge). Optional status/priority/type classify it; sources attach provenance (repo files, documentation URLs, manual input). Returns the requirement with its product-wide seq_num.
+         * @summary Creates a requirement.
          * @param {RequirementServiceApiRequirementServiceCreateRequirementRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -352,7 +363,8 @@ export const RequirementServiceApiFactory = function (configuration?: Configurat
             return localVarFp.requirementServiceCreateRequirement(requestParameters.productId, requestParameters.createRequirementBody, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * On a branch (branch set, non-main) a main-row delete records a copy-on-write deletion marker that applies at merge; on main the row is deleted directly. Returns history_id, which the web-only RestoreRequirement RPC accepts to undo the delete.
+         * @summary Deletes a requirement.
          * @param {RequirementServiceApiRequirementServiceDeleteRequirementRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -361,7 +373,8 @@ export const RequirementServiceApiFactory = function (configuration?: Configurat
             return localVarFp.requirementServiceDeleteRequirement(requestParameters.id, requestParameters.branch, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Returns the requirement including its sources and branch status.
+         * @summary Fetches one requirement by id.
          * @param {RequirementServiceApiRequirementServiceGetRequirementRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -370,7 +383,8 @@ export const RequirementServiceApiFactory = function (configuration?: Configurat
             return localVarFp.requirementServiceGetRequirement(requestParameters.id, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Returns the flat requirement list (parent_id encodes the tree) in the branch view (empty = main), paginated. Set include_sources to embed each requirement\'s full provenance sources — agents need them for source-based identity matching; otherwise only source_count is populated.
+         * @summary Lists a product\'s requirements.
          * @param {RequirementServiceApiRequirementServiceListRequirementsRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -379,7 +393,8 @@ export const RequirementServiceApiFactory = function (configuration?: Configurat
             return localVarFp.requirementServiceListRequirements(requestParameters.productId, requestParameters.paginationPageSize, requestParameters.paginationPageToken, requestParameters.branch, requestParameters.includeSources, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Only fields present on the request change; omitted optional fields keep their stored value. branch (empty = main) applies the edit copy-on-write. sources_update replaces the requirement\'s source set, or unions it with anchor-key dedup when merge=true (the agent-write mode).
+         * @summary Updates a requirement.
          * @param {RequirementServiceApiRequirementServiceUpdateRequirementRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -447,7 +462,8 @@ export interface RequirementServiceApiRequirementServiceUpdateRequirementRequest
  */
 export class RequirementServiceApi extends BaseAPI {
     /**
-     * 
+     * Creates the requirement under parent_id (empty = root) on branch (empty = main; a missing branch name is auto-created and edits stay copy-on-write until merge). Optional status/priority/type classify it; sources attach provenance (repo files, documentation URLs, manual input). Returns the requirement with its product-wide seq_num.
+     * @summary Creates a requirement.
      * @param {RequirementServiceApiRequirementServiceCreateRequirementRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -457,7 +473,8 @@ export class RequirementServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * On a branch (branch set, non-main) a main-row delete records a copy-on-write deletion marker that applies at merge; on main the row is deleted directly. Returns history_id, which the web-only RestoreRequirement RPC accepts to undo the delete.
+     * @summary Deletes a requirement.
      * @param {RequirementServiceApiRequirementServiceDeleteRequirementRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -467,7 +484,8 @@ export class RequirementServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Returns the requirement including its sources and branch status.
+     * @summary Fetches one requirement by id.
      * @param {RequirementServiceApiRequirementServiceGetRequirementRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -477,7 +495,8 @@ export class RequirementServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Returns the flat requirement list (parent_id encodes the tree) in the branch view (empty = main), paginated. Set include_sources to embed each requirement\'s full provenance sources — agents need them for source-based identity matching; otherwise only source_count is populated.
+     * @summary Lists a product\'s requirements.
      * @param {RequirementServiceApiRequirementServiceListRequirementsRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -487,7 +506,8 @@ export class RequirementServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Only fields present on the request change; omitted optional fields keep their stored value. branch (empty = main) applies the edit copy-on-write. sources_update replaces the requirement\'s source set, or unions it with anchor-key dedup when merge=true (the agent-write mode).
+     * @summary Updates a requirement.
      * @param {RequirementServiceApiRequirementServiceUpdateRequirementRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}

@@ -4,21 +4,22 @@ All URIs are relative to *https://api.tiden.ai*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
-|[**testRunServiceAbortTestRun**](#testrunserviceaborttestrun) | **POST** /v1/products/{productId}/runs/{runSeq}:abort | |
-|[**testRunServiceCompleteTestRun**](#testrunservicecompletetestrun) | **POST** /v1/products/{productId}/runs/{runSeq}:complete | |
-|[**testRunServiceCreateTestRun**](#testrunservicecreatetestrun) | **POST** /v1/products/{productId}/runs | |
-|[**testRunServiceDeleteTestRun**](#testrunservicedeletetestrun) | **DELETE** /v1/products/{productId}/runs/{runSeq} | |
-|[**testRunServiceGetRunAttachment**](#testrunservicegetrunattachment) | **GET** /v1/products/{productId}/attachments/{hash} | Resolves a content-hash (uploaded via the reporter multipart route POST /v1/products/{product_id}/attachments:upload) to a presigned download URL. Public so reporter/CLI clients and the SPA (JWT) can both fetch; ATTACHMENT_NOT_FOUND (→ 404) for an unknown hash — the drawer renders \&quot;attachment unavailable\&quot; on that.|
-|[**testRunServiceGetRunResult**](#testrunservicegetrunresult) | **GET** /v1/products/{productId}/runs/{runSeq}/results/{resultId} | |
-|[**testRunServiceGetRunSummary**](#testrunservicegetrunsummary) | **GET** /v1/products/{productId}/runs/{runSeq}/summary | |
-|[**testRunServiceGetTestRun**](#testrunservicegettestrun) | **GET** /v1/products/{productId}/runs/{runSeq} | |
-|[**testRunServiceListRunResults**](#testrunservicelistrunresults) | **GET** /v1/products/{productId}/runs/{runSeq}/results | |
-|[**testRunServiceListTestRuns**](#testrunservicelisttestruns) | **GET** /v1/products/{productId}/runs | |
-|[**testRunServiceReportResults**](#testrunservicereportresults) | **POST** /v1/products/{productId}/runs/{runSeq}/results:report | |
+|[**testRunServiceAbortTestRun**](#testrunserviceaborttestrun) | **POST** /v1/products/{productId}/runs/{runSeq}:abort | Aborts a run.|
+|[**testRunServiceCompleteTestRun**](#testrunservicecompletetestrun) | **POST** /v1/products/{productId}/runs/{runSeq}:complete | Completes a run and computes its final verdict.|
+|[**testRunServiceCreateTestRun**](#testrunservicecreatetestrun) | **POST** /v1/products/{productId}/runs | Creates a test run to report CI results into.|
+|[**testRunServiceDeleteTestRun**](#testrunservicedeletetestrun) | **DELETE** /v1/products/{productId}/runs/{runSeq} | Deletes a test run.|
+|[**testRunServiceGetRunAttachment**](#testrunservicegetrunattachment) | **GET** /v1/products/{productId}/attachments/{hash} | Resolves an attachment content hash to a download URL.|
+|[**testRunServiceGetRunResult**](#testrunservicegetrunresult) | **GET** /v1/products/{productId}/runs/{runSeq}/results/{resultId} | Fetches one reported result by id.|
+|[**testRunServiceGetRunSummary**](#testrunservicegetrunsummary) | **GET** /v1/products/{productId}/runs/{runSeq}/summary | Returns per-suite and per-case rollups of a run.|
+|[**testRunServiceGetTestRun**](#testrunservicegettestrun) | **GET** /v1/products/{productId}/runs/{runSeq} | Fetches one test run by its sequence number.|
+|[**testRunServiceListRunResults**](#testrunservicelistrunresults) | **GET** /v1/products/{productId}/runs/{runSeq}/results | Lists a run\&#39;s reported results.|
+|[**testRunServiceListTestRuns**](#testrunservicelisttestruns) | **GET** /v1/products/{productId}/runs | Lists a product\&#39;s test runs.|
+|[**testRunServiceReportResults**](#testrunservicereportresults) | **POST** /v1/products/{productId}/runs/{runSeq}/results:report | Reports a batch of test results into a run.|
 
 # **testRunServiceAbortTestRun**
 > AbortTestRunResponse testRunServiceAbortTestRun(body)
 
+Terminally cancels a run from new/in_progress; aborting a completed or already-aborted run is rejected. Stats are recomputed so a partial run still shows what was reported.
 
 ### Example
 
@@ -76,6 +77,7 @@ const { status, data } = await apiInstance.testRunServiceAbortTestRun(
 # **testRunServiceCompleteTestRun**
 > CompleteTestRunResponse testRunServiceCompleteTestRun(body)
 
+Recounts stats and derives the terminal status (passed | failed) from the latest attempt per execution. Idempotent: completing an already-completed run returns it unchanged (and retries a stuck or failed live-doc sync); aborted runs cannot be completed. When the product has live documentation enabled, completion triggers reconciliation of the test repository from the run\'s results.
 
 ### Example
 
@@ -133,6 +135,7 @@ const { status, data } = await apiInstance.testRunServiceCompleteTestRun(
 # **testRunServiceCreateTestRun**
 > CreateTestRunResponse testRunServiceCreateTestRun(createTestRunBody)
 
+The run is the container ReportResults writes into. environment is a slug, auto-created when unknown; branch is the git branch name (CI metadata used for test matching — no Tiden branch is created); title defaults to \"Automated run <RFC3339>\" server-side. The returned run\'s seq_num is the run_seq every other run endpoint addresses.
 
 ### Example
 
@@ -188,6 +191,7 @@ const { status, data } = await apiInstance.testRunServiceCreateTestRun(
 # **testRunServiceDeleteTestRun**
 > object testRunServiceDeleteTestRun()
 
+Permanently removes the run and its reported results. Not reversible.
 
 ### Example
 
@@ -242,6 +246,7 @@ const { status, data } = await apiInstance.testRunServiceDeleteTestRun(
 # **testRunServiceGetRunAttachment**
 > GetRunAttachmentResponse testRunServiceGetRunAttachment()
 
+Resolves a hash uploaded via the reporter multipart route POST /v1/products/{product_id}/attachments:upload to a fresh presigned download URL (15-minute expiry, attachment disposition). Content- addressed: the same hash always names the same bytes within a product. Public so reporter/CLI clients and the SPA (JWT) can both fetch; an unknown hash returns ATTACHMENT_NOT_FOUND (HTTP 404).
 
 ### Example
 
@@ -296,6 +301,7 @@ const { status, data } = await apiInstance.testRunServiceGetRunAttachment(
 # **testRunServiceGetRunResult**
 > GetRunResultResponse testRunServiceGetRunResult()
 
+Returns the full result including steps, parameters, stacktrace, and attachment hashes (resolve via GetRunAttachment).
 
 ### Example
 
@@ -353,6 +359,7 @@ const { status, data } = await apiInstance.testRunServiceGetRunResult(
 # **testRunServiceGetRunSummary**
 > GetRunSummaryResponse testRunServiceGetRunSummary()
 
+Aggregates the whole run into suite stats and case summaries (worst latest-attempt status across parameter combos, attempts, durations) so clients can render the run tree without paginating results.
 
 ### Example
 
@@ -407,6 +414,7 @@ const { status, data } = await apiInstance.testRunServiceGetRunSummary(
 # **testRunServiceGetTestRun**
 > GetTestRunResponse testRunServiceGetTestRun()
 
+Returns the run with its status, environment, stats (latest-attempt counters), and live-documentation sync state.
 
 ### Example
 
@@ -461,6 +469,7 @@ const { status, data } = await apiInstance.testRunServiceGetTestRun(
 # **testRunServiceListRunResults**
 > ListRunResultsResponse testRunServiceListRunResults()
 
+Filter by latest-attempt status, title substring (search), or identity_key (all attempts of one case identity); latest_only collapses retries to the latest attempt per execution. Paginated via pagination.page_size/page_token.
 
 ### Example
 
@@ -533,6 +542,7 @@ const { status, data } = await apiInstance.testRunServiceListRunResults(
 # **testRunServiceListTestRuns**
 > ListTestRunsResponse testRunServiceListTestRuns()
 
+Filter by status (new | in_progress | passed | failed | aborted), environment slug, branch name, or title substring via search. Paginated via pagination.page_size/page_token.
 
 ### Example
 
@@ -602,6 +612,7 @@ const { status, data } = await apiInstance.testRunServiceListTestRuns(
 # **testRunServiceReportResults**
 > ReportResultsResponse testRunServiceReportResults(reportResultsBody)
 
+Accepts 1..2000 results per call. The batch is validated up front; on failure nothing is written and per-entry errors are returned (HTTP 400, also attached as google.rpc.Status details for gRPC clients). Each result\'s id is an idempotency key — resends count as duplicates and are skipped, so retrying a batch is safe. Results are matched to repository cases by testops_ids[0], then external_id, then signature (unmatched results are kept). Rejected once the run is completed/aborted (RUN_COMPLETED).
 
 ### Example
 

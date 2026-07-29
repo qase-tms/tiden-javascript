@@ -17,6 +17,9 @@
 // @ts-ignore
 import type { TestExecution } from './test-execution';
 
+/**
+ * TestStep is one step of a test case\'s specification; children nest sub-steps.
+ */
 export interface TestStep {
     'id'?: string;
     'action'?: string;

@@ -1,5 +1,6 @@
 # FixHint
 
+FixHint is one agent-actionable remediation step attached to a verdict.
 
 ## Properties
 

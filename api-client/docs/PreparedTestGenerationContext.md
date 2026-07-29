@@ -1,5 +1,6 @@
 # PreparedTestGenerationContext
 
+PreparedTestGenerationContext is the batched output of PrepareTestGenerationContext: one RequirementTestContext per requested requirement plus shared codebase context, under one token budget.
 
 ## Properties
 

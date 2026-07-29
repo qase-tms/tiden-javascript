@@ -14,6 +14,9 @@
 
 
 
+/**
+ * RequirementTestFields are test-relevant facts extracted from the requirement\'s content for test authoring.
+ */
 export interface RequirementTestFields {
     'acceptanceCriteria'?: Array<string>;
     'edgeCases'?: Array<string>;

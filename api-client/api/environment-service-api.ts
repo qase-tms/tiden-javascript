@@ -37,7 +37,8 @@ import type { Status } from '../model';
 export const EnvironmentServiceApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * 
+         * Environments (e.g. production, staging) label where test runs and releases happened. slug is the stable identifier reporters and CI reference in CreateTestRun/CreateRelease; those endpoints also auto-create unknown slugs, so explicit creation is only needed to control name/host/type.
+         * @summary Creates an environment in a product.
          * @param {string} productId 
          * @param {CreateEnvironmentBody} createEnvironmentBody 
          * @param {*} [options] Override http request option.
@@ -78,7 +79,8 @@ export const EnvironmentServiceApiAxiosParamCreator = function (configuration?: 
             };
         },
         /**
-         * 
+         * Permanently removes the environment from the product. Test runs and releases that referenced it keep their recorded slug.
+         * @summary Deletes an environment.
          * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -114,7 +116,8 @@ export const EnvironmentServiceApiAxiosParamCreator = function (configuration?: 
             };
         },
         /**
-         * 
+         * Returns the environment including its slug, host, type, and origin.
+         * @summary Fetches one environment by id.
          * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -150,7 +153,8 @@ export const EnvironmentServiceApiAxiosParamCreator = function (configuration?: 
             };
         },
         /**
-         * 
+         * Returns all environments of the product with page_size/page_token pagination.
+         * @summary Lists a product\'s environments.
          * @param {string} productId 
          * @param {number} [paginationPageSize] 
          * @param {string} [paginationPageToken] 
@@ -205,7 +209,8 @@ export const EnvironmentServiceApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = EnvironmentServiceApiAxiosParamCreator(configuration)
     return {
         /**
-         * 
+         * Environments (e.g. production, staging) label where test runs and releases happened. slug is the stable identifier reporters and CI reference in CreateTestRun/CreateRelease; those endpoints also auto-create unknown slugs, so explicit creation is only needed to control name/host/type.
+         * @summary Creates an environment in a product.
          * @param {string} productId 
          * @param {CreateEnvironmentBody} createEnvironmentBody 
          * @param {*} [options] Override http request option.
@@ -218,7 +223,8 @@ export const EnvironmentServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Permanently removes the environment from the product. Test runs and releases that referenced it keep their recorded slug.
+         * @summary Deletes an environment.
          * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -230,7 +236,8 @@ export const EnvironmentServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Returns the environment including its slug, host, type, and origin.
+         * @summary Fetches one environment by id.
          * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -242,7 +249,8 @@ export const EnvironmentServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Returns all environments of the product with page_size/page_token pagination.
+         * @summary Lists a product\'s environments.
          * @param {string} productId 
          * @param {number} [paginationPageSize] 
          * @param {string} [paginationPageToken] 
@@ -265,7 +273,8 @@ export const EnvironmentServiceApiFactory = function (configuration?: Configurat
     const localVarFp = EnvironmentServiceApiFp(configuration)
     return {
         /**
-         * 
+         * Environments (e.g. production, staging) label where test runs and releases happened. slug is the stable identifier reporters and CI reference in CreateTestRun/CreateRelease; those endpoints also auto-create unknown slugs, so explicit creation is only needed to control name/host/type.
+         * @summary Creates an environment in a product.
          * @param {EnvironmentServiceApiEnvironmentServiceCreateEnvironmentRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -274,7 +283,8 @@ export const EnvironmentServiceApiFactory = function (configuration?: Configurat
             return localVarFp.environmentServiceCreateEnvironment(requestParameters.productId, requestParameters.createEnvironmentBody, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Permanently removes the environment from the product. Test runs and releases that referenced it keep their recorded slug.
+         * @summary Deletes an environment.
          * @param {EnvironmentServiceApiEnvironmentServiceDeleteEnvironmentRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -283,7 +293,8 @@ export const EnvironmentServiceApiFactory = function (configuration?: Configurat
             return localVarFp.environmentServiceDeleteEnvironment(requestParameters.id, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Returns the environment including its slug, host, type, and origin.
+         * @summary Fetches one environment by id.
          * @param {EnvironmentServiceApiEnvironmentServiceGetEnvironmentRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -292,7 +303,8 @@ export const EnvironmentServiceApiFactory = function (configuration?: Configurat
             return localVarFp.environmentServiceGetEnvironment(requestParameters.id, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Returns all environments of the product with page_size/page_token pagination.
+         * @summary Lists a product\'s environments.
          * @param {EnvironmentServiceApiEnvironmentServiceListEnvironmentsRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -342,7 +354,8 @@ export interface EnvironmentServiceApiEnvironmentServiceListEnvironmentsRequest 
  */
 export class EnvironmentServiceApi extends BaseAPI {
     /**
-     * 
+     * Environments (e.g. production, staging) label where test runs and releases happened. slug is the stable identifier reporters and CI reference in CreateTestRun/CreateRelease; those endpoints also auto-create unknown slugs, so explicit creation is only needed to control name/host/type.
+     * @summary Creates an environment in a product.
      * @param {EnvironmentServiceApiEnvironmentServiceCreateEnvironmentRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -352,7 +365,8 @@ export class EnvironmentServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Permanently removes the environment from the product. Test runs and releases that referenced it keep their recorded slug.
+     * @summary Deletes an environment.
      * @param {EnvironmentServiceApiEnvironmentServiceDeleteEnvironmentRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -362,7 +376,8 @@ export class EnvironmentServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Returns the environment including its slug, host, type, and origin.
+     * @summary Fetches one environment by id.
      * @param {EnvironmentServiceApiEnvironmentServiceGetEnvironmentRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -372,7 +387,8 @@ export class EnvironmentServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Returns all environments of the product with page_size/page_token pagination.
+     * @summary Lists a product\'s environments.
      * @param {EnvironmentServiceApiEnvironmentServiceListEnvironmentsRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}

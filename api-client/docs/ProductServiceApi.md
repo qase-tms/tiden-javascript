@@ -4,14 +4,15 @@ All URIs are relative to *https://api.tiden.ai*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
-|[**productServiceCreateProduct**](#productservicecreateproduct) | **POST** /v1/workspaces/{workspaceId}/products | |
-|[**productServiceGetProduct**](#productservicegetproduct) | **GET** /v1/products/{id} | GetProduct fetches one product by id so the CLI / agents can resolve a bound product\&#39;s details (e.g. its name for &#x60;tiden doctor&#x60;) without paging the whole workspace list. Tenancy is enforced via the id\&#39;s TENANT_ANCHOR_PRODUCT anchor.|
-|[**productServiceListProducts**](#productservicelistproducts) | **GET** /v1/workspaces/{workspaceId}/products | |
-|[**productServiceVerifyProductSetup**](#productserviceverifyproductsetup) | **POST** /v1/products/{productId}/setup:verify | |
+|[**productServiceCreateProduct**](#productservicecreateproduct) | **POST** /v1/workspaces/{workspaceId}/products | Creates a product in a workspace.|
+|[**productServiceGetProduct**](#productservicegetproduct) | **GET** /v1/products/{id} | Fetches one product by id.|
+|[**productServiceListProducts**](#productservicelistproducts) | **GET** /v1/workspaces/{workspaceId}/products | Lists a workspace\&#39;s products.|
+|[**productServiceVerifyProductSetup**](#productserviceverifyproductsetup) | **POST** /v1/products/{productId}/setup:verify | Records a CLI setup verification snapshot for the product.|
 
 # **productServiceCreateProduct**
 > CreateProductResponse productServiceCreateProduct(createProductBody)
 
+A product is the top-level container for requirements, tests, runs, and releases. code becomes the reference prefix for entity sequence numbers (e.g. \"QA\" yields QA-1, QA-2). team_id makes the product team-owned; empty leaves it workspace-owned and visible to all workspace members.
 
 ### Example
 
@@ -67,6 +68,7 @@ const { status, data } = await apiInstance.productServiceCreateProduct(
 # **productServiceGetProduct**
 > GetProductResponse productServiceGetProduct()
 
+Lets the CLI / agents resolve a bound product\'s details (e.g. its name for `tiden doctor`) without paging the whole workspace list. Tenancy is enforced via the id\'s TENANT_ANCHOR_PRODUCT anchor.
 
 ### Example
 
@@ -118,6 +120,7 @@ const { status, data } = await apiInstance.productServiceGetProduct(
 # **productServiceListProducts**
 > ListProductsResponse productServiceListProducts()
 
+Returns the products page twice: products (bare) and items — the same page wrapped with per-product rollups (requirement/test-case counts, open branches, activation state, last activity) for list pages. Paginated via pagination.page_size/page_token.
 
 ### Example
 
@@ -175,6 +178,7 @@ const { status, data } = await apiInstance.productServiceListProducts(
 # **productServiceVerifyProductSetup**
 > VerifyProductSetupResponse productServiceVerifyProductSetup(verifyProductSetupBody)
 
+Appends a per-user setup snapshot — repo fingerprint/binding, git-hook wiring, per-agent detected/wired statuses — stamped verified_at=now. repo_fingerprint is required; source defaults to \"cli\". The web onboarding checklist reads the latest snapshot.
 
 ### Example
 

@@ -17,6 +17,9 @@
 // @ts-ignore
 import type { CodebaseFile } from './codebase-file';
 
+/**
+ * CodebaseContext carries repository hints for test generation: relevant source/test files, the detected framework and test command, and style/ fixture examples to imitate.
+ */
 export interface CodebaseContext {
     'sourceFiles'?: Array<CodebaseFile>;
     'testFiles'?: Array<CodebaseFile>;

@@ -1,5 +1,6 @@
 # PaginationRequest
 
+PaginationRequest is the shared cursor-pagination input: page_size caps the page (server default and maximum apply when 0 or out of range) and page_token continues from a previous response\'s next_page_token.
 
 ## Properties
 

@@ -14,6 +14,9 @@
 
 
 
+/**
+ * DistillIntentRequest carries one coding session — the rendered transcript plus session metadata — to reconcile into the product\'s requirement tree.
+ */
 export interface DistillIntentBody {
     /**
      * Rendered conversation (normalized, slim — user/assistant text only). The backend never sees an agent-specific transcript format.

@@ -14,6 +14,9 @@
 
 
 
+/**
+ * AgentMemoryContext is one agent-memory entry surfaced into a context pack.
+ */
 export interface AgentMemoryContext {
     'id'?: string;
     'key'?: string;

@@ -35,8 +35,8 @@ import type { Status } from '../model';
 export const IssueServiceApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * 
-         * @summary Phase 3: server validates the staged object + atomically promotes to live. Exempt: addressed by source-map id (the product-gated entry point is CreateSourceMapUpload); source maps are observability infra, not a billed cap.
+         * Validates the staged object and atomically promotes it to live, so error events carrying the same debug_id resolve to original sources. Returns metadata only — never a download URL (source maps stay private). Billing-exempt: addressed by source-map id (the product-gated entry point is CreateSourceMapUpload); source maps are observability infra, not a billed cap.
+         * @summary Finalizes a source-map upload (phase 2 of 2).
          * @param {string} id 
          * @param {object} body 
          * @param {*} [options] Override http request option.
@@ -77,8 +77,8 @@ export const IssueServiceApiAxiosParamCreator = function (configuration?: Config
             };
         },
         /**
-         * 
-         * @summary Phase 1: create a pending row, return a presigned PUT to a staging key.
+         * Creates a pending source-map row keyed by debug_id and returns a presigned PUT URL to a staging key. Upload the raw map bytes to upload_url, then call ConfirmSourceMapUpload with the returned id to promote it.
+         * @summary Starts a source-map upload (phase 1 of 2).
          * @param {string} productId 
          * @param {CreateSourceMapUploadBody} createSourceMapUploadBody 
          * @param {*} [options] Override http request option.
@@ -128,8 +128,8 @@ export const IssueServiceApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = IssueServiceApiAxiosParamCreator(configuration)
     return {
         /**
-         * 
-         * @summary Phase 3: server validates the staged object + atomically promotes to live. Exempt: addressed by source-map id (the product-gated entry point is CreateSourceMapUpload); source maps are observability infra, not a billed cap.
+         * Validates the staged object and atomically promotes it to live, so error events carrying the same debug_id resolve to original sources. Returns metadata only — never a download URL (source maps stay private). Billing-exempt: addressed by source-map id (the product-gated entry point is CreateSourceMapUpload); source maps are observability infra, not a billed cap.
+         * @summary Finalizes a source-map upload (phase 2 of 2).
          * @param {string} id 
          * @param {object} body 
          * @param {*} [options] Override http request option.
@@ -142,8 +142,8 @@ export const IssueServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
-         * @summary Phase 1: create a pending row, return a presigned PUT to a staging key.
+         * Creates a pending source-map row keyed by debug_id and returns a presigned PUT URL to a staging key. Upload the raw map bytes to upload_url, then call ConfirmSourceMapUpload with the returned id to promote it.
+         * @summary Starts a source-map upload (phase 1 of 2).
          * @param {string} productId 
          * @param {CreateSourceMapUploadBody} createSourceMapUploadBody 
          * @param {*} [options] Override http request option.
@@ -165,8 +165,8 @@ export const IssueServiceApiFactory = function (configuration?: Configuration, b
     const localVarFp = IssueServiceApiFp(configuration)
     return {
         /**
-         * 
-         * @summary Phase 3: server validates the staged object + atomically promotes to live. Exempt: addressed by source-map id (the product-gated entry point is CreateSourceMapUpload); source maps are observability infra, not a billed cap.
+         * Validates the staged object and atomically promotes it to live, so error events carrying the same debug_id resolve to original sources. Returns metadata only — never a download URL (source maps stay private). Billing-exempt: addressed by source-map id (the product-gated entry point is CreateSourceMapUpload); source maps are observability infra, not a billed cap.
+         * @summary Finalizes a source-map upload (phase 2 of 2).
          * @param {IssueServiceApiIssueServiceConfirmSourceMapUploadRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -175,8 +175,8 @@ export const IssueServiceApiFactory = function (configuration?: Configuration, b
             return localVarFp.issueServiceConfirmSourceMapUpload(requestParameters.id, requestParameters.body, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
-         * @summary Phase 1: create a pending row, return a presigned PUT to a staging key.
+         * Creates a pending source-map row keyed by debug_id and returns a presigned PUT URL to a staging key. Upload the raw map bytes to upload_url, then call ConfirmSourceMapUpload with the returned id to promote it.
+         * @summary Starts a source-map upload (phase 1 of 2).
          * @param {IssueServiceApiIssueServiceCreateSourceMapUploadRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -210,8 +210,8 @@ export interface IssueServiceApiIssueServiceCreateSourceMapUploadRequest {
  */
 export class IssueServiceApi extends BaseAPI {
     /**
-     * 
-     * @summary Phase 3: server validates the staged object + atomically promotes to live. Exempt: addressed by source-map id (the product-gated entry point is CreateSourceMapUpload); source maps are observability infra, not a billed cap.
+     * Validates the staged object and atomically promotes it to live, so error events carrying the same debug_id resolve to original sources. Returns metadata only — never a download URL (source maps stay private). Billing-exempt: addressed by source-map id (the product-gated entry point is CreateSourceMapUpload); source maps are observability infra, not a billed cap.
+     * @summary Finalizes a source-map upload (phase 2 of 2).
      * @param {IssueServiceApiIssueServiceConfirmSourceMapUploadRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -221,8 +221,8 @@ export class IssueServiceApi extends BaseAPI {
     }
 
     /**
-     * 
-     * @summary Phase 1: create a pending row, return a presigned PUT to a staging key.
+     * Creates a pending source-map row keyed by debug_id and returns a presigned PUT URL to a staging key. Upload the raw map bytes to upload_url, then call ConfirmSourceMapUpload with the returned id to promote it.
+     * @summary Starts a source-map upload (phase 1 of 2).
      * @param {IssueServiceApiIssueServiceCreateSourceMapUploadRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}

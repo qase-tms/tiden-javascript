@@ -14,6 +14,9 @@
 
 
 
+/**
+ * FixHint is one agent-actionable remediation step attached to a verdict.
+ */
 export interface FixHint {
     'component'?: string;
     'action'?: string;

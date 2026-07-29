@@ -17,6 +17,9 @@
 // @ts-ignore
 import type { IngestTest } from './ingest-test';
 
+/**
+ * IngestTestsRequest is one reporter batch: 1..1000 tests upserted into (product, branch) with a shared framework label.
+ */
 export interface IngestTestsBody {
     'branch'?: string;
     /**

@@ -29,6 +29,9 @@ import type { TestRelation } from './test-relation';
 // @ts-ignore
 import type { TestStep } from './test-step';
 
+/**
+ * IngestTest is one reporter-observed test, identified by external_id within its suite_path (root to leaf).
+ */
 export interface IngestTest {
     'externalId'?: string;
     'suitePath'?: Array<IngestSuiteSegment>;

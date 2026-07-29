@@ -14,6 +14,9 @@
 
 
 
+/**
+ * TestRelation is a typed, reporter-provided relation payload attached to a test; data\'s shape depends on type.
+ */
 export interface TestRelation {
     'type'?: string;
     'data'?: object;

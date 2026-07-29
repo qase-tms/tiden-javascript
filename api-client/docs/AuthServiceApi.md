@@ -4,12 +4,13 @@ All URIs are relative to *https://api.tiden.ai*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
-|[**authServiceGetCurrentUser**](#authservicegetcurrentuser) | **GET** /v1/auth/me | |
-|[**authServiceUpdateUserOnboarding**](#authserviceupdateuseronboarding) | **PUT** /v1/auth/onboarding | |
+|[**authServiceGetCurrentUser**](#authservicegetcurrentuser) | **GET** /v1/auth/me | Returns the authenticated user (whoami).|
+|[**authServiceUpdateUserOnboarding**](#authserviceupdateuseronboarding) | **PUT** /v1/auth/onboarding | Updates the caller\&#39;s onboarding progress flags.|
 
 # **authServiceGetCurrentUser**
 > GetCurrentUserResponse authServiceGetCurrentUser()
 
+Resolves the caller from the presented credential (API token or session) and returns the user\'s id, email, name, and avatar URL. The CLI uses it to verify that a token is valid and who it belongs to.
 
 ### Example
 
@@ -54,6 +55,7 @@ This endpoint does not have any parameters.
 # **authServiceUpdateUserOnboarding**
 > UpdateUserOnboardingResponse authServiceUpdateUserOnboarding(updateUserOnboardingRequest)
 
+One-way latches: each of cli_verified, dismissed, and completed stamps its timestamp on the caller\'s onboarding state when true; false leaves the flag unchanged (flags cannot be un-set through this RPC). Returns the resulting onboarding state.
 
 ### Example
 
@@ -67,7 +69,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new AuthServiceApi(configuration);
 
-let updateUserOnboardingRequest: UpdateUserOnboardingRequest; //
+let updateUserOnboardingRequest: UpdateUserOnboardingRequest; //UpdateUserOnboardingRequest latches onboarding flags: each true field stamps its timestamp; false leaves the flag unchanged. wizard_step and answers are ordinary mutable state: an unset field is left untouched, a set one replaces the stored value.
 
 const { status, data } = await apiInstance.authServiceUpdateUserOnboarding(
     updateUserOnboardingRequest
@@ -78,7 +80,7 @@ const { status, data } = await apiInstance.authServiceUpdateUserOnboarding(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **updateUserOnboardingRequest** | **UpdateUserOnboardingRequest**|  | |
+| **updateUserOnboardingRequest** | **UpdateUserOnboardingRequest**| UpdateUserOnboardingRequest latches onboarding flags: each true field stamps its timestamp; false leaves the flag unchanged. wizard_step and answers are ordinary mutable state: an unset field is left untouched, a set one replaces the stored value. | |
 
 
 ### Return type

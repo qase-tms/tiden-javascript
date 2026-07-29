@@ -14,6 +14,9 @@
 
 
 
+/**
+ * StaleCoverageSignal flags a linked test last updated before its requirement\'s last update — coverage that may no longer verify the requirement.
+ */
 export interface StaleCoverageSignal {
     'requirementId'?: string;
     'testId'?: string;

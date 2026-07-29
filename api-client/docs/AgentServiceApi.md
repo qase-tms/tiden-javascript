@@ -4,15 +4,16 @@ All URIs are relative to *https://api.tiden.ai*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
-|[**agentServiceCreateAgentConfig**](#agentservicecreateagentconfig) | **POST** /v1/products/{productId}/agent-configs | |
-|[**agentServiceDeleteAgentConfig**](#agentservicedeleteagentconfig) | **DELETE** /v1/agent-configs/{id} | |
-|[**agentServiceGetAgentConfig**](#agentservicegetagentconfig) | **GET** /v1/agent-configs/{id} | |
-|[**agentServiceListAgentConfigs**](#agentservicelistagentconfigs) | **GET** /v1/products/{productId}/agent-configs | |
-|[**agentServiceListAgentTypes**](#agentservicelistagenttypes) | **GET** /v1/agent-types | |
+|[**agentServiceCreateAgentConfig**](#agentservicecreateagentconfig) | **POST** /v1/products/{productId}/agent-configs | Creates an agent configuration in a product.|
+|[**agentServiceDeleteAgentConfig**](#agentservicedeleteagentconfig) | **DELETE** /v1/agent-configs/{id} | Deletes an agent configuration.|
+|[**agentServiceGetAgentConfig**](#agentservicegetagentconfig) | **GET** /v1/agent-configs/{id} | Fetches one agent configuration by id.|
+|[**agentServiceListAgentConfigs**](#agentservicelistagentconfigs) | **GET** /v1/products/{productId}/agent-configs | Lists a product\&#39;s agent configurations.|
+|[**agentServiceListAgentTypes**](#agentservicelistagenttypes) | **GET** /v1/agent-types | Lists the catalog of available agent types.|
 
 # **agentServiceCreateAgentConfig**
 > CreateAgentConfigResponse agentServiceCreateAgentConfig(createAgentConfigBody)
 
+Binds an agent_type to the product with a name, inputs_json matching the type\'s input schema, optional LLM/data credential references, and an optional cron schedule (schedule_cron + schedule_timezone). Runs are started separately via StartAgentRun, the schedule, or a trigger.
 
 ### Example
 
@@ -68,6 +69,7 @@ const { status, data } = await apiInstance.agentServiceCreateAgentConfig(
 # **agentServiceDeleteAgentConfig**
 > object agentServiceDeleteAgentConfig()
 
+Permanently removes the config; scheduled executions stop. Not reversible.
 
 ### Example
 
@@ -119,6 +121,7 @@ const { status, data } = await apiInstance.agentServiceDeleteAgentConfig(
 # **agentServiceGetAgentConfig**
 > GetAgentConfigResponse agentServiceGetAgentConfig()
 
+Returns the config including inputs_json (parse against the agent type\'s input_schema_json), schedule, and credential references.
 
 ### Example
 
@@ -170,6 +173,7 @@ const { status, data } = await apiInstance.agentServiceGetAgentConfig(
 # **agentServiceListAgentConfigs**
 > ListAgentConfigsResponse agentServiceListAgentConfigs()
 
+Returns every agent config of the product, including its inputs, optional cron schedule, and credential references (never credential secrets).
 
 ### Example
 
@@ -221,6 +225,7 @@ const { status, data } = await apiInstance.agentServiceListAgentConfigs(
 # **agentServiceListAgentTypes**
 > ListAgentTypesResponse agentServiceListAgentTypes()
 
+Returns every code-defined agent capability with its input JSON Schema (input_schema_json), supported LLM providers, per-provider default models, and whether it needs a data credential or produces a branch. The catalog is global — not product-scoped.
 
 ### Example
 

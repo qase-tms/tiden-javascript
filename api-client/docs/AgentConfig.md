@@ -1,5 +1,6 @@
 # AgentConfig
 
+AgentConfig binds an agent type to a product with a name, inputs, optional LLM/data credential references, and an optional cron schedule.
 
 ## Properties
 

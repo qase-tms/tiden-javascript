@@ -14,6 +14,9 @@
 
 
 
+/**
+ * ContextCitation resolves a citation_id referenced elsewhere in a context pack to its source (a test, memory entry, source anchor, ...).
+ */
 export interface ContextCitation {
     'id'?: string;
     'sourceType'?: string;

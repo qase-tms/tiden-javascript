@@ -41,7 +41,8 @@ import type { VerifyProductSetupResponse } from '../model';
 export const ProductServiceApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * 
+         * A product is the top-level container for requirements, tests, runs, and releases. code becomes the reference prefix for entity sequence numbers (e.g. \"QA\" yields QA-1, QA-2). team_id makes the product team-owned; empty leaves it workspace-owned and visible to all workspace members.
+         * @summary Creates a product in a workspace.
          * @param {string} workspaceId 
          * @param {CreateProductBody} createProductBody 
          * @param {*} [options] Override http request option.
@@ -82,8 +83,8 @@ export const ProductServiceApiAxiosParamCreator = function (configuration?: Conf
             };
         },
         /**
-         * 
-         * @summary GetProduct fetches one product by id so the CLI / agents can resolve a bound product\'s details (e.g. its name for `tiden doctor`) without paging the whole workspace list. Tenancy is enforced via the id\'s TENANT_ANCHOR_PRODUCT anchor.
+         * Lets the CLI / agents resolve a bound product\'s details (e.g. its name for `tiden doctor`) without paging the whole workspace list. Tenancy is enforced via the id\'s TENANT_ANCHOR_PRODUCT anchor.
+         * @summary Fetches one product by id.
          * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -119,7 +120,8 @@ export const ProductServiceApiAxiosParamCreator = function (configuration?: Conf
             };
         },
         /**
-         * 
+         * Returns the products page twice: products (bare) and items — the same page wrapped with per-product rollups (requirement/test-case counts, open branches, activation state, last activity) for list pages. Paginated via pagination.page_size/page_token.
+         * @summary Lists a workspace\'s products.
          * @param {string} workspaceId 
          * @param {number} [paginationPageSize] 
          * @param {string} [paginationPageToken] 
@@ -165,7 +167,8 @@ export const ProductServiceApiAxiosParamCreator = function (configuration?: Conf
             };
         },
         /**
-         * 
+         * Appends a per-user setup snapshot — repo fingerprint/binding, git-hook wiring, per-agent detected/wired statuses — stamped verified_at=now. repo_fingerprint is required; source defaults to \"cli\". The web onboarding checklist reads the latest snapshot.
+         * @summary Records a CLI setup verification snapshot for the product.
          * @param {string} productId 
          * @param {VerifyProductSetupBody} verifyProductSetupBody 
          * @param {*} [options] Override http request option.
@@ -215,7 +218,8 @@ export const ProductServiceApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = ProductServiceApiAxiosParamCreator(configuration)
     return {
         /**
-         * 
+         * A product is the top-level container for requirements, tests, runs, and releases. code becomes the reference prefix for entity sequence numbers (e.g. \"QA\" yields QA-1, QA-2). team_id makes the product team-owned; empty leaves it workspace-owned and visible to all workspace members.
+         * @summary Creates a product in a workspace.
          * @param {string} workspaceId 
          * @param {CreateProductBody} createProductBody 
          * @param {*} [options] Override http request option.
@@ -228,8 +232,8 @@ export const ProductServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
-         * @summary GetProduct fetches one product by id so the CLI / agents can resolve a bound product\'s details (e.g. its name for `tiden doctor`) without paging the whole workspace list. Tenancy is enforced via the id\'s TENANT_ANCHOR_PRODUCT anchor.
+         * Lets the CLI / agents resolve a bound product\'s details (e.g. its name for `tiden doctor`) without paging the whole workspace list. Tenancy is enforced via the id\'s TENANT_ANCHOR_PRODUCT anchor.
+         * @summary Fetches one product by id.
          * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -241,7 +245,8 @@ export const ProductServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Returns the products page twice: products (bare) and items — the same page wrapped with per-product rollups (requirement/test-case counts, open branches, activation state, last activity) for list pages. Paginated via pagination.page_size/page_token.
+         * @summary Lists a workspace\'s products.
          * @param {string} workspaceId 
          * @param {number} [paginationPageSize] 
          * @param {string} [paginationPageToken] 
@@ -255,7 +260,8 @@ export const ProductServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Appends a per-user setup snapshot — repo fingerprint/binding, git-hook wiring, per-agent detected/wired statuses — stamped verified_at=now. repo_fingerprint is required; source defaults to \"cli\". The web onboarding checklist reads the latest snapshot.
+         * @summary Records a CLI setup verification snapshot for the product.
          * @param {string} productId 
          * @param {VerifyProductSetupBody} verifyProductSetupBody 
          * @param {*} [options] Override http request option.
@@ -277,7 +283,8 @@ export const ProductServiceApiFactory = function (configuration?: Configuration,
     const localVarFp = ProductServiceApiFp(configuration)
     return {
         /**
-         * 
+         * A product is the top-level container for requirements, tests, runs, and releases. code becomes the reference prefix for entity sequence numbers (e.g. \"QA\" yields QA-1, QA-2). team_id makes the product team-owned; empty leaves it workspace-owned and visible to all workspace members.
+         * @summary Creates a product in a workspace.
          * @param {ProductServiceApiProductServiceCreateProductRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -286,8 +293,8 @@ export const ProductServiceApiFactory = function (configuration?: Configuration,
             return localVarFp.productServiceCreateProduct(requestParameters.workspaceId, requestParameters.createProductBody, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
-         * @summary GetProduct fetches one product by id so the CLI / agents can resolve a bound product\'s details (e.g. its name for `tiden doctor`) without paging the whole workspace list. Tenancy is enforced via the id\'s TENANT_ANCHOR_PRODUCT anchor.
+         * Lets the CLI / agents resolve a bound product\'s details (e.g. its name for `tiden doctor`) without paging the whole workspace list. Tenancy is enforced via the id\'s TENANT_ANCHOR_PRODUCT anchor.
+         * @summary Fetches one product by id.
          * @param {ProductServiceApiProductServiceGetProductRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -296,7 +303,8 @@ export const ProductServiceApiFactory = function (configuration?: Configuration,
             return localVarFp.productServiceGetProduct(requestParameters.id, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Returns the products page twice: products (bare) and items — the same page wrapped with per-product rollups (requirement/test-case counts, open branches, activation state, last activity) for list pages. Paginated via pagination.page_size/page_token.
+         * @summary Lists a workspace\'s products.
          * @param {ProductServiceApiProductServiceListProductsRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -305,7 +313,8 @@ export const ProductServiceApiFactory = function (configuration?: Configuration,
             return localVarFp.productServiceListProducts(requestParameters.workspaceId, requestParameters.paginationPageSize, requestParameters.paginationPageToken, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Appends a per-user setup snapshot — repo fingerprint/binding, git-hook wiring, per-agent detected/wired statuses — stamped verified_at=now. repo_fingerprint is required; source defaults to \"cli\". The web onboarding checklist reads the latest snapshot.
+         * @summary Records a CLI setup verification snapshot for the product.
          * @param {ProductServiceApiProductServiceVerifyProductSetupRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -357,7 +366,8 @@ export interface ProductServiceApiProductServiceVerifyProductSetupRequest {
  */
 export class ProductServiceApi extends BaseAPI {
     /**
-     * 
+     * A product is the top-level container for requirements, tests, runs, and releases. code becomes the reference prefix for entity sequence numbers (e.g. \"QA\" yields QA-1, QA-2). team_id makes the product team-owned; empty leaves it workspace-owned and visible to all workspace members.
+     * @summary Creates a product in a workspace.
      * @param {ProductServiceApiProductServiceCreateProductRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -367,8 +377,8 @@ export class ProductServiceApi extends BaseAPI {
     }
 
     /**
-     * 
-     * @summary GetProduct fetches one product by id so the CLI / agents can resolve a bound product\'s details (e.g. its name for `tiden doctor`) without paging the whole workspace list. Tenancy is enforced via the id\'s TENANT_ANCHOR_PRODUCT anchor.
+     * Lets the CLI / agents resolve a bound product\'s details (e.g. its name for `tiden doctor`) without paging the whole workspace list. Tenancy is enforced via the id\'s TENANT_ANCHOR_PRODUCT anchor.
+     * @summary Fetches one product by id.
      * @param {ProductServiceApiProductServiceGetProductRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -378,7 +388,8 @@ export class ProductServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Returns the products page twice: products (bare) and items — the same page wrapped with per-product rollups (requirement/test-case counts, open branches, activation state, last activity) for list pages. Paginated via pagination.page_size/page_token.
+     * @summary Lists a workspace\'s products.
      * @param {ProductServiceApiProductServiceListProductsRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -388,7 +399,8 @@ export class ProductServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Appends a per-user setup snapshot — repo fingerprint/binding, git-hook wiring, per-agent detected/wired statuses — stamped verified_at=now. repo_fingerprint is required; source defaults to \"cli\". The web onboarding checklist reads the latest snapshot.
+     * @summary Records a CLI setup verification snapshot for the product.
      * @param {ProductServiceApiProductServiceVerifyProductSetupRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}

@@ -1,5 +1,6 @@
 # ReportError
 
+ReportError is one per-entry validation failure from a reported batch.
 
 ## Properties
 

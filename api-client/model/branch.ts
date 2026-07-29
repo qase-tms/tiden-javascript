@@ -17,6 +17,9 @@
 // @ts-ignore
 import type { BranchChangeStats } from './branch-change-stats';
 
+/**
+ * Branch is a copy-on-write working line over a product\'s main data: requirement/test/component edits made on it shadow main until merged. status is \"open\" until the branch is merged (\"merged\").
+ */
 export interface Branch {
     'id'?: string;
     'productId'?: string;

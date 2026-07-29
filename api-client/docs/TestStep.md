@@ -1,5 +1,6 @@
 # TestStep
 
+TestStep is one step of a test case\'s specification; children nest sub-steps.
 
 ## Properties
 

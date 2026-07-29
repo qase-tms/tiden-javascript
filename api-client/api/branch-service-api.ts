@@ -43,7 +43,8 @@ import type { Status } from '../model';
 export const BranchServiceApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * 
+         * The branch starts as a view of main; edits made on it copy entities on write and flow back via MergeBranch. name must be lowercase alphanumeric with hyphens/underscores/slashes, at most 100 characters, and not \"main\". created_by_agent_run_id attributes branches created by an agent run.
+         * @summary Creates a copy-on-write branch of a product\'s main line.
          * @param {string} productId 
          * @param {CreateBranchBody} createBranchBody 
          * @param {*} [options] Override http request option.
@@ -84,7 +85,8 @@ export const BranchServiceApiAxiosParamCreator = function (configuration?: Confi
             };
         },
         /**
-         * 
+         * Permanently drops the branch\'s local requirement/test/component copies and deletion markers; main is unaffected. Deletion history is recorded per discarded requirement. The main branch cannot be deleted.
+         * @summary Deletes a branch and discards its copy-on-write changes.
          * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -120,7 +122,8 @@ export const BranchServiceApiAxiosParamCreator = function (configuration?: Confi
             };
         },
         /**
-         * 
+         * Returns the branch with its status and metadata. Change stats are only populated by ListBranches with include_stats=true.
+         * @summary Fetches one branch by id.
          * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -156,7 +159,8 @@ export const BranchServiceApiAxiosParamCreator = function (configuration?: Confi
             };
         },
         /**
-         * 
+         * Returns the additions, modifications (with per-field conflict flags), and deletions the merge would apply, for requirements, tests, and components, plus aggregate stats. A conflict means main changed the entity after the branch took its copy. Read-only — nothing is written.
+         * @summary Previews the effect of merging a branch into main.
          * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -192,7 +196,8 @@ export const BranchServiceApiAxiosParamCreator = function (configuration?: Confi
             };
         },
         /**
-         * 
+         * Returns every branch including main. Set include_stats to add per-branch change counts vs main (additions/modifications/deletions per entity kind, plus conflicts).
+         * @summary Lists a product\'s branches.
          * @param {string} productId 
          * @param {boolean} [includeStats] When true, each returned Branch carries BranchChangeStats (per-branch change counts vs main).
          * @param {*} [options] Override http request option.
@@ -233,7 +238,8 @@ export const BranchServiceApiAxiosParamCreator = function (configuration?: Confi
             };
         },
         /**
-         * 
+         * Applies the branch\'s additions/modifications/deletions to main in one transaction. Every conflicting entity requires a resolutions entry keyed \"req:<uuid>\", \"test:<uuid>\", or \"comp:<uuid>\" with value KEEP_BRANCH or KEEP_MAIN — otherwise the call fails with UNRESOLVED_CONFLICT and nothing is applied. Only open branches can merge; main cannot merge into itself.
+         * @summary Merges a branch\'s changes into main and closes the branch.
          * @param {string} id 
          * @param {MergeBranchBody} mergeBranchBody 
          * @param {*} [options] Override http request option.
@@ -283,7 +289,8 @@ export const BranchServiceApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = BranchServiceApiAxiosParamCreator(configuration)
     return {
         /**
-         * 
+         * The branch starts as a view of main; edits made on it copy entities on write and flow back via MergeBranch. name must be lowercase alphanumeric with hyphens/underscores/slashes, at most 100 characters, and not \"main\". created_by_agent_run_id attributes branches created by an agent run.
+         * @summary Creates a copy-on-write branch of a product\'s main line.
          * @param {string} productId 
          * @param {CreateBranchBody} createBranchBody 
          * @param {*} [options] Override http request option.
@@ -296,7 +303,8 @@ export const BranchServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Permanently drops the branch\'s local requirement/test/component copies and deletion markers; main is unaffected. Deletion history is recorded per discarded requirement. The main branch cannot be deleted.
+         * @summary Deletes a branch and discards its copy-on-write changes.
          * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -308,7 +316,8 @@ export const BranchServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Returns the branch with its status and metadata. Change stats are only populated by ListBranches with include_stats=true.
+         * @summary Fetches one branch by id.
          * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -320,7 +329,8 @@ export const BranchServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Returns the additions, modifications (with per-field conflict flags), and deletions the merge would apply, for requirements, tests, and components, plus aggregate stats. A conflict means main changed the entity after the branch took its copy. Read-only — nothing is written.
+         * @summary Previews the effect of merging a branch into main.
          * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -332,7 +342,8 @@ export const BranchServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Returns every branch including main. Set include_stats to add per-branch change counts vs main (additions/modifications/deletions per entity kind, plus conflicts).
+         * @summary Lists a product\'s branches.
          * @param {string} productId 
          * @param {boolean} [includeStats] When true, each returned Branch carries BranchChangeStats (per-branch change counts vs main).
          * @param {*} [options] Override http request option.
@@ -345,7 +356,8 @@ export const BranchServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Applies the branch\'s additions/modifications/deletions to main in one transaction. Every conflicting entity requires a resolutions entry keyed \"req:<uuid>\", \"test:<uuid>\", or \"comp:<uuid>\" with value KEEP_BRANCH or KEEP_MAIN — otherwise the call fails with UNRESOLVED_CONFLICT and nothing is applied. Only open branches can merge; main cannot merge into itself.
+         * @summary Merges a branch\'s changes into main and closes the branch.
          * @param {string} id 
          * @param {MergeBranchBody} mergeBranchBody 
          * @param {*} [options] Override http request option.
@@ -367,7 +379,8 @@ export const BranchServiceApiFactory = function (configuration?: Configuration, 
     const localVarFp = BranchServiceApiFp(configuration)
     return {
         /**
-         * 
+         * The branch starts as a view of main; edits made on it copy entities on write and flow back via MergeBranch. name must be lowercase alphanumeric with hyphens/underscores/slashes, at most 100 characters, and not \"main\". created_by_agent_run_id attributes branches created by an agent run.
+         * @summary Creates a copy-on-write branch of a product\'s main line.
          * @param {BranchServiceApiBranchServiceCreateBranchRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -376,7 +389,8 @@ export const BranchServiceApiFactory = function (configuration?: Configuration, 
             return localVarFp.branchServiceCreateBranch(requestParameters.productId, requestParameters.createBranchBody, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Permanently drops the branch\'s local requirement/test/component copies and deletion markers; main is unaffected. Deletion history is recorded per discarded requirement. The main branch cannot be deleted.
+         * @summary Deletes a branch and discards its copy-on-write changes.
          * @param {BranchServiceApiBranchServiceDeleteBranchRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -385,7 +399,8 @@ export const BranchServiceApiFactory = function (configuration?: Configuration, 
             return localVarFp.branchServiceDeleteBranch(requestParameters.id, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Returns the branch with its status and metadata. Change stats are only populated by ListBranches with include_stats=true.
+         * @summary Fetches one branch by id.
          * @param {BranchServiceApiBranchServiceGetBranchRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -394,7 +409,8 @@ export const BranchServiceApiFactory = function (configuration?: Configuration, 
             return localVarFp.branchServiceGetBranch(requestParameters.id, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Returns the additions, modifications (with per-field conflict flags), and deletions the merge would apply, for requirements, tests, and components, plus aggregate stats. A conflict means main changed the entity after the branch took its copy. Read-only — nothing is written.
+         * @summary Previews the effect of merging a branch into main.
          * @param {BranchServiceApiBranchServiceGetMergePreviewRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -403,7 +419,8 @@ export const BranchServiceApiFactory = function (configuration?: Configuration, 
             return localVarFp.branchServiceGetMergePreview(requestParameters.id, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Returns every branch including main. Set include_stats to add per-branch change counts vs main (additions/modifications/deletions per entity kind, plus conflicts).
+         * @summary Lists a product\'s branches.
          * @param {BranchServiceApiBranchServiceListBranchesRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -412,7 +429,8 @@ export const BranchServiceApiFactory = function (configuration?: Configuration, 
             return localVarFp.branchServiceListBranches(requestParameters.productId, requestParameters.includeStats, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Applies the branch\'s additions/modifications/deletions to main in one transaction. Every conflicting entity requires a resolutions entry keyed \"req:<uuid>\", \"test:<uuid>\", or \"comp:<uuid>\" with value KEEP_BRANCH or KEEP_MAIN — otherwise the call fails with UNRESOLVED_CONFLICT and nothing is applied. Only open branches can merge; main cannot merge into itself.
+         * @summary Merges a branch\'s changes into main and closes the branch.
          * @param {BranchServiceApiBranchServiceMergeBranchRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -479,7 +497,8 @@ export interface BranchServiceApiBranchServiceMergeBranchRequest {
  */
 export class BranchServiceApi extends BaseAPI {
     /**
-     * 
+     * The branch starts as a view of main; edits made on it copy entities on write and flow back via MergeBranch. name must be lowercase alphanumeric with hyphens/underscores/slashes, at most 100 characters, and not \"main\". created_by_agent_run_id attributes branches created by an agent run.
+     * @summary Creates a copy-on-write branch of a product\'s main line.
      * @param {BranchServiceApiBranchServiceCreateBranchRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -489,7 +508,8 @@ export class BranchServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Permanently drops the branch\'s local requirement/test/component copies and deletion markers; main is unaffected. Deletion history is recorded per discarded requirement. The main branch cannot be deleted.
+     * @summary Deletes a branch and discards its copy-on-write changes.
      * @param {BranchServiceApiBranchServiceDeleteBranchRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -499,7 +519,8 @@ export class BranchServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Returns the branch with its status and metadata. Change stats are only populated by ListBranches with include_stats=true.
+     * @summary Fetches one branch by id.
      * @param {BranchServiceApiBranchServiceGetBranchRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -509,7 +530,8 @@ export class BranchServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Returns the additions, modifications (with per-field conflict flags), and deletions the merge would apply, for requirements, tests, and components, plus aggregate stats. A conflict means main changed the entity after the branch took its copy. Read-only — nothing is written.
+     * @summary Previews the effect of merging a branch into main.
      * @param {BranchServiceApiBranchServiceGetMergePreviewRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -519,7 +541,8 @@ export class BranchServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Returns every branch including main. Set include_stats to add per-branch change counts vs main (additions/modifications/deletions per entity kind, plus conflicts).
+     * @summary Lists a product\'s branches.
      * @param {BranchServiceApiBranchServiceListBranchesRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -529,7 +552,8 @@ export class BranchServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Applies the branch\'s additions/modifications/deletions to main in one transaction. Every conflicting entity requires a resolutions entry keyed \"req:<uuid>\", \"test:<uuid>\", or \"comp:<uuid>\" with value KEEP_BRANCH or KEEP_MAIN — otherwise the call fails with UNRESOLVED_CONFLICT and nothing is applied. Only open branches can merge; main cannot merge into itself.
+     * @summary Merges a branch\'s changes into main and closes the branch.
      * @param {BranchServiceApiBranchServiceMergeBranchRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}

@@ -1,5 +1,6 @@
 # IngestTestsBody
 
+IngestTestsRequest is one reporter batch: 1..1000 tests upserted into (product, branch) with a shared framework label.
 
 ## Properties
 

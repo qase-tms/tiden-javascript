@@ -17,6 +17,9 @@
 // @ts-ignore
 import type { TestParameter } from './test-parameter';
 
+/**
+ * TestParameterGroup names one set of parameter values a parameterized test runs with.
+ */
 export interface TestParameterGroup {
     'id'?: string;
     'name'?: string;

@@ -39,7 +39,8 @@ import type { Status } from '../model';
 export const AgentServiceApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * 
+         * Binds an agent_type to the product with a name, inputs_json matching the type\'s input schema, optional LLM/data credential references, and an optional cron schedule (schedule_cron + schedule_timezone). Runs are started separately via StartAgentRun, the schedule, or a trigger.
+         * @summary Creates an agent configuration in a product.
          * @param {string} productId 
          * @param {CreateAgentConfigBody} createAgentConfigBody 
          * @param {*} [options] Override http request option.
@@ -80,7 +81,8 @@ export const AgentServiceApiAxiosParamCreator = function (configuration?: Config
             };
         },
         /**
-         * 
+         * Permanently removes the config; scheduled executions stop. Not reversible.
+         * @summary Deletes an agent configuration.
          * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -116,7 +118,8 @@ export const AgentServiceApiAxiosParamCreator = function (configuration?: Config
             };
         },
         /**
-         * 
+         * Returns the config including inputs_json (parse against the agent type\'s input_schema_json), schedule, and credential references.
+         * @summary Fetches one agent configuration by id.
          * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -152,7 +155,8 @@ export const AgentServiceApiAxiosParamCreator = function (configuration?: Config
             };
         },
         /**
-         * 
+         * Returns every agent config of the product, including its inputs, optional cron schedule, and credential references (never credential secrets).
+         * @summary Lists a product\'s agent configurations.
          * @param {string} productId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -188,7 +192,8 @@ export const AgentServiceApiAxiosParamCreator = function (configuration?: Config
             };
         },
         /**
-         * 
+         * Returns every code-defined agent capability with its input JSON Schema (input_schema_json), supported LLM providers, per-provider default models, and whether it needs a data credential or produces a branch. The catalog is global — not product-scoped.
+         * @summary Lists the catalog of available agent types.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -229,7 +234,8 @@ export const AgentServiceApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = AgentServiceApiAxiosParamCreator(configuration)
     return {
         /**
-         * 
+         * Binds an agent_type to the product with a name, inputs_json matching the type\'s input schema, optional LLM/data credential references, and an optional cron schedule (schedule_cron + schedule_timezone). Runs are started separately via StartAgentRun, the schedule, or a trigger.
+         * @summary Creates an agent configuration in a product.
          * @param {string} productId 
          * @param {CreateAgentConfigBody} createAgentConfigBody 
          * @param {*} [options] Override http request option.
@@ -242,7 +248,8 @@ export const AgentServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Permanently removes the config; scheduled executions stop. Not reversible.
+         * @summary Deletes an agent configuration.
          * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -254,7 +261,8 @@ export const AgentServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Returns the config including inputs_json (parse against the agent type\'s input_schema_json), schedule, and credential references.
+         * @summary Fetches one agent configuration by id.
          * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -266,7 +274,8 @@ export const AgentServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Returns every agent config of the product, including its inputs, optional cron schedule, and credential references (never credential secrets).
+         * @summary Lists a product\'s agent configurations.
          * @param {string} productId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -278,7 +287,8 @@ export const AgentServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Returns every code-defined agent capability with its input JSON Schema (input_schema_json), supported LLM providers, per-provider default models, and whether it needs a data credential or produces a branch. The catalog is global — not product-scoped.
+         * @summary Lists the catalog of available agent types.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -298,7 +308,8 @@ export const AgentServiceApiFactory = function (configuration?: Configuration, b
     const localVarFp = AgentServiceApiFp(configuration)
     return {
         /**
-         * 
+         * Binds an agent_type to the product with a name, inputs_json matching the type\'s input schema, optional LLM/data credential references, and an optional cron schedule (schedule_cron + schedule_timezone). Runs are started separately via StartAgentRun, the schedule, or a trigger.
+         * @summary Creates an agent configuration in a product.
          * @param {AgentServiceApiAgentServiceCreateAgentConfigRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -307,7 +318,8 @@ export const AgentServiceApiFactory = function (configuration?: Configuration, b
             return localVarFp.agentServiceCreateAgentConfig(requestParameters.productId, requestParameters.createAgentConfigBody, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Permanently removes the config; scheduled executions stop. Not reversible.
+         * @summary Deletes an agent configuration.
          * @param {AgentServiceApiAgentServiceDeleteAgentConfigRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -316,7 +328,8 @@ export const AgentServiceApiFactory = function (configuration?: Configuration, b
             return localVarFp.agentServiceDeleteAgentConfig(requestParameters.id, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Returns the config including inputs_json (parse against the agent type\'s input_schema_json), schedule, and credential references.
+         * @summary Fetches one agent configuration by id.
          * @param {AgentServiceApiAgentServiceGetAgentConfigRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -325,7 +338,8 @@ export const AgentServiceApiFactory = function (configuration?: Configuration, b
             return localVarFp.agentServiceGetAgentConfig(requestParameters.id, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Returns every agent config of the product, including its inputs, optional cron schedule, and credential references (never credential secrets).
+         * @summary Lists a product\'s agent configurations.
          * @param {AgentServiceApiAgentServiceListAgentConfigsRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -334,7 +348,8 @@ export const AgentServiceApiFactory = function (configuration?: Configuration, b
             return localVarFp.agentServiceListAgentConfigs(requestParameters.productId, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Returns every code-defined agent capability with its input JSON Schema (input_schema_json), supported LLM providers, per-provider default models, and whether it needs a data credential or produces a branch. The catalog is global — not product-scoped.
+         * @summary Lists the catalog of available agent types.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -379,7 +394,8 @@ export interface AgentServiceApiAgentServiceListAgentConfigsRequest {
  */
 export class AgentServiceApi extends BaseAPI {
     /**
-     * 
+     * Binds an agent_type to the product with a name, inputs_json matching the type\'s input schema, optional LLM/data credential references, and an optional cron schedule (schedule_cron + schedule_timezone). Runs are started separately via StartAgentRun, the schedule, or a trigger.
+     * @summary Creates an agent configuration in a product.
      * @param {AgentServiceApiAgentServiceCreateAgentConfigRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -389,7 +405,8 @@ export class AgentServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Permanently removes the config; scheduled executions stop. Not reversible.
+     * @summary Deletes an agent configuration.
      * @param {AgentServiceApiAgentServiceDeleteAgentConfigRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -399,7 +416,8 @@ export class AgentServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Returns the config including inputs_json (parse against the agent type\'s input_schema_json), schedule, and credential references.
+     * @summary Fetches one agent configuration by id.
      * @param {AgentServiceApiAgentServiceGetAgentConfigRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -409,7 +427,8 @@ export class AgentServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Returns every agent config of the product, including its inputs, optional cron schedule, and credential references (never credential secrets).
+     * @summary Lists a product\'s agent configurations.
      * @param {AgentServiceApiAgentServiceListAgentConfigsRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -419,7 +438,8 @@ export class AgentServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Returns every code-defined agent capability with its input JSON Schema (input_schema_json), supported LLM providers, per-provider default models, and whether it needs a data credential or produces a branch. The catalog is global — not product-scoped.
+     * @summary Lists the catalog of available agent types.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */

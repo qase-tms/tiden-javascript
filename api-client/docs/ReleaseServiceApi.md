@@ -4,13 +4,14 @@ All URIs are relative to *https://api.tiden.ai*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
-|[**releaseServiceCreateRelease**](#releaseservicecreaterelease) | **POST** /v1/products/{productId}/releases | Create a release from an external source (CI/SDK). Idempotent upsert on (product, version, environment). The environment is matched by slug and auto-created if unknown.|
-|[**releaseServiceGetRelease**](#releaseservicegetrelease) | **GET** /v1/releases/{id} | |
-|[**releaseServiceListReleases**](#releaseservicelistreleases) | **GET** /v1/products/{productId}/releases | |
+|[**releaseServiceCreateRelease**](#releaseservicecreaterelease) | **POST** /v1/products/{productId}/releases | Creates a release from an external source (CI/SDK).|
+|[**releaseServiceGetRelease**](#releaseservicegetrelease) | **GET** /v1/releases/{id} | Fetches one release by id.|
+|[**releaseServiceListReleases**](#releaseservicelistreleases) | **GET** /v1/products/{productId}/releases | Lists a product\&#39;s releases.|
 
 # **releaseServiceCreateRelease**
 > CreateReleaseResponse releaseServiceCreateRelease(createReleaseBody)
 
+Idempotent upsert keyed on (product, version, environment): re-posting the same version updates the existing release instead of duplicating it. The environment is matched by slug and auto-created if unknown; released_at is an RFC 3339 timestamp.
 
 ### Example
 
@@ -66,6 +67,7 @@ const { status, data } = await apiInstance.releaseServiceCreateRelease(
 # **releaseServiceGetRelease**
 > GetReleaseResponse releaseServiceGetRelease()
 
+Returns the release with its version, environment, and metadata.
 
 ### Example
 
@@ -117,6 +119,7 @@ const { status, data } = await apiInstance.releaseServiceGetRelease(
 # **releaseServiceListReleases**
 > ListReleasesResponse releaseServiceListReleases()
 
+Optionally filtered by environment slug; paginated via pagination.page_size/page_token.
 
 ### Example
 

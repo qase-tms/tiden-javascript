@@ -155,6 +155,7 @@ docs/MergeBranchResponse.md
 docs/MergeModification.md
 docs/MergeStats.md
 docs/NullValue.md
+docs/OnboardingAnswers.md
 docs/OpenDefect.md
 docs/PaginationRequest.md
 docs/PaginationResponse.md
@@ -366,6 +367,7 @@ model/merge-branch-response.ts
 model/merge-modification.ts
 model/merge-stats.ts
 model/null-value.ts
+model/onboarding-answers.ts
 model/open-defect.ts
 model/pagination-request.ts
 model/pagination-response.ts

@@ -17,6 +17,9 @@
 // @ts-ignore
 import type { Test } from './test';
 
+/**
+ * ContextTest is one test in a context pack, labeled by how it relates to the requirement (link_kind) and whether its coverage is stale.
+ */
 export interface ContextTest {
     'test'?: Test;
     'linkKind'?: string;

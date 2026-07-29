@@ -13,7 +13,13 @@
  */
 
 
+// May contain unused imports in some cases
+// @ts-ignore
+import type { OnboardingAnswers } from './onboarding-answers';
 
+/**
+ * UserOnboardingState tracks a user\'s onboarding milestones as one-way timestamps (unset = not reached), plus the resumable creator-wizard position.
+ */
 export interface UserOnboardingState {
     'userId'?: string;
     'cliVerifiedAt'?: string;
@@ -21,5 +27,10 @@ export interface UserOnboardingState {
     'completedAt'?: string;
     'createdAt'?: string;
     'updatedAt'?: string;
+    /**
+     * Current wizard screen; \"\" means the wizard was never started.
+     */
+    'wizardStep'?: string;
+    'answers'?: OnboardingAnswers;
 }
 

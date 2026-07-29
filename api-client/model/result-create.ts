@@ -26,6 +26,9 @@ import type { ResultStep } from './result-step';
 // @ts-ignore
 import type { SuiteSegment } from './suite-segment';
 
+/**
+ * ResultCreate is one reported test result (Qase v2 ResultCreate-compatible; see the section note above for transformer deltas). id is the idempotency key — resending the same id is counted as a duplicate and skipped.
+ */
 export interface ResultCreate {
     'id'?: string;
     'title'?: string;

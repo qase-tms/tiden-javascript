@@ -45,8 +45,8 @@ import type { Status } from '../model';
 export const QualityGateServiceApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * 
-         * @summary Record a sign-off on a 🟡 (soft-signal) verdict so it becomes shippable. Hard-blocked (🔴) verdicts can\'t be accepted. High-severity components need a distinct 2nd approver (ApproveRisk); low-severity self-approve.
+         * Records a risk acceptance (reason required) for the whole verdict or one component, so a verdict failing only soft signals becomes shippable. Hard-blocked verdicts cannot be accepted. High-severity components need a distinct second approver via ApproveRisk; low-severity ones self-approve. Returns the recomputed verdict reflecting the acceptance.
+         * @summary Signs off the residual risk on a soft-signal verdict.
          * @param {string} productId 
          * @param {AcceptRiskBody} acceptRiskBody 
          * @param {*} [options] Override http request option.
@@ -87,8 +87,8 @@ export const QualityGateServiceApiAxiosParamCreator = function (configuration?: 
             };
         },
         /**
-         * 
-         * @summary Second-approver sign-off for a pending acceptance (must differ from the recorder).
+         * Approves the acceptance identified by acceptance_id; the approver must be a different user than the one who recorded it. Returns the recomputed verdict.
+         * @summary Second-approver sign-off for a pending risk acceptance.
          * @param {string} productId 
          * @param {ApproveRiskBody} approveRiskBody 
          * @param {*} [options] Override http request option.
@@ -129,8 +129,8 @@ export const QualityGateServiceApiAxiosParamCreator = function (configuration?: 
             };
         },
         /**
-         * 
-         * @summary Compute (or recompute) the verdict for a release or branch scope and persist an immutable snapshot. Side-effecting; the engine is idempotent on the current data state (CAS on publish).
+         * Computes (or recomputes) the go/no-go verdict for a scope — RELEASE (release_id required), BRANCH (branch name required), or MAIN — and persists an immutable snapshot. Side-effecting, but idempotent on the current data state (CAS on publish): recomputing unchanged data yields the same verdict. subject_type/subject_id narrow the returned breakdown to one component/feature/product subject.
+         * @summary Computes and persists a quality-gate verdict.
          * @param {string} productId 
          * @param {ComputeVerdictBody} computeVerdictBody 
          * @param {*} [options] Override http request option.
@@ -171,8 +171,8 @@ export const QualityGateServiceApiAxiosParamCreator = function (configuration?: 
             };
         },
         /**
-         * 
-         * @summary The traceability-matrix slice the verdict was computed over (req x case by component), for the matrix page and audit.
+         * Returns the requirement-by-test-case slice (grouped by component) the verdict was computed over, for the matrix page and audit. subject_type/subject_id filter the matrix to one component or feature.
+         * @summary Returns the traceability matrix behind a verdict.
          * @param {string} productId 
          * @param {QualityGateServiceGetTraceabilityScopeEnum} [scope]  - VERDICT_SCOPE_RELEASE: canonical, against main-live entities of a release build  - VERDICT_SCOPE_BRANCH: pre-merge preview, against the merge-preview projection  - VERDICT_SCOPE_MAIN: current main, not tied to a release (latest exec per test)
          * @param {string} [releaseId] 
@@ -233,8 +233,8 @@ export const QualityGateServiceApiAxiosParamCreator = function (configuration?: 
             };
         },
         /**
-         * 
-         * @summary Latest non-invalidated verdict for a (scope, ref). On no-go the agent reads the structured component/criterion breakdown + fix hints from here.
+         * Returns the latest non-invalidated verdict for the (scope, ref). On a blocked verdict, clients read the structured per-subject criterion breakdown and agent-actionable fix hints from here.
+         * @summary Fetches the latest verdict for a scope.
          * @param {string} productId 
          * @param {QualityGateServiceGetVerdictScopeEnum} [scope]  - VERDICT_SCOPE_RELEASE: canonical, against main-live entities of a release build  - VERDICT_SCOPE_BRANCH: pre-merge preview, against the merge-preview projection  - VERDICT_SCOPE_MAIN: current main, not tied to a release (latest exec per test)
          * @param {string} [releaseId] 
@@ -304,8 +304,8 @@ export const QualityGateServiceApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = QualityGateServiceApiAxiosParamCreator(configuration)
     return {
         /**
-         * 
-         * @summary Record a sign-off on a 🟡 (soft-signal) verdict so it becomes shippable. Hard-blocked (🔴) verdicts can\'t be accepted. High-severity components need a distinct 2nd approver (ApproveRisk); low-severity self-approve.
+         * Records a risk acceptance (reason required) for the whole verdict or one component, so a verdict failing only soft signals becomes shippable. Hard-blocked verdicts cannot be accepted. High-severity components need a distinct second approver via ApproveRisk; low-severity ones self-approve. Returns the recomputed verdict reflecting the acceptance.
+         * @summary Signs off the residual risk on a soft-signal verdict.
          * @param {string} productId 
          * @param {AcceptRiskBody} acceptRiskBody 
          * @param {*} [options] Override http request option.
@@ -318,8 +318,8 @@ export const QualityGateServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
-         * @summary Second-approver sign-off for a pending acceptance (must differ from the recorder).
+         * Approves the acceptance identified by acceptance_id; the approver must be a different user than the one who recorded it. Returns the recomputed verdict.
+         * @summary Second-approver sign-off for a pending risk acceptance.
          * @param {string} productId 
          * @param {ApproveRiskBody} approveRiskBody 
          * @param {*} [options] Override http request option.
@@ -332,8 +332,8 @@ export const QualityGateServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
-         * @summary Compute (or recompute) the verdict for a release or branch scope and persist an immutable snapshot. Side-effecting; the engine is idempotent on the current data state (CAS on publish).
+         * Computes (or recomputes) the go/no-go verdict for a scope — RELEASE (release_id required), BRANCH (branch name required), or MAIN — and persists an immutable snapshot. Side-effecting, but idempotent on the current data state (CAS on publish): recomputing unchanged data yields the same verdict. subject_type/subject_id narrow the returned breakdown to one component/feature/product subject.
+         * @summary Computes and persists a quality-gate verdict.
          * @param {string} productId 
          * @param {ComputeVerdictBody} computeVerdictBody 
          * @param {*} [options] Override http request option.
@@ -346,8 +346,8 @@ export const QualityGateServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
-         * @summary The traceability-matrix slice the verdict was computed over (req x case by component), for the matrix page and audit.
+         * Returns the requirement-by-test-case slice (grouped by component) the verdict was computed over, for the matrix page and audit. subject_type/subject_id filter the matrix to one component or feature.
+         * @summary Returns the traceability matrix behind a verdict.
          * @param {string} productId 
          * @param {QualityGateServiceGetTraceabilityScopeEnum} [scope]  - VERDICT_SCOPE_RELEASE: canonical, against main-live entities of a release build  - VERDICT_SCOPE_BRANCH: pre-merge preview, against the merge-preview projection  - VERDICT_SCOPE_MAIN: current main, not tied to a release (latest exec per test)
          * @param {string} [releaseId] 
@@ -364,8 +364,8 @@ export const QualityGateServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
-         * @summary Latest non-invalidated verdict for a (scope, ref). On no-go the agent reads the structured component/criterion breakdown + fix hints from here.
+         * Returns the latest non-invalidated verdict for the (scope, ref). On a blocked verdict, clients read the structured per-subject criterion breakdown and agent-actionable fix hints from here.
+         * @summary Fetches the latest verdict for a scope.
          * @param {string} productId 
          * @param {QualityGateServiceGetVerdictScopeEnum} [scope]  - VERDICT_SCOPE_RELEASE: canonical, against main-live entities of a release build  - VERDICT_SCOPE_BRANCH: pre-merge preview, against the merge-preview projection  - VERDICT_SCOPE_MAIN: current main, not tied to a release (latest exec per test)
          * @param {string} [releaseId] 
@@ -391,8 +391,8 @@ export const QualityGateServiceApiFactory = function (configuration?: Configurat
     const localVarFp = QualityGateServiceApiFp(configuration)
     return {
         /**
-         * 
-         * @summary Record a sign-off on a 🟡 (soft-signal) verdict so it becomes shippable. Hard-blocked (🔴) verdicts can\'t be accepted. High-severity components need a distinct 2nd approver (ApproveRisk); low-severity self-approve.
+         * Records a risk acceptance (reason required) for the whole verdict or one component, so a verdict failing only soft signals becomes shippable. Hard-blocked verdicts cannot be accepted. High-severity components need a distinct second approver via ApproveRisk; low-severity ones self-approve. Returns the recomputed verdict reflecting the acceptance.
+         * @summary Signs off the residual risk on a soft-signal verdict.
          * @param {QualityGateServiceApiQualityGateServiceAcceptRiskRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -401,8 +401,8 @@ export const QualityGateServiceApiFactory = function (configuration?: Configurat
             return localVarFp.qualityGateServiceAcceptRisk(requestParameters.productId, requestParameters.acceptRiskBody, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
-         * @summary Second-approver sign-off for a pending acceptance (must differ from the recorder).
+         * Approves the acceptance identified by acceptance_id; the approver must be a different user than the one who recorded it. Returns the recomputed verdict.
+         * @summary Second-approver sign-off for a pending risk acceptance.
          * @param {QualityGateServiceApiQualityGateServiceApproveRiskRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -411,8 +411,8 @@ export const QualityGateServiceApiFactory = function (configuration?: Configurat
             return localVarFp.qualityGateServiceApproveRisk(requestParameters.productId, requestParameters.approveRiskBody, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
-         * @summary Compute (or recompute) the verdict for a release or branch scope and persist an immutable snapshot. Side-effecting; the engine is idempotent on the current data state (CAS on publish).
+         * Computes (or recomputes) the go/no-go verdict for a scope — RELEASE (release_id required), BRANCH (branch name required), or MAIN — and persists an immutable snapshot. Side-effecting, but idempotent on the current data state (CAS on publish): recomputing unchanged data yields the same verdict. subject_type/subject_id narrow the returned breakdown to one component/feature/product subject.
+         * @summary Computes and persists a quality-gate verdict.
          * @param {QualityGateServiceApiQualityGateServiceComputeVerdictRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -421,8 +421,8 @@ export const QualityGateServiceApiFactory = function (configuration?: Configurat
             return localVarFp.qualityGateServiceComputeVerdict(requestParameters.productId, requestParameters.computeVerdictBody, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
-         * @summary The traceability-matrix slice the verdict was computed over (req x case by component), for the matrix page and audit.
+         * Returns the requirement-by-test-case slice (grouped by component) the verdict was computed over, for the matrix page and audit. subject_type/subject_id filter the matrix to one component or feature.
+         * @summary Returns the traceability matrix behind a verdict.
          * @param {QualityGateServiceApiQualityGateServiceGetTraceabilityRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -431,8 +431,8 @@ export const QualityGateServiceApiFactory = function (configuration?: Configurat
             return localVarFp.qualityGateServiceGetTraceability(requestParameters.productId, requestParameters.scope, requestParameters.releaseId, requestParameters.branch, requestParameters.subjectType, requestParameters.subjectId, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
-         * @summary Latest non-invalidated verdict for a (scope, ref). On no-go the agent reads the structured component/criterion breakdown + fix hints from here.
+         * Returns the latest non-invalidated verdict for the (scope, ref). On a blocked verdict, clients read the structured per-subject criterion breakdown and agent-actionable fix hints from here.
+         * @summary Fetches the latest verdict for a scope.
          * @param {QualityGateServiceApiQualityGateServiceGetVerdictRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -527,8 +527,8 @@ export interface QualityGateServiceApiQualityGateServiceGetVerdictRequest {
  */
 export class QualityGateServiceApi extends BaseAPI {
     /**
-     * 
-     * @summary Record a sign-off on a 🟡 (soft-signal) verdict so it becomes shippable. Hard-blocked (🔴) verdicts can\'t be accepted. High-severity components need a distinct 2nd approver (ApproveRisk); low-severity self-approve.
+     * Records a risk acceptance (reason required) for the whole verdict or one component, so a verdict failing only soft signals becomes shippable. Hard-blocked verdicts cannot be accepted. High-severity components need a distinct second approver via ApproveRisk; low-severity ones self-approve. Returns the recomputed verdict reflecting the acceptance.
+     * @summary Signs off the residual risk on a soft-signal verdict.
      * @param {QualityGateServiceApiQualityGateServiceAcceptRiskRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -538,8 +538,8 @@ export class QualityGateServiceApi extends BaseAPI {
     }
 
     /**
-     * 
-     * @summary Second-approver sign-off for a pending acceptance (must differ from the recorder).
+     * Approves the acceptance identified by acceptance_id; the approver must be a different user than the one who recorded it. Returns the recomputed verdict.
+     * @summary Second-approver sign-off for a pending risk acceptance.
      * @param {QualityGateServiceApiQualityGateServiceApproveRiskRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -549,8 +549,8 @@ export class QualityGateServiceApi extends BaseAPI {
     }
 
     /**
-     * 
-     * @summary Compute (or recompute) the verdict for a release or branch scope and persist an immutable snapshot. Side-effecting; the engine is idempotent on the current data state (CAS on publish).
+     * Computes (or recomputes) the go/no-go verdict for a scope — RELEASE (release_id required), BRANCH (branch name required), or MAIN — and persists an immutable snapshot. Side-effecting, but idempotent on the current data state (CAS on publish): recomputing unchanged data yields the same verdict. subject_type/subject_id narrow the returned breakdown to one component/feature/product subject.
+     * @summary Computes and persists a quality-gate verdict.
      * @param {QualityGateServiceApiQualityGateServiceComputeVerdictRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -560,8 +560,8 @@ export class QualityGateServiceApi extends BaseAPI {
     }
 
     /**
-     * 
-     * @summary The traceability-matrix slice the verdict was computed over (req x case by component), for the matrix page and audit.
+     * Returns the requirement-by-test-case slice (grouped by component) the verdict was computed over, for the matrix page and audit. subject_type/subject_id filter the matrix to one component or feature.
+     * @summary Returns the traceability matrix behind a verdict.
      * @param {QualityGateServiceApiQualityGateServiceGetTraceabilityRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -571,8 +571,8 @@ export class QualityGateServiceApi extends BaseAPI {
     }
 
     /**
-     * 
-     * @summary Latest non-invalidated verdict for a (scope, ref). On no-go the agent reads the structured component/criterion breakdown + fix hints from here.
+     * Returns the latest non-invalidated verdict for the (scope, ref). On a blocked verdict, clients read the structured per-subject criterion breakdown and agent-actionable fix hints from here.
+     * @summary Fetches the latest verdict for a scope.
      * @param {QualityGateServiceApiQualityGateServiceGetVerdictRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}

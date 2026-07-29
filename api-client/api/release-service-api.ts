@@ -37,8 +37,8 @@ import type { Status } from '../model';
 export const ReleaseServiceApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * 
-         * @summary Create a release from an external source (CI/SDK). Idempotent upsert on (product, version, environment). The environment is matched by slug and auto-created if unknown.
+         * Idempotent upsert keyed on (product, version, environment): re-posting the same version updates the existing release instead of duplicating it. The environment is matched by slug and auto-created if unknown; released_at is an RFC 3339 timestamp.
+         * @summary Creates a release from an external source (CI/SDK).
          * @param {string} productId 
          * @param {CreateReleaseBody} createReleaseBody 
          * @param {*} [options] Override http request option.
@@ -79,7 +79,8 @@ export const ReleaseServiceApiAxiosParamCreator = function (configuration?: Conf
             };
         },
         /**
-         * 
+         * Returns the release with its version, environment, and metadata.
+         * @summary Fetches one release by id.
          * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -115,7 +116,8 @@ export const ReleaseServiceApiAxiosParamCreator = function (configuration?: Conf
             };
         },
         /**
-         * 
+         * Optionally filtered by environment slug; paginated via pagination.page_size/page_token.
+         * @summary Lists a product\'s releases.
          * @param {string} productId 
          * @param {string} [environment] optional environment slug filter
          * @param {number} [paginationPageSize] 
@@ -175,8 +177,8 @@ export const ReleaseServiceApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = ReleaseServiceApiAxiosParamCreator(configuration)
     return {
         /**
-         * 
-         * @summary Create a release from an external source (CI/SDK). Idempotent upsert on (product, version, environment). The environment is matched by slug and auto-created if unknown.
+         * Idempotent upsert keyed on (product, version, environment): re-posting the same version updates the existing release instead of duplicating it. The environment is matched by slug and auto-created if unknown; released_at is an RFC 3339 timestamp.
+         * @summary Creates a release from an external source (CI/SDK).
          * @param {string} productId 
          * @param {CreateReleaseBody} createReleaseBody 
          * @param {*} [options] Override http request option.
@@ -189,7 +191,8 @@ export const ReleaseServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Returns the release with its version, environment, and metadata.
+         * @summary Fetches one release by id.
          * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -201,7 +204,8 @@ export const ReleaseServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Optionally filtered by environment slug; paginated via pagination.page_size/page_token.
+         * @summary Lists a product\'s releases.
          * @param {string} productId 
          * @param {string} [environment] optional environment slug filter
          * @param {number} [paginationPageSize] 
@@ -225,8 +229,8 @@ export const ReleaseServiceApiFactory = function (configuration?: Configuration,
     const localVarFp = ReleaseServiceApiFp(configuration)
     return {
         /**
-         * 
-         * @summary Create a release from an external source (CI/SDK). Idempotent upsert on (product, version, environment). The environment is matched by slug and auto-created if unknown.
+         * Idempotent upsert keyed on (product, version, environment): re-posting the same version updates the existing release instead of duplicating it. The environment is matched by slug and auto-created if unknown; released_at is an RFC 3339 timestamp.
+         * @summary Creates a release from an external source (CI/SDK).
          * @param {ReleaseServiceApiReleaseServiceCreateReleaseRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -235,7 +239,8 @@ export const ReleaseServiceApiFactory = function (configuration?: Configuration,
             return localVarFp.releaseServiceCreateRelease(requestParameters.productId, requestParameters.createReleaseBody, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Returns the release with its version, environment, and metadata.
+         * @summary Fetches one release by id.
          * @param {ReleaseServiceApiReleaseServiceGetReleaseRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -244,7 +249,8 @@ export const ReleaseServiceApiFactory = function (configuration?: Configuration,
             return localVarFp.releaseServiceGetRelease(requestParameters.id, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Optionally filtered by environment slug; paginated via pagination.page_size/page_token.
+         * @summary Lists a product\'s releases.
          * @param {ReleaseServiceApiReleaseServiceListReleasesRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -292,8 +298,8 @@ export interface ReleaseServiceApiReleaseServiceListReleasesRequest {
  */
 export class ReleaseServiceApi extends BaseAPI {
     /**
-     * 
-     * @summary Create a release from an external source (CI/SDK). Idempotent upsert on (product, version, environment). The environment is matched by slug and auto-created if unknown.
+     * Idempotent upsert keyed on (product, version, environment): re-posting the same version updates the existing release instead of duplicating it. The environment is matched by slug and auto-created if unknown; released_at is an RFC 3339 timestamp.
+     * @summary Creates a release from an external source (CI/SDK).
      * @param {ReleaseServiceApiReleaseServiceCreateReleaseRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -303,7 +309,8 @@ export class ReleaseServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Returns the release with its version, environment, and metadata.
+     * @summary Fetches one release by id.
      * @param {ReleaseServiceApiReleaseServiceGetReleaseRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -313,7 +320,8 @@ export class ReleaseServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Optionally filtered by environment slug; paginated via pagination.page_size/page_token.
+     * @summary Lists a product\'s releases.
      * @param {ReleaseServiceApiReleaseServiceListReleasesRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}

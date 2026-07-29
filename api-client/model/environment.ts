@@ -14,6 +14,9 @@
 
 
 
+/**
+ * Environment labels where test runs and releases happen (e.g. production, staging). slug is the stable identifier reporters and CI reference; origin is \"manual\" (created explicitly) or \"auto\" (auto-created by an ingest endpoint from an unknown slug).
+ */
 export interface Environment {
     'id'?: string;
     'productId'?: string;

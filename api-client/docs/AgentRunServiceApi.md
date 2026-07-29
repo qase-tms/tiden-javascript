@@ -4,16 +4,17 @@ All URIs are relative to *https://api.tiden.ai*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
-|[**agentRunServiceCancelAgentRun**](#agentrunservicecancelagentrun) | **POST** /v1/agent-runs/{id}:cancel | |
-|[**agentRunServiceGetAgentRun**](#agentrunservicegetagentrun) | **GET** /v1/agent-runs/{id} | |
-|[**agentRunServiceListAgentRunEvents**](#agentrunservicelistagentrunevents) | **GET** /v1/agent-runs/{runId}/events | |
-|[**agentRunServiceListAgentRuns**](#agentrunservicelistagentruns) | **GET** /v1/agent-configs/{agentConfigId}/runs | |
-|[**agentRunServiceStartAgentRun**](#agentrunservicestartagentrun) | **POST** /v1/agent-configs/{agentConfigId}/runs | |
-|[**agentRunServiceStreamAgentRun**](#agentrunservicestreamagentrun) | **GET** /v1/agent-runs/{runId}/events:stream | |
+|[**agentRunServiceCancelAgentRun**](#agentrunservicecancelagentrun) | **POST** /v1/agent-runs/{id}:cancel | Cancels a pending or running agent run.|
+|[**agentRunServiceGetAgentRun**](#agentrunservicegetagentrun) | **GET** /v1/agent-runs/{id} | Fetches one agent run by id.|
+|[**agentRunServiceListAgentRunEvents**](#agentrunservicelistagentrunevents) | **GET** /v1/agent-runs/{runId}/events | Lists the event log of an agent run.|
+|[**agentRunServiceListAgentRuns**](#agentrunservicelistagentruns) | **GET** /v1/agent-configs/{agentConfigId}/runs | Lists the runs of an agent configuration.|
+|[**agentRunServiceStartAgentRun**](#agentrunservicestartagentrun) | **POST** /v1/agent-configs/{agentConfigId}/runs | Starts a run of an agent configuration.|
+|[**agentRunServiceStreamAgentRun**](#agentrunservicestreamagentrun) | **GET** /v1/agent-runs/{runId}/events:stream | Streams an agent run\&#39;s events as they happen.|
 
 # **agentRunServiceCancelAgentRun**
 > CancelAgentRunResponse agentRunServiceCancelAgentRun(cancelAgentRunBody)
 
+Transitions the run to \"cancelled\" and records the reason (default \"cancelled by user\"). Only pending/running runs transition; a run that already finished is returned unchanged, so the call is safe to retry.
 
 ### Example
 
@@ -69,6 +70,7 @@ const { status, data } = await apiInstance.agentRunServiceCancelAgentRun(
 # **agentRunServiceGetAgentRun**
 > GetAgentRunResponse agentRunServiceGetAgentRun()
 
+Returns the run with its status, trigger, timing, LLM token/cost counters, error summary, the branch it produced (if any), and the structured result when the run reported one.
 
 ### Example
 
@@ -120,6 +122,7 @@ const { status, data } = await apiInstance.agentRunServiceGetAgentRun(
 # **agentRunServiceListAgentRunEvents**
 > ListAgentRunEventsResponse agentRunServiceListAgentRunEvents()
 
+Returns the run\'s timestamped events (level, kind, message, structured data) with page_size/page_token pagination — the polling alternative to StreamAgentRun.
 
 ### Example
 
@@ -177,6 +180,7 @@ const { status, data } = await apiInstance.agentRunServiceListAgentRunEvents(
 # **agentRunServiceListAgentRuns**
 > ListAgentRunsResponse agentRunServiceListAgentRuns()
 
+Returns the config\'s runs, newest first, with page_size/page_token pagination.
 
 ### Example
 
@@ -234,6 +238,7 @@ const { status, data } = await apiInstance.agentRunServiceListAgentRuns(
 # **agentRunServiceStartAgentRun**
 > StartAgentRunResponse agentRunServiceStartAgentRun(startAgentRunBody)
 
+Enqueues a new run (status \"pending\") and notifies the agent worker to pick it up; the call returns without waiting for execution. Fails when the config is disabled. inputs_override_json overrides the config\'s inputs_json for this run only, without persisting it. Follow progress via GetAgentRun or ListAgentRunEvents.
 
 ### Example
 
@@ -289,6 +294,7 @@ const { status, data } = await apiInstance.agentRunServiceStartAgentRun(
 # **agentRunServiceStreamAgentRun**
 > StreamResultOfAgentRunEvent agentRunServiceStreamAgentRun()
 
+Server-streams AgentRunEvent messages for the run, resuming after after_event_id when set (empty streams from the beginning). Over REST the gateway delivers the stream as chunked newline-delimited JSON.
 
 ### Example
 

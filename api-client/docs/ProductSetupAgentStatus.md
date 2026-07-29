@@ -1,5 +1,6 @@
 # ProductSetupAgentStatus
 
+ProductSetupAgentStatus reports one coding agent found in the bound repo and whether its Tiden hooks are wired.
 
 ## Properties
 

@@ -53,7 +53,8 @@ import type { Status } from '../model';
 export const TestRunServiceApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * 
+         * Terminally cancels a run from new/in_progress; aborting a completed or already-aborted run is rejected. Stats are recomputed so a partial run still shows what was reported.
+         * @summary Aborts a run.
          * @param {string} productId 
          * @param {number} runSeq 
          * @param {object} body 
@@ -98,7 +99,8 @@ export const TestRunServiceApiAxiosParamCreator = function (configuration?: Conf
             };
         },
         /**
-         * 
+         * Recounts stats and derives the terminal status (passed | failed) from the latest attempt per execution. Idempotent: completing an already-completed run returns it unchanged (and retries a stuck or failed live-doc sync); aborted runs cannot be completed. When the product has live documentation enabled, completion triggers reconciliation of the test repository from the run\'s results.
+         * @summary Completes a run and computes its final verdict.
          * @param {string} productId 
          * @param {number} runSeq 
          * @param {object} body 
@@ -143,7 +145,8 @@ export const TestRunServiceApiAxiosParamCreator = function (configuration?: Conf
             };
         },
         /**
-         * 
+         * The run is the container ReportResults writes into. environment is a slug, auto-created when unknown; branch is the git branch name (CI metadata used for test matching — no Tiden branch is created); title defaults to \"Automated run <RFC3339>\" server-side. The returned run\'s seq_num is the run_seq every other run endpoint addresses.
+         * @summary Creates a test run to report CI results into.
          * @param {string} productId 
          * @param {CreateTestRunBody} createTestRunBody 
          * @param {*} [options] Override http request option.
@@ -184,7 +187,8 @@ export const TestRunServiceApiAxiosParamCreator = function (configuration?: Conf
             };
         },
         /**
-         * 
+         * Permanently removes the run and its reported results. Not reversible.
+         * @summary Deletes a test run.
          * @param {string} productId 
          * @param {number} runSeq 
          * @param {*} [options] Override http request option.
@@ -224,8 +228,8 @@ export const TestRunServiceApiAxiosParamCreator = function (configuration?: Conf
             };
         },
         /**
-         * 
-         * @summary Resolves a content-hash (uploaded via the reporter multipart route POST /v1/products/{product_id}/attachments:upload) to a presigned download URL. Public so reporter/CLI clients and the SPA (JWT) can both fetch; ATTACHMENT_NOT_FOUND (→ 404) for an unknown hash — the drawer renders \"attachment unavailable\" on that.
+         * Resolves a hash uploaded via the reporter multipart route POST /v1/products/{product_id}/attachments:upload to a fresh presigned download URL (15-minute expiry, attachment disposition). Content- addressed: the same hash always names the same bytes within a product. Public so reporter/CLI clients and the SPA (JWT) can both fetch; an unknown hash returns ATTACHMENT_NOT_FOUND (HTTP 404).
+         * @summary Resolves an attachment content hash to a download URL.
          * @param {string} productId 
          * @param {string} hash sha256 hex content hash
          * @param {*} [options] Override http request option.
@@ -265,7 +269,8 @@ export const TestRunServiceApiAxiosParamCreator = function (configuration?: Conf
             };
         },
         /**
-         * 
+         * Returns the full result including steps, parameters, stacktrace, and attachment hashes (resolve via GetRunAttachment).
+         * @summary Fetches one reported result by id.
          * @param {string} productId 
          * @param {number} runSeq 
          * @param {string} resultId 
@@ -309,7 +314,8 @@ export const TestRunServiceApiAxiosParamCreator = function (configuration?: Conf
             };
         },
         /**
-         * 
+         * Aggregates the whole run into suite stats and case summaries (worst latest-attempt status across parameter combos, attempts, durations) so clients can render the run tree without paginating results.
+         * @summary Returns per-suite and per-case rollups of a run.
          * @param {string} productId 
          * @param {number} runSeq 
          * @param {*} [options] Override http request option.
@@ -349,7 +355,8 @@ export const TestRunServiceApiAxiosParamCreator = function (configuration?: Conf
             };
         },
         /**
-         * 
+         * Returns the run with its status, environment, stats (latest-attempt counters), and live-documentation sync state.
+         * @summary Fetches one test run by its sequence number.
          * @param {string} productId 
          * @param {number} runSeq 
          * @param {*} [options] Override http request option.
@@ -389,7 +396,8 @@ export const TestRunServiceApiAxiosParamCreator = function (configuration?: Conf
             };
         },
         /**
-         * 
+         * Filter by latest-attempt status, title substring (search), or identity_key (all attempts of one case identity); latest_only collapses retries to the latest attempt per execution. Paginated via pagination.page_size/page_token.
+         * @summary Lists a run\'s reported results.
          * @param {string} productId 
          * @param {number} runSeq 
          * @param {string} [status] optional filter (latest attempt status)
@@ -459,7 +467,8 @@ export const TestRunServiceApiAxiosParamCreator = function (configuration?: Conf
             };
         },
         /**
-         * 
+         * Filter by status (new | in_progress | passed | failed | aborted), environment slug, branch name, or title substring via search. Paginated via pagination.page_size/page_token.
+         * @summary Lists a product\'s test runs.
          * @param {string} productId 
          * @param {string} [status] optional filter
          * @param {string} [environment] optional environment slug filter
@@ -525,7 +534,8 @@ export const TestRunServiceApiAxiosParamCreator = function (configuration?: Conf
             };
         },
         /**
-         * 
+         * Accepts 1..2000 results per call. The batch is validated up front; on failure nothing is written and per-entry errors are returned (HTTP 400, also attached as google.rpc.Status details for gRPC clients). Each result\'s id is an idempotency key — resends count as duplicates and are skipped, so retrying a batch is safe. Results are matched to repository cases by testops_ids[0], then external_id, then signature (unmatched results are kept). Rejected once the run is completed/aborted (RUN_COMPLETED).
+         * @summary Reports a batch of test results into a run.
          * @param {string} productId 
          * @param {number} runSeq 
          * @param {ReportResultsBody} reportResultsBody 
@@ -579,7 +589,8 @@ export const TestRunServiceApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = TestRunServiceApiAxiosParamCreator(configuration)
     return {
         /**
-         * 
+         * Terminally cancels a run from new/in_progress; aborting a completed or already-aborted run is rejected. Stats are recomputed so a partial run still shows what was reported.
+         * @summary Aborts a run.
          * @param {string} productId 
          * @param {number} runSeq 
          * @param {object} body 
@@ -593,7 +604,8 @@ export const TestRunServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Recounts stats and derives the terminal status (passed | failed) from the latest attempt per execution. Idempotent: completing an already-completed run returns it unchanged (and retries a stuck or failed live-doc sync); aborted runs cannot be completed. When the product has live documentation enabled, completion triggers reconciliation of the test repository from the run\'s results.
+         * @summary Completes a run and computes its final verdict.
          * @param {string} productId 
          * @param {number} runSeq 
          * @param {object} body 
@@ -607,7 +619,8 @@ export const TestRunServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * The run is the container ReportResults writes into. environment is a slug, auto-created when unknown; branch is the git branch name (CI metadata used for test matching — no Tiden branch is created); title defaults to \"Automated run <RFC3339>\" server-side. The returned run\'s seq_num is the run_seq every other run endpoint addresses.
+         * @summary Creates a test run to report CI results into.
          * @param {string} productId 
          * @param {CreateTestRunBody} createTestRunBody 
          * @param {*} [options] Override http request option.
@@ -620,7 +633,8 @@ export const TestRunServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Permanently removes the run and its reported results. Not reversible.
+         * @summary Deletes a test run.
          * @param {string} productId 
          * @param {number} runSeq 
          * @param {*} [options] Override http request option.
@@ -633,8 +647,8 @@ export const TestRunServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
-         * @summary Resolves a content-hash (uploaded via the reporter multipart route POST /v1/products/{product_id}/attachments:upload) to a presigned download URL. Public so reporter/CLI clients and the SPA (JWT) can both fetch; ATTACHMENT_NOT_FOUND (→ 404) for an unknown hash — the drawer renders \"attachment unavailable\" on that.
+         * Resolves a hash uploaded via the reporter multipart route POST /v1/products/{product_id}/attachments:upload to a fresh presigned download URL (15-minute expiry, attachment disposition). Content- addressed: the same hash always names the same bytes within a product. Public so reporter/CLI clients and the SPA (JWT) can both fetch; an unknown hash returns ATTACHMENT_NOT_FOUND (HTTP 404).
+         * @summary Resolves an attachment content hash to a download URL.
          * @param {string} productId 
          * @param {string} hash sha256 hex content hash
          * @param {*} [options] Override http request option.
@@ -647,7 +661,8 @@ export const TestRunServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Returns the full result including steps, parameters, stacktrace, and attachment hashes (resolve via GetRunAttachment).
+         * @summary Fetches one reported result by id.
          * @param {string} productId 
          * @param {number} runSeq 
          * @param {string} resultId 
@@ -661,7 +676,8 @@ export const TestRunServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Aggregates the whole run into suite stats and case summaries (worst latest-attempt status across parameter combos, attempts, durations) so clients can render the run tree without paginating results.
+         * @summary Returns per-suite and per-case rollups of a run.
          * @param {string} productId 
          * @param {number} runSeq 
          * @param {*} [options] Override http request option.
@@ -674,7 +690,8 @@ export const TestRunServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Returns the run with its status, environment, stats (latest-attempt counters), and live-documentation sync state.
+         * @summary Fetches one test run by its sequence number.
          * @param {string} productId 
          * @param {number} runSeq 
          * @param {*} [options] Override http request option.
@@ -687,7 +704,8 @@ export const TestRunServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Filter by latest-attempt status, title substring (search), or identity_key (all attempts of one case identity); latest_only collapses retries to the latest attempt per execution. Paginated via pagination.page_size/page_token.
+         * @summary Lists a run\'s reported results.
          * @param {string} productId 
          * @param {number} runSeq 
          * @param {string} [status] optional filter (latest attempt status)
@@ -706,7 +724,8 @@ export const TestRunServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Filter by status (new | in_progress | passed | failed | aborted), environment slug, branch name, or title substring via search. Paginated via pagination.page_size/page_token.
+         * @summary Lists a product\'s test runs.
          * @param {string} productId 
          * @param {string} [status] optional filter
          * @param {string} [environment] optional environment slug filter
@@ -724,7 +743,8 @@ export const TestRunServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Accepts 1..2000 results per call. The batch is validated up front; on failure nothing is written and per-entry errors are returned (HTTP 400, also attached as google.rpc.Status details for gRPC clients). Each result\'s id is an idempotency key — resends count as duplicates and are skipped, so retrying a batch is safe. Results are matched to repository cases by testops_ids[0], then external_id, then signature (unmatched results are kept). Rejected once the run is completed/aborted (RUN_COMPLETED).
+         * @summary Reports a batch of test results into a run.
          * @param {string} productId 
          * @param {number} runSeq 
          * @param {ReportResultsBody} reportResultsBody 
@@ -747,7 +767,8 @@ export const TestRunServiceApiFactory = function (configuration?: Configuration,
     const localVarFp = TestRunServiceApiFp(configuration)
     return {
         /**
-         * 
+         * Terminally cancels a run from new/in_progress; aborting a completed or already-aborted run is rejected. Stats are recomputed so a partial run still shows what was reported.
+         * @summary Aborts a run.
          * @param {TestRunServiceApiTestRunServiceAbortTestRunRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -756,7 +777,8 @@ export const TestRunServiceApiFactory = function (configuration?: Configuration,
             return localVarFp.testRunServiceAbortTestRun(requestParameters.productId, requestParameters.runSeq, requestParameters.body, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Recounts stats and derives the terminal status (passed | failed) from the latest attempt per execution. Idempotent: completing an already-completed run returns it unchanged (and retries a stuck or failed live-doc sync); aborted runs cannot be completed. When the product has live documentation enabled, completion triggers reconciliation of the test repository from the run\'s results.
+         * @summary Completes a run and computes its final verdict.
          * @param {TestRunServiceApiTestRunServiceCompleteTestRunRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -765,7 +787,8 @@ export const TestRunServiceApiFactory = function (configuration?: Configuration,
             return localVarFp.testRunServiceCompleteTestRun(requestParameters.productId, requestParameters.runSeq, requestParameters.body, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * The run is the container ReportResults writes into. environment is a slug, auto-created when unknown; branch is the git branch name (CI metadata used for test matching — no Tiden branch is created); title defaults to \"Automated run <RFC3339>\" server-side. The returned run\'s seq_num is the run_seq every other run endpoint addresses.
+         * @summary Creates a test run to report CI results into.
          * @param {TestRunServiceApiTestRunServiceCreateTestRunRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -774,7 +797,8 @@ export const TestRunServiceApiFactory = function (configuration?: Configuration,
             return localVarFp.testRunServiceCreateTestRun(requestParameters.productId, requestParameters.createTestRunBody, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Permanently removes the run and its reported results. Not reversible.
+         * @summary Deletes a test run.
          * @param {TestRunServiceApiTestRunServiceDeleteTestRunRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -783,8 +807,8 @@ export const TestRunServiceApiFactory = function (configuration?: Configuration,
             return localVarFp.testRunServiceDeleteTestRun(requestParameters.productId, requestParameters.runSeq, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
-         * @summary Resolves a content-hash (uploaded via the reporter multipart route POST /v1/products/{product_id}/attachments:upload) to a presigned download URL. Public so reporter/CLI clients and the SPA (JWT) can both fetch; ATTACHMENT_NOT_FOUND (→ 404) for an unknown hash — the drawer renders \"attachment unavailable\" on that.
+         * Resolves a hash uploaded via the reporter multipart route POST /v1/products/{product_id}/attachments:upload to a fresh presigned download URL (15-minute expiry, attachment disposition). Content- addressed: the same hash always names the same bytes within a product. Public so reporter/CLI clients and the SPA (JWT) can both fetch; an unknown hash returns ATTACHMENT_NOT_FOUND (HTTP 404).
+         * @summary Resolves an attachment content hash to a download URL.
          * @param {TestRunServiceApiTestRunServiceGetRunAttachmentRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -793,7 +817,8 @@ export const TestRunServiceApiFactory = function (configuration?: Configuration,
             return localVarFp.testRunServiceGetRunAttachment(requestParameters.productId, requestParameters.hash, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Returns the full result including steps, parameters, stacktrace, and attachment hashes (resolve via GetRunAttachment).
+         * @summary Fetches one reported result by id.
          * @param {TestRunServiceApiTestRunServiceGetRunResultRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -802,7 +827,8 @@ export const TestRunServiceApiFactory = function (configuration?: Configuration,
             return localVarFp.testRunServiceGetRunResult(requestParameters.productId, requestParameters.runSeq, requestParameters.resultId, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Aggregates the whole run into suite stats and case summaries (worst latest-attempt status across parameter combos, attempts, durations) so clients can render the run tree without paginating results.
+         * @summary Returns per-suite and per-case rollups of a run.
          * @param {TestRunServiceApiTestRunServiceGetRunSummaryRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -811,7 +837,8 @@ export const TestRunServiceApiFactory = function (configuration?: Configuration,
             return localVarFp.testRunServiceGetRunSummary(requestParameters.productId, requestParameters.runSeq, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Returns the run with its status, environment, stats (latest-attempt counters), and live-documentation sync state.
+         * @summary Fetches one test run by its sequence number.
          * @param {TestRunServiceApiTestRunServiceGetTestRunRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -820,7 +847,8 @@ export const TestRunServiceApiFactory = function (configuration?: Configuration,
             return localVarFp.testRunServiceGetTestRun(requestParameters.productId, requestParameters.runSeq, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Filter by latest-attempt status, title substring (search), or identity_key (all attempts of one case identity); latest_only collapses retries to the latest attempt per execution. Paginated via pagination.page_size/page_token.
+         * @summary Lists a run\'s reported results.
          * @param {TestRunServiceApiTestRunServiceListRunResultsRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -829,7 +857,8 @@ export const TestRunServiceApiFactory = function (configuration?: Configuration,
             return localVarFp.testRunServiceListRunResults(requestParameters.productId, requestParameters.runSeq, requestParameters.status, requestParameters.search, requestParameters.identityKey, requestParameters.latestOnly, requestParameters.paginationPageSize, requestParameters.paginationPageToken, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Filter by status (new | in_progress | passed | failed | aborted), environment slug, branch name, or title substring via search. Paginated via pagination.page_size/page_token.
+         * @summary Lists a product\'s test runs.
          * @param {TestRunServiceApiTestRunServiceListTestRunsRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -838,7 +867,8 @@ export const TestRunServiceApiFactory = function (configuration?: Configuration,
             return localVarFp.testRunServiceListTestRuns(requestParameters.productId, requestParameters.status, requestParameters.environment, requestParameters.branch, requestParameters.search, requestParameters.paginationPageSize, requestParameters.paginationPageToken, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Accepts 1..2000 results per call. The batch is validated up front; on failure nothing is written and per-entry errors are returned (HTTP 400, also attached as google.rpc.Status details for gRPC clients). Each result\'s id is an idempotency key — resends count as duplicates and are skipped, so retrying a batch is safe. Results are matched to repository cases by testops_ids[0], then external_id, then signature (unmatched results are kept). Rejected once the run is completed/aborted (RUN_COMPLETED).
+         * @summary Reports a batch of test results into a run.
          * @param {TestRunServiceApiTestRunServiceReportResultsRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1010,7 +1040,8 @@ export interface TestRunServiceApiTestRunServiceReportResultsRequest {
  */
 export class TestRunServiceApi extends BaseAPI {
     /**
-     * 
+     * Terminally cancels a run from new/in_progress; aborting a completed or already-aborted run is rejected. Stats are recomputed so a partial run still shows what was reported.
+     * @summary Aborts a run.
      * @param {TestRunServiceApiTestRunServiceAbortTestRunRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1020,7 +1051,8 @@ export class TestRunServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Recounts stats and derives the terminal status (passed | failed) from the latest attempt per execution. Idempotent: completing an already-completed run returns it unchanged (and retries a stuck or failed live-doc sync); aborted runs cannot be completed. When the product has live documentation enabled, completion triggers reconciliation of the test repository from the run\'s results.
+     * @summary Completes a run and computes its final verdict.
      * @param {TestRunServiceApiTestRunServiceCompleteTestRunRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1030,7 +1062,8 @@ export class TestRunServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * The run is the container ReportResults writes into. environment is a slug, auto-created when unknown; branch is the git branch name (CI metadata used for test matching — no Tiden branch is created); title defaults to \"Automated run <RFC3339>\" server-side. The returned run\'s seq_num is the run_seq every other run endpoint addresses.
+     * @summary Creates a test run to report CI results into.
      * @param {TestRunServiceApiTestRunServiceCreateTestRunRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1040,7 +1073,8 @@ export class TestRunServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Permanently removes the run and its reported results. Not reversible.
+     * @summary Deletes a test run.
      * @param {TestRunServiceApiTestRunServiceDeleteTestRunRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1050,8 +1084,8 @@ export class TestRunServiceApi extends BaseAPI {
     }
 
     /**
-     * 
-     * @summary Resolves a content-hash (uploaded via the reporter multipart route POST /v1/products/{product_id}/attachments:upload) to a presigned download URL. Public so reporter/CLI clients and the SPA (JWT) can both fetch; ATTACHMENT_NOT_FOUND (→ 404) for an unknown hash — the drawer renders \"attachment unavailable\" on that.
+     * Resolves a hash uploaded via the reporter multipart route POST /v1/products/{product_id}/attachments:upload to a fresh presigned download URL (15-minute expiry, attachment disposition). Content- addressed: the same hash always names the same bytes within a product. Public so reporter/CLI clients and the SPA (JWT) can both fetch; an unknown hash returns ATTACHMENT_NOT_FOUND (HTTP 404).
+     * @summary Resolves an attachment content hash to a download URL.
      * @param {TestRunServiceApiTestRunServiceGetRunAttachmentRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1061,7 +1095,8 @@ export class TestRunServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Returns the full result including steps, parameters, stacktrace, and attachment hashes (resolve via GetRunAttachment).
+     * @summary Fetches one reported result by id.
      * @param {TestRunServiceApiTestRunServiceGetRunResultRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1071,7 +1106,8 @@ export class TestRunServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Aggregates the whole run into suite stats and case summaries (worst latest-attempt status across parameter combos, attempts, durations) so clients can render the run tree without paginating results.
+     * @summary Returns per-suite and per-case rollups of a run.
      * @param {TestRunServiceApiTestRunServiceGetRunSummaryRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1081,7 +1117,8 @@ export class TestRunServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Returns the run with its status, environment, stats (latest-attempt counters), and live-documentation sync state.
+     * @summary Fetches one test run by its sequence number.
      * @param {TestRunServiceApiTestRunServiceGetTestRunRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1091,7 +1128,8 @@ export class TestRunServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Filter by latest-attempt status, title substring (search), or identity_key (all attempts of one case identity); latest_only collapses retries to the latest attempt per execution. Paginated via pagination.page_size/page_token.
+     * @summary Lists a run\'s reported results.
      * @param {TestRunServiceApiTestRunServiceListRunResultsRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1101,7 +1139,8 @@ export class TestRunServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Filter by status (new | in_progress | passed | failed | aborted), environment slug, branch name, or title substring via search. Paginated via pagination.page_size/page_token.
+     * @summary Lists a product\'s test runs.
      * @param {TestRunServiceApiTestRunServiceListTestRunsRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1111,7 +1150,8 @@ export class TestRunServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Accepts 1..2000 results per call. The batch is validated up front; on failure nothing is written and per-entry errors are returned (HTTP 400, also attached as google.rpc.Status details for gRPC clients). Each result\'s id is an idempotency key — resends count as duplicates and are skipped, so retrying a batch is safe. Results are matched to repository cases by testops_ids[0], then external_id, then signature (unmatched results are kept). Rejected once the run is completed/aborted (RUN_COMPLETED).
+     * @summary Reports a batch of test results into a run.
      * @param {TestRunServiceApiTestRunServiceReportResultsRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}

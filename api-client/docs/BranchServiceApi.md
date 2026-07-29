@@ -4,16 +4,17 @@ All URIs are relative to *https://api.tiden.ai*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
-|[**branchServiceCreateBranch**](#branchservicecreatebranch) | **POST** /v1/products/{productId}/branches | |
-|[**branchServiceDeleteBranch**](#branchservicedeletebranch) | **DELETE** /v1/branches/{id} | |
-|[**branchServiceGetBranch**](#branchservicegetbranch) | **GET** /v1/branches/{id} | |
-|[**branchServiceGetMergePreview**](#branchservicegetmergepreview) | **GET** /v1/branches/{id}/merge-preview | |
-|[**branchServiceListBranches**](#branchservicelistbranches) | **GET** /v1/products/{productId}/branches | |
-|[**branchServiceMergeBranch**](#branchservicemergebranch) | **POST** /v1/branches/{id}/merge | |
+|[**branchServiceCreateBranch**](#branchservicecreatebranch) | **POST** /v1/products/{productId}/branches | Creates a copy-on-write branch of a product\&#39;s main line.|
+|[**branchServiceDeleteBranch**](#branchservicedeletebranch) | **DELETE** /v1/branches/{id} | Deletes a branch and discards its copy-on-write changes.|
+|[**branchServiceGetBranch**](#branchservicegetbranch) | **GET** /v1/branches/{id} | Fetches one branch by id.|
+|[**branchServiceGetMergePreview**](#branchservicegetmergepreview) | **GET** /v1/branches/{id}/merge-preview | Previews the effect of merging a branch into main.|
+|[**branchServiceListBranches**](#branchservicelistbranches) | **GET** /v1/products/{productId}/branches | Lists a product\&#39;s branches.|
+|[**branchServiceMergeBranch**](#branchservicemergebranch) | **POST** /v1/branches/{id}/merge | Merges a branch\&#39;s changes into main and closes the branch.|
 
 # **branchServiceCreateBranch**
 > CreateBranchResponse branchServiceCreateBranch(createBranchBody)
 
+The branch starts as a view of main; edits made on it copy entities on write and flow back via MergeBranch. name must be lowercase alphanumeric with hyphens/underscores/slashes, at most 100 characters, and not \"main\". created_by_agent_run_id attributes branches created by an agent run.
 
 ### Example
 
@@ -69,6 +70,7 @@ const { status, data } = await apiInstance.branchServiceCreateBranch(
 # **branchServiceDeleteBranch**
 > object branchServiceDeleteBranch()
 
+Permanently drops the branch\'s local requirement/test/component copies and deletion markers; main is unaffected. Deletion history is recorded per discarded requirement. The main branch cannot be deleted.
 
 ### Example
 
@@ -120,6 +122,7 @@ const { status, data } = await apiInstance.branchServiceDeleteBranch(
 # **branchServiceGetBranch**
 > GetBranchResponse branchServiceGetBranch()
 
+Returns the branch with its status and metadata. Change stats are only populated by ListBranches with include_stats=true.
 
 ### Example
 
@@ -171,6 +174,7 @@ const { status, data } = await apiInstance.branchServiceGetBranch(
 # **branchServiceGetMergePreview**
 > GetMergePreviewResponse branchServiceGetMergePreview()
 
+Returns the additions, modifications (with per-field conflict flags), and deletions the merge would apply, for requirements, tests, and components, plus aggregate stats. A conflict means main changed the entity after the branch took its copy. Read-only — nothing is written.
 
 ### Example
 
@@ -222,6 +226,7 @@ const { status, data } = await apiInstance.branchServiceGetMergePreview(
 # **branchServiceListBranches**
 > ListBranchesResponse branchServiceListBranches()
 
+Returns every branch including main. Set include_stats to add per-branch change counts vs main (additions/modifications/deletions per entity kind, plus conflicts).
 
 ### Example
 
@@ -276,6 +281,7 @@ const { status, data } = await apiInstance.branchServiceListBranches(
 # **branchServiceMergeBranch**
 > MergeBranchResponse branchServiceMergeBranch(mergeBranchBody)
 
+Applies the branch\'s additions/modifications/deletions to main in one transaction. Every conflicting entity requires a resolutions entry keyed \"req:<uuid>\", \"test:<uuid>\", or \"comp:<uuid>\" with value KEEP_BRANCH or KEEP_MAIN — otherwise the call fails with UNRESOLVED_CONFLICT and nothing is applied. Only open branches can merge; main cannot merge into itself.
 
 ### Example
 

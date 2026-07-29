@@ -14,6 +14,9 @@
 
 
 
+/**
+ * ReportError is one per-entry validation failure from a reported batch.
+ */
 export interface ReportError {
     'index'?: number;
     'resultId'?: string;

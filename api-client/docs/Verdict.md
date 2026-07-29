@@ -1,5 +1,6 @@
 # Verdict
 
+Verdict is one immutable quality-gate decision snapshot for a (scope, ref): overall status, per-subject criterion breakdowns, and agent-actionable fix hints. invalidated_at marks snapshots superseded by newer data.
 
 ## Properties
 

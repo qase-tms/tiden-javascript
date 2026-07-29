@@ -1,5 +1,6 @@
 # TestParameterGroup
 
+TestParameterGroup names one set of parameter values a parameterized test runs with.
 
 ## Properties
 

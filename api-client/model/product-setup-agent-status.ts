@@ -14,6 +14,9 @@
 
 
 
+/**
+ * ProductSetupAgentStatus reports one coding agent found in the bound repo and whether its Tiden hooks are wired.
+ */
 export interface ProductSetupAgentStatus {
     'agent'?: string;
     'detected'?: boolean;

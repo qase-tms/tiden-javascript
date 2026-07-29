@@ -14,6 +14,9 @@
 
 
 
+/**
+ * IngestError is one per-entry validation failure from an ingest batch.
+ */
 export interface IngestError {
     'externalId'?: string;
     /**
