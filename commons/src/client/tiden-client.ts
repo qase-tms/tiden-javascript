@@ -1,10 +1,10 @@
 import { AxiosInstance, isAxiosError } from 'axios';
-import { createTidenClient } from './tiden-http';
+import { ResultCreate, TestRunServiceApi } from '@tiden/api-client';
+import { createTestRunApi, createTidenClient } from './tiden-http';
 import { IClient } from './interface';
 import { RunService } from './services/run-service';
 import { AttachmentService } from './services/attachment-service';
 import { ResultTransformer } from './services/result-transformer';
-import { TidenResultCreate } from './models/tiden-result';
 import { processError } from './services/api-error-handler';
 import { LoggerInterface } from '../utils/logger';
 import { TidenOptionsType } from '../models/config/TidenOptionsType';
@@ -13,11 +13,17 @@ import { Attachment, TestResultType } from '../models';
 interface ReportErrorDetail { index?: number; resultId?: string; code?: string; message?: string; ['@type']?: string }
 
 /**
- * Facade over the Tiden REST API — replaces the previously generated
- * `ClientV1`/`ClientV2` API client packages.
+ * Facade over the Tiden REST API.
+ *
+ * The JSON endpoints (create/report/complete) go through the generated
+ * `@tiden/api-client`, so their request/response types track the OpenAPI spec
+ * in qase-tms/tiden-specs. Attachment upload stays hand-written: it is a
+ * multipart route with no generated operation (see AttachmentService).
+ * Both share the one axios instance created here.
  */
 export class TidenApiClient implements IClient {
   private readonly http: AxiosInstance;
+  private readonly api: TestRunServiceApi;
   private readonly runService: RunService;
   private readonly attachmentService: AttachmentService;
   private readonly resultTransformer: ResultTransformer;
@@ -29,7 +35,8 @@ export class TidenApiClient implements IClient {
     rootSuite: string | undefined,
   ) {
     this.http = createTidenClient(config.api.baseUrl ?? '', config.api.token);
-    this.runService = new RunService(logger, this.http);
+    this.api = createTestRunApi(this.http, config.api.baseUrl ?? '');
+    this.runService = new RunService(logger, this.api);
     this.attachmentService = new AttachmentService(logger, this.http);
     this.resultTransformer = new ResultTransformer(logger, rootSuite);
   }
@@ -74,11 +81,21 @@ export class TidenApiClient implements IClient {
   /** 429-only retry (Retry-After honored, exp backoff, 30s cap); 400 is
    *  terminal — resending an identical batch fails identically, so log
    *  every per-entry ReportError from details[] and re-throw. */
-  private async postResultsWithRetry(runId: number, models: TidenResultCreate[], maxRetries = 5): Promise<void> {
+  private async postResultsWithRetry(runId: number, models: ResultCreate[], maxRetries = 5): Promise<void> {
     let delay = 1000;
     for (let attempt = 0; ; attempt++) {
       try {
-        await this.http.post(`/v1/products/${this.config.product}/runs/${runId}/results:report`, { results: models });
+        const { data } = await this.api.testRunServiceReportResults({
+          productId: this.config.product,
+          runSeq: runId,
+          reportResultsBody: { results: models },
+        });
+        // `accepted`/`duplicates` are int64s (strings on the wire). Duplicates
+        // are the server's idempotency check recognising a result `id` it has
+        // already stored — a re-reported batch is dropped there, not here.
+        this.logger.logDebug(
+          `Reported ${models.length} result(s): accepted=${data.accepted ?? '?'} duplicates=${data.duplicates ?? '?'}`,
+        );
         return;
       } catch (error) {
         if (isAxiosError(error) && error.response?.status === 429 && attempt < maxRetries) {

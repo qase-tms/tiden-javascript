@@ -1,10 +1,10 @@
 import {
-  TidenParamGroup,
-  TidenResultCreate,
-  TidenResultExecution,
-  TidenResultStep,
-  TidenSuiteSegment,
-} from '../models/tiden-result';
+  ParamGroup,
+  ResultCreate,
+  ResultExecution,
+  ResultStep,
+  SuiteSegment,
+} from '@tiden/api-client';
 import {
   Attachment,
   Relation,
@@ -43,7 +43,7 @@ export class ResultTransformer {
   async transform(
     result: TestResultType,
     attachmentUploader: (attachment: Attachment) => Promise<string>,
-  ): Promise<TidenResultCreate> {
+  ): Promise<ResultCreate> {
     const attachments = await this.uploadAttachments(result.attachments, attachmentUploader);
     if (result.preparedAttachments) {
       attachments.push(...result.preparedAttachments);
@@ -51,25 +51,31 @@ export class ResultTransformer {
     const steps = await this.transformSteps(result.steps, result.title, attachmentUploader);
     const params = this.transformParams(result.params);
     const groupParams = this.transformGroupParams(result.group_params, params);
+    // No linked case ids → omit the field (previously an explicit null; both
+    // decode to an empty repeated field server-side).
+    const caseIds: number[] | null = Array.isArray(result.case_id)
+      ? (result.case_id.length > 0 ? result.case_id : null)
+      : result.case_id !== null ? [result.case_id] : null;
 
-    const model: TidenResultCreate = {
+    // Field names/types come from the generated `ResultCreate` (api.v1
+    // ResultCreate via the OpenAPI spec), so they track repos/specs: JSON is
+    // lowerCamelCase and int64s are strings. Nullable internal values are
+    // omitted rather than sent as `null` — protojson maps both to the field's
+    // zero value, and omitting keeps the generated optional types honest.
+    const model: ResultCreate = {
       id: result.id,
       title: result.title,
       execution: this.getExecution(result.execution),
-      // Wire field name mirrors api.v1.ResultCreate.testops_ids — kept as-is
-      // for API compatibility; see client/models/tiden-result.ts.
-      testops_ids: Array.isArray(result.case_id)
-        ? (result.case_id.length > 0 ? result.case_id : null)
-        : result.case_id !== null ? [result.case_id] : null,
+      ...(caseIds ? { testopsIds: caseIds } : {}),
       attachments: attachments,
       steps: steps,
       params: params,
-      param_groups: groupParams,
-      suite_path: this.getSuitePath(result.relations),
-      message: result.message,
+      paramGroups: groupParams,
+      suitePath: this.getSuitePath(result.relations),
+      ...(result.message != null ? { message: result.message } : {}),
       fields: result.fields,
       defect: false,
-      signature: result.signature,
+      ...(result.signature != null ? { signature: result.signature } : {}),
     };
 
     if (result.tags && result.tags.length > 0) {
@@ -88,7 +94,7 @@ export class ResultTransformer {
     result: TestResultType,
     attachmentUploader: (attachment: Attachment) => Promise<string>,
     defect: boolean,
-  ): Promise<TidenResultCreate> {
+  ): Promise<ResultCreate> {
     const model = await this.transform(result, attachmentUploader);
     model.defect = defect;
     return model;
@@ -110,7 +116,7 @@ export class ResultTransformer {
     steps: TestStepType[],
     testTitle: string,
     attachmentUploader: (attachment: Attachment) => Promise<string>,
-  ): Promise<TidenResultStep[]> {
+  ): Promise<ResultStep[]> {
     return Promise.all(
       steps.map(step => this.transformStep(step, testTitle, attachmentUploader)),
     );
@@ -120,7 +126,7 @@ export class ResultTransformer {
     step: TestStepType,
     testTitle: string,
     attachmentUploader: (attachment: Attachment) => Promise<string>,
-  ): Promise<TidenResultStep> {
+  ): Promise<ResultStep> {
     const attachmentHashes = await this.uploadAttachments(step.attachments, attachmentUploader);
     const resultStep = this.createBaseResultStep(attachmentHashes, step.execution.status);
 
@@ -139,7 +145,7 @@ export class ResultTransformer {
     return resultStep;
   }
 
-  private createBaseResultStep(attachmentHashes: string[], status: StepStatusEnum): TidenResultStep {
+  private createBaseResultStep(attachmentHashes: string[], status: StepStatusEnum): ResultStep {
     return {
       data: { action: '' },
       execution: {
@@ -149,7 +155,7 @@ export class ResultTransformer {
     };
   }
 
-  private processTextStep(step: TestStepType, resultStep: TidenResultStep, testTitle: string): void {
+  private processTextStep(step: TestStepType, resultStep: ResultStep, testTitle: string): void {
     if (!('action' in step.data) || !resultStep.data) return;
 
     const stepData = step.data;
@@ -160,33 +166,36 @@ export class ResultTransformer {
     }
 
     if (stepData.expected_result != null) {
-      resultStep.data.expected_result = stepData.expected_result;
+      resultStep.data.expectedResult = stepData.expected_result;
     }
 
     if (stepData.data != null) {
-      resultStep.data.input_data = stepData.data;
+      resultStep.data.inputData = stepData.data;
     }
   }
 
-  private processGherkinStep(step: TestStepType, resultStep: TidenResultStep): void {
+  private processGherkinStep(step: TestStepType, resultStep: ResultStep): void {
     if (!('keyword' in step.data) || !resultStep.data) return;
     resultStep.data.action = step.data.keyword;
   }
 
-  private processRequestStep(step: TestStepType, resultStep: TidenResultStep): void {
+  private processRequestStep(step: TestStepType, resultStep: ResultStep): void {
     if (!('request_method' in step.data) || !resultStep.data) return;
     const stepData = step.data;
     resultStep.data.action = `${stepData.request_method} ${stepData.request_url}`;
   }
 
-  private getExecution(exec: TestExecution): TidenResultExecution {
+  private getExecution(exec: TestExecution): ResultExecution {
+    // `duration` is an int64 in the proto, so the generated type carries it as
+    // a string (protojson's int64 convention); the timestamps stay numbers
+    // (Unix seconds, fractional ms).
     return {
       status: statusMap[exec.status],
-      start_time: exec.start_time,
-      end_time: exec.end_time,
-      duration: exec.duration,
-      stacktrace: exec.stacktrace,
-      thread: exec.thread,
+      ...(exec.start_time != null ? { startTime: exec.start_time } : {}),
+      ...(exec.end_time != null ? { endTime: exec.end_time } : {}),
+      ...(exec.duration != null ? { duration: String(exec.duration) } : {}),
+      ...(exec.stacktrace != null ? { stacktrace: exec.stacktrace } : {}),
+      ...(exec.thread != null ? { thread: exec.thread } : {}),
     };
   }
 
@@ -203,7 +212,7 @@ export class ResultTransformer {
   private transformGroupParams(
     groupParams: Record<string, string>,
     params: Record<string, string>,
-  ): TidenParamGroup[] {
+  ): ParamGroup[] {
     const keys = Object.keys(groupParams);
     if (keys.length === 0) return [];
 
@@ -216,7 +225,7 @@ export class ResultTransformer {
     return [{ names: keys }];
   }
 
-  private getSuitePath(relation: Relation | null): TidenSuiteSegment[] {
+  private getSuitePath(relation: Relation | null): SuiteSegment[] {
     const titles = relation?.suite?.data.map(d => d.title) ?? [];
     const path = this.rootSuite ? [this.rootSuite, ...titles] : titles;
     return path.map(title => ({ title }));

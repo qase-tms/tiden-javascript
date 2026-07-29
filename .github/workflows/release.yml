@@ -1,10 +1,11 @@
 # Release
 #
 # Tag-triggered npm publish for the tiden-javascript workspaces: builds,
-# tests, then publishes `commons` before the framework reporters that depend
-# on it (`playwright`, `vitest`), plus `api-client` (the generated OpenAPI
-# client; no dependency on the others, so publish order relative to them
-# doesn't matter).
+# tests, then publishes in dependency order — `api-client` (the generated
+# OpenAPI client) first because `commons` now depends on it at runtime, then
+# `commons`, then the framework reporters that depend on commons
+# (`playwright`, `vitest`). @tiden/api-client can no longer be held back from
+# a release: commons is unusable without it on the registry.
 # Push a `vX.Y.Z` tag matching the versions already set in each package's
 # package.json to publish.
 #
@@ -53,7 +54,10 @@ jobs:
           done
       - run: npm run build -ws --if-present
       - run: npm run test -ws --if-present
+      # Publish order follows the dependency graph: api-client is a runtime
+      # dependency of commons (the JSON endpoints go through the generated
+      # client), and commons is a runtime dependency of both reporters.
+      - run: npm publish -w api-client --provenance --access public
       - run: npm publish -w commons --provenance --access public
       - run: npm publish -w playwright --provenance --access public
       - run: npm publish -w vitest --provenance --access public
-      - run: npm publish -w api-client --provenance --access public

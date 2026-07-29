@@ -178,7 +178,16 @@ export class AttachmentService {
 
   /** POST one multipart batch to Tiden. Returns the upstream-shaped
    *  `{data: {result: [{hash}]}}` envelope so callers stay unchanged
-   *  (Tiden's response body is `{status, result: [{hash, ...}]}`). */
+   *  (Tiden's response body is `{status, result: [{hash, ...}]}`).
+   *
+   *  Hand-written on purpose: `POST /v1/products/{product}/attachments:upload`
+   *  is a multipart route that is NOT in the OpenAPI spec, so
+   *  `@tiden/api-client` has no generated operation for it (the path appears
+   *  there only inside a doc comment on testRunServiceGetRunAttachment). It
+   *  still goes over the same axios instance as the generated calls, so
+   *  baseURL/auth/timeout stay shared; only the request building is local.
+   *  If the route is ever added to the spec, replace this with the generated
+   *  operation. */
   private async postAttachmentBatch(
     projectCode: string,
     data: AttachmentData[],

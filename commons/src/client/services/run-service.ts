@@ -1,4 +1,4 @@
-import { AxiosInstance } from 'axios';
+import { CreateTestRunBody, TestRunServiceApi } from '@tiden/api-client';
 import { LoggerInterface } from '../../utils/logger';
 import { TidenError } from '../../utils/tiden-error';
 import { TidenOptionsType } from '../../models/config/TidenOptionsType';
@@ -7,7 +7,7 @@ import { processError } from './api-error-handler';
 export class RunService {
   constructor(
     private readonly logger: LoggerInterface,
-    private readonly http: AxiosInstance,
+    private readonly api: TestRunServiceApi,
   ) {}
 
   /**
@@ -20,7 +20,9 @@ export class RunService {
       return config.run.id; // sharded CI: pre-created run
     }
     try {
-      const body = {
+      // Body shape comes from the generated CreateTestRunBody (lowerCamelCase
+      // JSON, hence `clientMeta`), so it tracks the OpenAPI spec.
+      const body: CreateTestRunBody = {
         title: config.run.title ?? '',
         description: config.run.description ?? '',
         environment: environment ?? '',
@@ -28,12 +30,13 @@ export class RunService {
         configurations: config.configurations
           ? Object.fromEntries(config.configurations.values.map((v) => [v.name, v.value]))
           : {},
-        client_meta: config.clientMeta ?? {},
+        clientMeta: config.clientMeta ?? {},
       };
       this.logger.logDebug(`Creating test run: ${JSON.stringify(body)}`);
-      const { data } = await this.http.post<{ run?: { seqNum?: number } }>(
-        `/v1/products/${config.product}/runs`, body,
-      );
+      const { data } = await this.api.testRunServiceCreateTestRun({
+        productId: config.product,
+        createTestRunBody: body,
+      });
       const seqNum = data.run?.seqNum;
       if (!seqNum) {
         throw new TidenError('Failed to create test run');
@@ -57,7 +60,11 @@ export class RunService {
       return;
     }
     try {
-      await this.http.post(`/v1/products/${config.product}/runs/${runId}:complete`, {});
+      await this.api.testRunServiceCompleteTestRun({
+        productId: config.product,
+        runSeq: runId,
+        body: {},
+      });
       this.logger.log(`Test run #${runId} completed`);
     } catch (error) {
       throw processError(error, 'Error on completing run');
