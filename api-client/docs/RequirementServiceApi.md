@@ -4,15 +4,16 @@ All URIs are relative to *https://api.tiden.ai*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
-|[**requirementServiceCreateRequirement**](#requirementservicecreaterequirement) | **POST** /v1/products/{productId}/requirements | |
-|[**requirementServiceDeleteRequirement**](#requirementservicedeleterequirement) | **DELETE** /v1/requirements/{id} | |
-|[**requirementServiceGetRequirement**](#requirementservicegetrequirement) | **GET** /v1/requirements/{id} | |
-|[**requirementServiceListRequirements**](#requirementservicelistrequirements) | **GET** /v1/products/{productId}/requirements | |
-|[**requirementServiceUpdateRequirement**](#requirementserviceupdaterequirement) | **PUT** /v1/requirements/{id} | |
+|[**requirementServiceCreateRequirement**](#requirementservicecreaterequirement) | **POST** /v1/products/{productId}/requirements | Creates a requirement.|
+|[**requirementServiceDeleteRequirement**](#requirementservicedeleterequirement) | **DELETE** /v1/requirements/{id} | Deletes a requirement.|
+|[**requirementServiceGetRequirement**](#requirementservicegetrequirement) | **GET** /v1/requirements/{id} | Fetches one requirement by id.|
+|[**requirementServiceListRequirements**](#requirementservicelistrequirements) | **GET** /v1/products/{productId}/requirements | Lists a product\&#39;s requirements.|
+|[**requirementServiceUpdateRequirement**](#requirementserviceupdaterequirement) | **PUT** /v1/requirements/{id} | Updates a requirement.|
 
 # **requirementServiceCreateRequirement**
 > CreateRequirementResponse requirementServiceCreateRequirement(createRequirementBody)
 
+Creates the requirement under parent_id (empty = root) on branch (empty = main; a missing branch name is auto-created and edits stay copy-on-write until merge). Optional status/priority/type classify it; sources attach provenance (repo files, documentation URLs, manual input). Returns the requirement with its product-wide seq_num.
 
 ### Example
 
@@ -68,6 +69,7 @@ const { status, data } = await apiInstance.requirementServiceCreateRequirement(
 # **requirementServiceDeleteRequirement**
 > DeleteRequirementResponse requirementServiceDeleteRequirement()
 
+On a branch (branch set, non-main) a main-row delete records a copy-on-write deletion marker that applies at merge; on main the row is deleted directly. Returns history_id, which the web-only RestoreRequirement RPC accepts to undo the delete.
 
 ### Example
 
@@ -122,6 +124,7 @@ const { status, data } = await apiInstance.requirementServiceDeleteRequirement(
 # **requirementServiceGetRequirement**
 > GetRequirementResponse requirementServiceGetRequirement()
 
+Returns the requirement including its sources and branch status.
 
 ### Example
 
@@ -173,6 +176,7 @@ const { status, data } = await apiInstance.requirementServiceGetRequirement(
 # **requirementServiceListRequirements**
 > ListRequirementsResponse requirementServiceListRequirements()
 
+Returns the flat requirement list (parent_id encodes the tree) in the branch view (empty = main), paginated. Set include_sources to embed each requirement\'s full provenance sources — agents need them for source-based identity matching; otherwise only source_count is populated.
 
 ### Example
 
@@ -236,6 +240,7 @@ const { status, data } = await apiInstance.requirementServiceListRequirements(
 # **requirementServiceUpdateRequirement**
 > UpdateRequirementResponse requirementServiceUpdateRequirement(updateRequirementBody)
 
+Only fields present on the request change; omitted optional fields keep their stored value. branch (empty = main) applies the edit copy-on-write. sources_update replaces the requirement\'s source set, or unions it with anchor-key dedup when merge=true (the agent-write mode).
 
 ### Example
 

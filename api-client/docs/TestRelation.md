@@ -1,5 +1,6 @@
 # TestRelation
 
+TestRelation is a typed, reporter-provided relation payload attached to a test; data\'s shape depends on type.
 
 ## Properties
 

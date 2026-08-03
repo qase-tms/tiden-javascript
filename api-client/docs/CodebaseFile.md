@@ -1,5 +1,6 @@
 # CodebaseFile
 
+CodebaseFile is one repository file excerpt included in codebase context.
 
 ## Properties
 

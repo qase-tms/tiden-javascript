@@ -35,7 +35,8 @@ import type { UpdateUserOnboardingResponse } from '../model';
 export const AuthServiceApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * 
+         * Resolves the caller from the presented credential (API token or session) and returns the user\'s id, email, name, and avatar URL. The CLI uses it to verify that a token is valid and who it belongs to.
+         * @summary Returns the authenticated user (whoami).
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -67,8 +68,9 @@ export const AuthServiceApiAxiosParamCreator = function (configuration?: Configu
             };
         },
         /**
-         * 
-         * @param {UpdateUserOnboardingRequest} updateUserOnboardingRequest 
+         * One-way latches: each of cli_verified, dismissed, and completed stamps its timestamp on the caller\'s onboarding state when true; false leaves the flag unchanged (flags cannot be un-set through this RPC). Returns the resulting onboarding state.
+         * @summary Updates the caller\'s onboarding progress flags.
+         * @param {UpdateUserOnboardingRequest} updateUserOnboardingRequest UpdateUserOnboardingRequest latches onboarding flags: each true field stamps its timestamp; false leaves the flag unchanged. wizard_step and answers are ordinary mutable state: an unset field is left untouched, a set one replaces the stored value.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -113,7 +115,8 @@ export const AuthServiceApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = AuthServiceApiAxiosParamCreator(configuration)
     return {
         /**
-         * 
+         * Resolves the caller from the presented credential (API token or session) and returns the user\'s id, email, name, and avatar URL. The CLI uses it to verify that a token is valid and who it belongs to.
+         * @summary Returns the authenticated user (whoami).
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -124,8 +127,9 @@ export const AuthServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
-         * @param {UpdateUserOnboardingRequest} updateUserOnboardingRequest 
+         * One-way latches: each of cli_verified, dismissed, and completed stamps its timestamp on the caller\'s onboarding state when true; false leaves the flag unchanged (flags cannot be un-set through this RPC). Returns the resulting onboarding state.
+         * @summary Updates the caller\'s onboarding progress flags.
+         * @param {UpdateUserOnboardingRequest} updateUserOnboardingRequest UpdateUserOnboardingRequest latches onboarding flags: each true field stamps its timestamp; false leaves the flag unchanged. wizard_step and answers are ordinary mutable state: an unset field is left untouched, a set one replaces the stored value.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -145,7 +149,8 @@ export const AuthServiceApiFactory = function (configuration?: Configuration, ba
     const localVarFp = AuthServiceApiFp(configuration)
     return {
         /**
-         * 
+         * Resolves the caller from the presented credential (API token or session) and returns the user\'s id, email, name, and avatar URL. The CLI uses it to verify that a token is valid and who it belongs to.
+         * @summary Returns the authenticated user (whoami).
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -153,7 +158,8 @@ export const AuthServiceApiFactory = function (configuration?: Configuration, ba
             return localVarFp.authServiceGetCurrentUser(options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * One-way latches: each of cli_verified, dismissed, and completed stamps its timestamp on the caller\'s onboarding state when true; false leaves the flag unchanged (flags cannot be un-set through this RPC). Returns the resulting onboarding state.
+         * @summary Updates the caller\'s onboarding progress flags.
          * @param {AuthServiceApiAuthServiceUpdateUserOnboardingRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -168,6 +174,9 @@ export const AuthServiceApiFactory = function (configuration?: Configuration, ba
  * Request parameters for authServiceUpdateUserOnboarding operation in AuthServiceApi.
  */
 export interface AuthServiceApiAuthServiceUpdateUserOnboardingRequest {
+    /**
+     * UpdateUserOnboardingRequest latches onboarding flags: each true field stamps its timestamp; false leaves the flag unchanged. wizard_step and answers are ordinary mutable state: an unset field is left untouched, a set one replaces the stored value.
+     */
     readonly updateUserOnboardingRequest: UpdateUserOnboardingRequest
 }
 
@@ -176,7 +185,8 @@ export interface AuthServiceApiAuthServiceUpdateUserOnboardingRequest {
  */
 export class AuthServiceApi extends BaseAPI {
     /**
-     * 
+     * Resolves the caller from the presented credential (API token or session) and returns the user\'s id, email, name, and avatar URL. The CLI uses it to verify that a token is valid and who it belongs to.
+     * @summary Returns the authenticated user (whoami).
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
@@ -185,7 +195,8 @@ export class AuthServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * One-way latches: each of cli_verified, dismissed, and completed stamps its timestamp on the caller\'s onboarding state when true; false leaves the flag unchanged (flags cannot be un-set through this RPC). Returns the resulting onboarding state.
+     * @summary Updates the caller\'s onboarding progress flags.
      * @param {AuthServiceApiAuthServiceUpdateUserOnboardingRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}

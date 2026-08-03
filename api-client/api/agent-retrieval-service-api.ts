@@ -61,7 +61,8 @@ import type { WriteRequirementEdgeResponse } from '../model';
 export const AgentRetrievalServiceApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * 
+         * Maps repo-qualified changed files to components via the main-branch component scopes, declares one idempotent impacts_component edge intent per touched component, and sets requirement.component_id when the files resolve to exactly one component (clears it when they span several). All files must belong to a single repository; unmatched files are returned.
+         * @summary Attributes a requirement\'s changed files to owning components.
          * @param {string} productId 
          * @param {string} requirementId 
          * @param {AttributeChangedFilesBody} attributeChangedFilesBody 
@@ -106,7 +107,8 @@ export const AgentRetrievalServiceApiAxiosParamCreator = function (configuration
             };
         },
         /**
-         * 
+         * Stores an edge intent on the given branch (empty = main) instead of writing the edge immediately; the intent materializes into a real edge when the branch merges to main. Endpoint and edge_type rules match WriteRequirementEdge.
+         * @summary Records a deferred graph edge for endpoints not yet on main.
          * @param {string} productId 
          * @param {DeclareRequirementEdgeIntentBody} declareRequirementEdgeIntentBody 
          * @param {*} [options] Override http request option.
@@ -147,7 +149,8 @@ export const AgentRetrievalServiceApiAxiosParamCreator = function (configuration
             };
         },
         /**
-         * 
+         * Returns every graph node (requirements plus component nodes reached via impacts_component edges, discriminated by kind) and every edge with its type, source kind, and confidence — for whole-product visualization or offline analysis.
+         * @summary Returns the product\'s full requirement graph.
          * @param {string} productId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -183,11 +186,12 @@ export const AgentRetrievalServiceApiAxiosParamCreator = function (configuration
             };
         },
         /**
-         * 
+         * Returns the requirement with its parent/children/siblings, component, linked/proposed/relevant tests, stale-coverage signals, extracted test-oriented fields (acceptance criteria, edge cases, ...), agent memory, and citations, resolved in the branch view (empty branch = main). budget caps the pack\'s approximate token size; truncation_signals reports what was cut to fit.
+         * @summary Builds the full test-authoring context pack for one requirement.
          * @param {string} productId 
          * @param {string} requirementId 
          * @param {string} [branch] 
-         * @param {number} [budget] 
+         * @param {number} [budget] budget bounds the pack\&#39;s approximate token size: smaller budgets shrink per-list limits and trim long excerpts; &lt;&#x3D; 0 uses server defaults.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -233,7 +237,8 @@ export const AgentRetrievalServiceApiAxiosParamCreator = function (configuration
             };
         },
         /**
-         * 
+         * Returns the subset of the given requirement_ids that have zero live test links. Typically chained after RequirementImpact or RequirementNeighbors to find the uncovered part of a blast radius.
+         * @summary Filters a requirement set down to those without test coverage.
          * @param {string} productId 
          * @param {Array<string>} [requirementIds] requirement_ids is the set to check for coverage. Typically the result of RequirementImpact or RequirementNeighbors.
          * @param {*} [options] Override http request option.
@@ -274,7 +279,8 @@ export const AgentRetrievalServiceApiAxiosParamCreator = function (configuration
             };
         },
         /**
-         * 
+         * Returns the product\'s branch-effective coverage gaps, ranked for agent triage. Filter by coverage status (none | partial | covered | stale | unknown), component, free-text query, or a feature subtree via root_requirement_id. Paginated via pagination.page_size/page_token.
+         * @summary Lists requirements with insufficient test coverage.
          * @param {string} productId 
          * @param {string} [branch] 
          * @param {Array<string>} [coverageStatuses] 
@@ -345,7 +351,8 @@ export const AgentRetrievalServiceApiAxiosParamCreator = function (configuration
             };
         },
         /**
-         * 
+         * Returns every (requirement_id, repo_path) pair from repo_file source anchors as seen from branch (empty = main), so a client can map file paths to requirements without fetching full requirements.
+         * @summary Lists the branch-effective code anchors of all requirements.
          * @param {string} productId 
          * @param {string} [branch] empty &#x3D; main
          * @param {*} [options] Override http request option.
@@ -386,7 +393,8 @@ export const AgentRetrievalServiceApiAxiosParamCreator = function (configuration
             };
         },
         /**
-         * 
+         * Aggregates a GetRequirementTestContext pack per requirement_id plus codebase hints (framework, test command, style examples) under a shared token_budget. POST is used for the large request body only — the call computes a context and writes nothing.
+         * @summary Prepares a batched test-generation context for several requirements.
          * @param {string} productId 
          * @param {PrepareTestGenerationContextBody} prepareTestGenerationContextBody 
          * @param {*} [options] Override http request option.
@@ -427,7 +435,8 @@ export const AgentRetrievalServiceApiAxiosParamCreator = function (configuration
             };
         },
         /**
-         * 
+         * Resolves repo_paths to seed requirements via their repo_file source anchors, then expands the requirement graph up to depth hops (default 3) over the given edge_types (empty = all canonical types). Returns the affected requirement ids, the tests covering any of them, and the affected requirements with no live test links.
+         * @summary Computes the requirement blast radius of a set of changed files.
          * @param {string} productId 
          * @param {Array<string>} [repoPaths] repo_paths is the set of changed file paths (e.g. from a merged PR). The backend resolves these to seeded requirement IDs via requirement_sources.
          * @param {number} [depth] depth controls how many hops the graph traversal expands beyond the seeds. Defaults to 3 on the server if &lt;&#x3D; 0.
@@ -478,7 +487,8 @@ export const AgentRetrievalServiceApiAxiosParamCreator = function (configuration
             };
         },
         /**
-         * 
+         * Traverses the requirement graph from requirement_id up to depth hops (default 1) over the given edge_types (empty = all canonical types) and returns the reachable requirement ids.
+         * @summary Lists the graph neighbors of one requirement.
          * @param {string} productId 
          * @param {string} requirementId 
          * @param {number} [depth] depth controls how many hops to traverse (default 1 if &lt;&#x3D; 0).
@@ -528,7 +538,8 @@ export const AgentRetrievalServiceApiAxiosParamCreator = function (configuration
             };
         },
         /**
-         * 
+         * Retrieves the requirement-graph slices relevant to the free-text objective (and optional changed repo_paths): per feature, the root requirement, the touched nodes with their code anchors, the branch-effective coverage of that slice, and the retrieval signals (vector | fts | anchor) that surfaced the seeds. k bounds each retrieval signal\'s breadth.
+         * @summary Resolves a coding objective into feature-rooted requirement context.
          * @param {string} productId 
          * @param {string} [branch] empty &#x3D; main
          * @param {string} [text] text is the free-text coding objective to resolve into feature context.
@@ -584,7 +595,8 @@ export const AgentRetrievalServiceApiAxiosParamCreator = function (configuration
             };
         },
         /**
-         * 
+         * Creates a src->dst edge with exactly one destination endpoint: dst_requirement_id (edge_type depends_on | traces_to) or dst_component_id (edge_type impacts_component). confidence is required — an explicit 0.0 is valid, omitted is not. The edge is attributed to agent_run_id; the created edge id is returned.
+         * @summary Writes one semantic edge into the requirement graph.
          * @param {string} productId 
          * @param {WriteRequirementEdgeBody} writeRequirementEdgeBody 
          * @param {*} [options] Override http request option.
@@ -634,7 +646,8 @@ export const AgentRetrievalServiceApiFp = function(configuration?: Configuration
     const localVarAxiosParamCreator = AgentRetrievalServiceApiAxiosParamCreator(configuration)
     return {
         /**
-         * 
+         * Maps repo-qualified changed files to components via the main-branch component scopes, declares one idempotent impacts_component edge intent per touched component, and sets requirement.component_id when the files resolve to exactly one component (clears it when they span several). All files must belong to a single repository; unmatched files are returned.
+         * @summary Attributes a requirement\'s changed files to owning components.
          * @param {string} productId 
          * @param {string} requirementId 
          * @param {AttributeChangedFilesBody} attributeChangedFilesBody 
@@ -648,7 +661,8 @@ export const AgentRetrievalServiceApiFp = function(configuration?: Configuration
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Stores an edge intent on the given branch (empty = main) instead of writing the edge immediately; the intent materializes into a real edge when the branch merges to main. Endpoint and edge_type rules match WriteRequirementEdge.
+         * @summary Records a deferred graph edge for endpoints not yet on main.
          * @param {string} productId 
          * @param {DeclareRequirementEdgeIntentBody} declareRequirementEdgeIntentBody 
          * @param {*} [options] Override http request option.
@@ -661,7 +675,8 @@ export const AgentRetrievalServiceApiFp = function(configuration?: Configuration
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Returns every graph node (requirements plus component nodes reached via impacts_component edges, discriminated by kind) and every edge with its type, source kind, and confidence — for whole-product visualization or offline analysis.
+         * @summary Returns the product\'s full requirement graph.
          * @param {string} productId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -673,11 +688,12 @@ export const AgentRetrievalServiceApiFp = function(configuration?: Configuration
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Returns the requirement with its parent/children/siblings, component, linked/proposed/relevant tests, stale-coverage signals, extracted test-oriented fields (acceptance criteria, edge cases, ...), agent memory, and citations, resolved in the branch view (empty branch = main). budget caps the pack\'s approximate token size; truncation_signals reports what was cut to fit.
+         * @summary Builds the full test-authoring context pack for one requirement.
          * @param {string} productId 
          * @param {string} requirementId 
          * @param {string} [branch] 
-         * @param {number} [budget] 
+         * @param {number} [budget] budget bounds the pack\&#39;s approximate token size: smaller budgets shrink per-list limits and trim long excerpts; &lt;&#x3D; 0 uses server defaults.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -688,7 +704,8 @@ export const AgentRetrievalServiceApiFp = function(configuration?: Configuration
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Returns the subset of the given requirement_ids that have zero live test links. Typically chained after RequirementImpact or RequirementNeighbors to find the uncovered part of a blast radius.
+         * @summary Filters a requirement set down to those without test coverage.
          * @param {string} productId 
          * @param {Array<string>} [requirementIds] requirement_ids is the set to check for coverage. Typically the result of RequirementImpact or RequirementNeighbors.
          * @param {*} [options] Override http request option.
@@ -701,7 +718,8 @@ export const AgentRetrievalServiceApiFp = function(configuration?: Configuration
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Returns the product\'s branch-effective coverage gaps, ranked for agent triage. Filter by coverage status (none | partial | covered | stale | unknown), component, free-text query, or a feature subtree via root_requirement_id. Paginated via pagination.page_size/page_token.
+         * @summary Lists requirements with insufficient test coverage.
          * @param {string} productId 
          * @param {string} [branch] 
          * @param {Array<string>} [coverageStatuses] 
@@ -720,7 +738,8 @@ export const AgentRetrievalServiceApiFp = function(configuration?: Configuration
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Returns every (requirement_id, repo_path) pair from repo_file source anchors as seen from branch (empty = main), so a client can map file paths to requirements without fetching full requirements.
+         * @summary Lists the branch-effective code anchors of all requirements.
          * @param {string} productId 
          * @param {string} [branch] empty &#x3D; main
          * @param {*} [options] Override http request option.
@@ -733,7 +752,8 @@ export const AgentRetrievalServiceApiFp = function(configuration?: Configuration
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Aggregates a GetRequirementTestContext pack per requirement_id plus codebase hints (framework, test command, style examples) under a shared token_budget. POST is used for the large request body only — the call computes a context and writes nothing.
+         * @summary Prepares a batched test-generation context for several requirements.
          * @param {string} productId 
          * @param {PrepareTestGenerationContextBody} prepareTestGenerationContextBody 
          * @param {*} [options] Override http request option.
@@ -746,7 +766,8 @@ export const AgentRetrievalServiceApiFp = function(configuration?: Configuration
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Resolves repo_paths to seed requirements via their repo_file source anchors, then expands the requirement graph up to depth hops (default 3) over the given edge_types (empty = all canonical types). Returns the affected requirement ids, the tests covering any of them, and the affected requirements with no live test links.
+         * @summary Computes the requirement blast radius of a set of changed files.
          * @param {string} productId 
          * @param {Array<string>} [repoPaths] repo_paths is the set of changed file paths (e.g. from a merged PR). The backend resolves these to seeded requirement IDs via requirement_sources.
          * @param {number} [depth] depth controls how many hops the graph traversal expands beyond the seeds. Defaults to 3 on the server if &lt;&#x3D; 0.
@@ -761,7 +782,8 @@ export const AgentRetrievalServiceApiFp = function(configuration?: Configuration
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Traverses the requirement graph from requirement_id up to depth hops (default 1) over the given edge_types (empty = all canonical types) and returns the reachable requirement ids.
+         * @summary Lists the graph neighbors of one requirement.
          * @param {string} productId 
          * @param {string} requirementId 
          * @param {number} [depth] depth controls how many hops to traverse (default 1 if &lt;&#x3D; 0).
@@ -776,7 +798,8 @@ export const AgentRetrievalServiceApiFp = function(configuration?: Configuration
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Retrieves the requirement-graph slices relevant to the free-text objective (and optional changed repo_paths): per feature, the root requirement, the touched nodes with their code anchors, the branch-effective coverage of that slice, and the retrieval signals (vector | fts | anchor) that surfaced the seeds. k bounds each retrieval signal\'s breadth.
+         * @summary Resolves a coding objective into feature-rooted requirement context.
          * @param {string} productId 
          * @param {string} [branch] empty &#x3D; main
          * @param {string} [text] text is the free-text coding objective to resolve into feature context.
@@ -792,7 +815,8 @@ export const AgentRetrievalServiceApiFp = function(configuration?: Configuration
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Creates a src->dst edge with exactly one destination endpoint: dst_requirement_id (edge_type depends_on | traces_to) or dst_component_id (edge_type impacts_component). confidence is required — an explicit 0.0 is valid, omitted is not. The edge is attributed to agent_run_id; the created edge id is returned.
+         * @summary Writes one semantic edge into the requirement graph.
          * @param {string} productId 
          * @param {WriteRequirementEdgeBody} writeRequirementEdgeBody 
          * @param {*} [options] Override http request option.
@@ -814,7 +838,8 @@ export const AgentRetrievalServiceApiFactory = function (configuration?: Configu
     const localVarFp = AgentRetrievalServiceApiFp(configuration)
     return {
         /**
-         * 
+         * Maps repo-qualified changed files to components via the main-branch component scopes, declares one idempotent impacts_component edge intent per touched component, and sets requirement.component_id when the files resolve to exactly one component (clears it when they span several). All files must belong to a single repository; unmatched files are returned.
+         * @summary Attributes a requirement\'s changed files to owning components.
          * @param {AgentRetrievalServiceApiAgentRetrievalServiceAttributeChangedFilesRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -823,7 +848,8 @@ export const AgentRetrievalServiceApiFactory = function (configuration?: Configu
             return localVarFp.agentRetrievalServiceAttributeChangedFiles(requestParameters.productId, requestParameters.requirementId, requestParameters.attributeChangedFilesBody, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Stores an edge intent on the given branch (empty = main) instead of writing the edge immediately; the intent materializes into a real edge when the branch merges to main. Endpoint and edge_type rules match WriteRequirementEdge.
+         * @summary Records a deferred graph edge for endpoints not yet on main.
          * @param {AgentRetrievalServiceApiAgentRetrievalServiceDeclareRequirementEdgeIntentRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -832,7 +858,8 @@ export const AgentRetrievalServiceApiFactory = function (configuration?: Configu
             return localVarFp.agentRetrievalServiceDeclareRequirementEdgeIntent(requestParameters.productId, requestParameters.declareRequirementEdgeIntentBody, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Returns every graph node (requirements plus component nodes reached via impacts_component edges, discriminated by kind) and every edge with its type, source kind, and confidence — for whole-product visualization or offline analysis.
+         * @summary Returns the product\'s full requirement graph.
          * @param {AgentRetrievalServiceApiAgentRetrievalServiceGetRequirementGraphRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -841,7 +868,8 @@ export const AgentRetrievalServiceApiFactory = function (configuration?: Configu
             return localVarFp.agentRetrievalServiceGetRequirementGraph(requestParameters.productId, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Returns the requirement with its parent/children/siblings, component, linked/proposed/relevant tests, stale-coverage signals, extracted test-oriented fields (acceptance criteria, edge cases, ...), agent memory, and citations, resolved in the branch view (empty branch = main). budget caps the pack\'s approximate token size; truncation_signals reports what was cut to fit.
+         * @summary Builds the full test-authoring context pack for one requirement.
          * @param {AgentRetrievalServiceApiAgentRetrievalServiceGetRequirementTestContextRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -850,7 +878,8 @@ export const AgentRetrievalServiceApiFactory = function (configuration?: Configu
             return localVarFp.agentRetrievalServiceGetRequirementTestContext(requestParameters.productId, requestParameters.requirementId, requestParameters.branch, requestParameters.budget, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Returns the subset of the given requirement_ids that have zero live test links. Typically chained after RequirementImpact or RequirementNeighbors to find the uncovered part of a blast radius.
+         * @summary Filters a requirement set down to those without test coverage.
          * @param {AgentRetrievalServiceApiAgentRetrievalServiceGraphCoverageGapsRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -859,7 +888,8 @@ export const AgentRetrievalServiceApiFactory = function (configuration?: Configu
             return localVarFp.agentRetrievalServiceGraphCoverageGaps(requestParameters.productId, requestParameters.requirementIds, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Returns the product\'s branch-effective coverage gaps, ranked for agent triage. Filter by coverage status (none | partial | covered | stale | unknown), component, free-text query, or a feature subtree via root_requirement_id. Paginated via pagination.page_size/page_token.
+         * @summary Lists requirements with insufficient test coverage.
          * @param {AgentRetrievalServiceApiAgentRetrievalServiceListCoverageGapsRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -868,7 +898,8 @@ export const AgentRetrievalServiceApiFactory = function (configuration?: Configu
             return localVarFp.agentRetrievalServiceListCoverageGaps(requestParameters.productId, requestParameters.branch, requestParameters.coverageStatuses, requestParameters.componentId, requestParameters.query, requestParameters.paginationPageSize, requestParameters.paginationPageToken, requestParameters.rootRequirementId, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Returns every (requirement_id, repo_path) pair from repo_file source anchors as seen from branch (empty = main), so a client can map file paths to requirements without fetching full requirements.
+         * @summary Lists the branch-effective code anchors of all requirements.
          * @param {AgentRetrievalServiceApiAgentRetrievalServiceListRequirementAnchorsRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -877,7 +908,8 @@ export const AgentRetrievalServiceApiFactory = function (configuration?: Configu
             return localVarFp.agentRetrievalServiceListRequirementAnchors(requestParameters.productId, requestParameters.branch, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Aggregates a GetRequirementTestContext pack per requirement_id plus codebase hints (framework, test command, style examples) under a shared token_budget. POST is used for the large request body only — the call computes a context and writes nothing.
+         * @summary Prepares a batched test-generation context for several requirements.
          * @param {AgentRetrievalServiceApiAgentRetrievalServicePrepareTestGenerationContextRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -886,7 +918,8 @@ export const AgentRetrievalServiceApiFactory = function (configuration?: Configu
             return localVarFp.agentRetrievalServicePrepareTestGenerationContext(requestParameters.productId, requestParameters.prepareTestGenerationContextBody, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Resolves repo_paths to seed requirements via their repo_file source anchors, then expands the requirement graph up to depth hops (default 3) over the given edge_types (empty = all canonical types). Returns the affected requirement ids, the tests covering any of them, and the affected requirements with no live test links.
+         * @summary Computes the requirement blast radius of a set of changed files.
          * @param {AgentRetrievalServiceApiAgentRetrievalServiceRequirementImpactRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -895,7 +928,8 @@ export const AgentRetrievalServiceApiFactory = function (configuration?: Configu
             return localVarFp.agentRetrievalServiceRequirementImpact(requestParameters.productId, requestParameters.repoPaths, requestParameters.depth, requestParameters.edgeTypes, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Traverses the requirement graph from requirement_id up to depth hops (default 1) over the given edge_types (empty = all canonical types) and returns the reachable requirement ids.
+         * @summary Lists the graph neighbors of one requirement.
          * @param {AgentRetrievalServiceApiAgentRetrievalServiceRequirementNeighborsRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -904,7 +938,8 @@ export const AgentRetrievalServiceApiFactory = function (configuration?: Configu
             return localVarFp.agentRetrievalServiceRequirementNeighbors(requestParameters.productId, requestParameters.requirementId, requestParameters.depth, requestParameters.edgeTypes, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Retrieves the requirement-graph slices relevant to the free-text objective (and optional changed repo_paths): per feature, the root requirement, the touched nodes with their code anchors, the branch-effective coverage of that slice, and the retrieval signals (vector | fts | anchor) that surfaced the seeds. k bounds each retrieval signal\'s breadth.
+         * @summary Resolves a coding objective into feature-rooted requirement context.
          * @param {AgentRetrievalServiceApiAgentRetrievalServiceResolveFeatureContextRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -913,7 +948,8 @@ export const AgentRetrievalServiceApiFactory = function (configuration?: Configu
             return localVarFp.agentRetrievalServiceResolveFeatureContext(requestParameters.productId, requestParameters.branch, requestParameters.text, requestParameters.repoPaths, requestParameters.k, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Creates a src->dst edge with exactly one destination endpoint: dst_requirement_id (edge_type depends_on | traces_to) or dst_component_id (edge_type impacts_component). confidence is required — an explicit 0.0 is valid, omitted is not. The edge is attributed to agent_run_id; the created edge id is returned.
+         * @summary Writes one semantic edge into the requirement graph.
          * @param {AgentRetrievalServiceApiAgentRetrievalServiceWriteRequirementEdgeRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -961,6 +997,9 @@ export interface AgentRetrievalServiceApiAgentRetrievalServiceGetRequirementTest
 
     readonly branch?: string
 
+    /**
+     * budget bounds the pack\&#39;s approximate token size: smaller budgets shrink per-list limits and trim long excerpts; &lt;&#x3D; 0 uses server defaults.
+     */
     readonly budget?: number
 }
 
@@ -1103,7 +1142,8 @@ export interface AgentRetrievalServiceApiAgentRetrievalServiceWriteRequirementEd
  */
 export class AgentRetrievalServiceApi extends BaseAPI {
     /**
-     * 
+     * Maps repo-qualified changed files to components via the main-branch component scopes, declares one idempotent impacts_component edge intent per touched component, and sets requirement.component_id when the files resolve to exactly one component (clears it when they span several). All files must belong to a single repository; unmatched files are returned.
+     * @summary Attributes a requirement\'s changed files to owning components.
      * @param {AgentRetrievalServiceApiAgentRetrievalServiceAttributeChangedFilesRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1113,7 +1153,8 @@ export class AgentRetrievalServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Stores an edge intent on the given branch (empty = main) instead of writing the edge immediately; the intent materializes into a real edge when the branch merges to main. Endpoint and edge_type rules match WriteRequirementEdge.
+     * @summary Records a deferred graph edge for endpoints not yet on main.
      * @param {AgentRetrievalServiceApiAgentRetrievalServiceDeclareRequirementEdgeIntentRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1123,7 +1164,8 @@ export class AgentRetrievalServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Returns every graph node (requirements plus component nodes reached via impacts_component edges, discriminated by kind) and every edge with its type, source kind, and confidence — for whole-product visualization or offline analysis.
+     * @summary Returns the product\'s full requirement graph.
      * @param {AgentRetrievalServiceApiAgentRetrievalServiceGetRequirementGraphRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1133,7 +1175,8 @@ export class AgentRetrievalServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Returns the requirement with its parent/children/siblings, component, linked/proposed/relevant tests, stale-coverage signals, extracted test-oriented fields (acceptance criteria, edge cases, ...), agent memory, and citations, resolved in the branch view (empty branch = main). budget caps the pack\'s approximate token size; truncation_signals reports what was cut to fit.
+     * @summary Builds the full test-authoring context pack for one requirement.
      * @param {AgentRetrievalServiceApiAgentRetrievalServiceGetRequirementTestContextRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1143,7 +1186,8 @@ export class AgentRetrievalServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Returns the subset of the given requirement_ids that have zero live test links. Typically chained after RequirementImpact or RequirementNeighbors to find the uncovered part of a blast radius.
+     * @summary Filters a requirement set down to those without test coverage.
      * @param {AgentRetrievalServiceApiAgentRetrievalServiceGraphCoverageGapsRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1153,7 +1197,8 @@ export class AgentRetrievalServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Returns the product\'s branch-effective coverage gaps, ranked for agent triage. Filter by coverage status (none | partial | covered | stale | unknown), component, free-text query, or a feature subtree via root_requirement_id. Paginated via pagination.page_size/page_token.
+     * @summary Lists requirements with insufficient test coverage.
      * @param {AgentRetrievalServiceApiAgentRetrievalServiceListCoverageGapsRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1163,7 +1208,8 @@ export class AgentRetrievalServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Returns every (requirement_id, repo_path) pair from repo_file source anchors as seen from branch (empty = main), so a client can map file paths to requirements without fetching full requirements.
+     * @summary Lists the branch-effective code anchors of all requirements.
      * @param {AgentRetrievalServiceApiAgentRetrievalServiceListRequirementAnchorsRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1173,7 +1219,8 @@ export class AgentRetrievalServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Aggregates a GetRequirementTestContext pack per requirement_id plus codebase hints (framework, test command, style examples) under a shared token_budget. POST is used for the large request body only — the call computes a context and writes nothing.
+     * @summary Prepares a batched test-generation context for several requirements.
      * @param {AgentRetrievalServiceApiAgentRetrievalServicePrepareTestGenerationContextRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1183,7 +1230,8 @@ export class AgentRetrievalServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Resolves repo_paths to seed requirements via their repo_file source anchors, then expands the requirement graph up to depth hops (default 3) over the given edge_types (empty = all canonical types). Returns the affected requirement ids, the tests covering any of them, and the affected requirements with no live test links.
+     * @summary Computes the requirement blast radius of a set of changed files.
      * @param {AgentRetrievalServiceApiAgentRetrievalServiceRequirementImpactRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1193,7 +1241,8 @@ export class AgentRetrievalServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Traverses the requirement graph from requirement_id up to depth hops (default 1) over the given edge_types (empty = all canonical types) and returns the reachable requirement ids.
+     * @summary Lists the graph neighbors of one requirement.
      * @param {AgentRetrievalServiceApiAgentRetrievalServiceRequirementNeighborsRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1203,7 +1252,8 @@ export class AgentRetrievalServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Retrieves the requirement-graph slices relevant to the free-text objective (and optional changed repo_paths): per feature, the root requirement, the touched nodes with their code anchors, the branch-effective coverage of that slice, and the retrieval signals (vector | fts | anchor) that surfaced the seeds. k bounds each retrieval signal\'s breadth.
+     * @summary Resolves a coding objective into feature-rooted requirement context.
      * @param {AgentRetrievalServiceApiAgentRetrievalServiceResolveFeatureContextRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1213,7 +1263,8 @@ export class AgentRetrievalServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Creates a src->dst edge with exactly one destination endpoint: dst_requirement_id (edge_type depends_on | traces_to) or dst_component_id (edge_type impacts_component). confidence is required — an explicit 0.0 is valid, omitted is not. The edge is attributed to agent_run_id; the created edge id is returned.
+     * @summary Writes one semantic edge into the requirement graph.
      * @param {AgentRetrievalServiceApiAgentRetrievalServiceWriteRequirementEdgeRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}

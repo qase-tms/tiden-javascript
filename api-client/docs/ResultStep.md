@@ -1,5 +1,6 @@
 # ResultStep
 
+ResultStep is one reported step of a result; steps nest recursively.
 
 ## Properties
 

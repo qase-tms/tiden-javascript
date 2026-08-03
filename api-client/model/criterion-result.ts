@@ -20,6 +20,9 @@ import type { CriterionDetail } from './criterion-detail';
 // @ts-ignore
 import type { CriterionStatus } from './criterion-status';
 
+/**
+ * CriterionResult is one criterion\'s outcome within a subject\'s verdict breakdown.
+ */
 export interface CriterionResult {
     /**
      * \"pass_rate\" | \"coverage\" | \"risk\" | \"freshness\" | ...

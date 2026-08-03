@@ -14,6 +14,9 @@
 
 
 
+/**
+ * Release is one shipped version of a product in an environment, upserted from CI keyed on (product, version, environment).
+ */
 export interface Release {
     'id'?: string;
     'productId'?: string;

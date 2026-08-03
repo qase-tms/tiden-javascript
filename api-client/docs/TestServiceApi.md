@@ -4,22 +4,23 @@ All URIs are relative to *https://api.tiden.ai*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
-|[**testServiceCreateTest**](#testservicecreatetest) | **POST** /v1/products/{productId}/tests | |
-|[**testServiceDeleteTest**](#testservicedeletetest) | **DELETE** /v1/tests/{id} | |
-|[**testServiceDeriveTestLinks**](#testservicederivetestlinks) | **POST** /v1/products/{productId}/test-links:derive | DeriveTestLinks matches requirement repo_file anchors against tests\&#39; file_path: exact-file matches are auto-linked (durable, moves the gate), directory-proximity matches are returned for an agent to confirm via LinkRequirement. Idempotent.|
-|[**testServiceGetTest**](#testservicegettest) | **GET** /v1/tests/{id} | |
-|[**testServiceIngestTests**](#testserviceingesttests) | **POST** /v1/products/{productId}/tests:ingest | IngestTests is the reporter-friendly batch upsert endpoint. Idempotent on (product, branch, external_id). Server-validates the entire batch upfront, then either applies all changes or returns 422 with the per-entry errors. Max 1000 tests per call (enforced server-side).|
-|[**testServiceLinkRequirement**](#testservicelinkrequirement) | **POST** /v1/tests/{testId}/links | |
-|[**testServiceListBranchLinkProposals**](#testservicelistbranchlinkproposals) | **GET** /v1/branches/{branchId}/link-proposals | |
-|[**testServiceListLinks**](#testservicelistlinks) | **GET** /v1/tests/{testId}/links | |
-|[**testServiceListTests**](#testservicelisttests) | **GET** /v1/products/{productId}/tests | |
-|[**testServiceReviewBranchLinkProposals**](#testservicereviewbranchlinkproposals) | **POST** /v1/branches/{branchId}/link-proposals:review | |
-|[**testServiceUnlinkRequirement**](#testserviceunlinkrequirement) | **DELETE** /v1/tests/{testId}/links/{requirementId} | |
-|[**testServiceUpdateTest**](#testserviceupdatetest) | **PUT** /v1/tests/{id} | |
+|[**testServiceCreateTest**](#testservicecreatetest) | **POST** /v1/products/{productId}/tests | Creates a test suite or case.|
+|[**testServiceDeleteTest**](#testservicedeletetest) | **DELETE** /v1/tests/{id} | Deletes a test.|
+|[**testServiceDeriveTestLinks**](#testservicederivetestlinks) | **POST** /v1/products/{productId}/test-links:derive | Derives test-requirement links from shared file anchors.|
+|[**testServiceGetTest**](#testservicegettest) | **GET** /v1/tests/{id} | Fetches one test by id.|
+|[**testServiceIngestTests**](#testserviceingesttests) | **POST** /v1/products/{productId}/tests:ingest | Batch-upserts tests from a reporter (live-documentation ingest).|
+|[**testServiceLinkRequirement**](#testservicelinkrequirement) | **POST** /v1/tests/{testId}/links | Links a test case to a requirement.|
+|[**testServiceListBranchLinkProposals**](#testservicelistbranchlinkproposals) | **GET** /v1/branches/{branchId}/link-proposals | Lists a branch\&#39;s test-requirement link proposals.|
+|[**testServiceListLinks**](#testservicelistlinks) | **GET** /v1/tests/{testId}/links | Lists a test\&#39;s requirement links.|
+|[**testServiceListTests**](#testservicelisttests) | **GET** /v1/products/{productId}/tests | Lists a product\&#39;s tests.|
+|[**testServiceReviewBranchLinkProposals**](#testservicereviewbranchlinkproposals) | **POST** /v1/branches/{branchId}/link-proposals:review | Accepts or rejects branch link proposals.|
+|[**testServiceUnlinkRequirement**](#testserviceunlinkrequirement) | **DELETE** /v1/tests/{testId}/links/{requirementId} | Removes a test-requirement link.|
+|[**testServiceUpdateTest**](#testserviceupdatetest) | **PUT** /v1/tests/{id} | Updates a test suite or case.|
 
 # **testServiceCreateTest**
 > CreateTestResponse testServiceCreateTest(createTestBody)
 
+kind selects \"suite\" | \"case\"; case-only fields (status, steps, execution, ...) are ignored for suites. parent_id nests the test under a suite; branch (empty = main) applies the write copy-on-write. Cases get a product-wide seq_num.
 
 ### Example
 
@@ -75,6 +76,7 @@ const { status, data } = await apiInstance.testServiceCreateTest(
 # **testServiceDeleteTest**
 > object testServiceDeleteTest()
 
+On a branch (branch set, non-main) a main-row delete records a copy-on-write deletion marker that applies at merge; on main the row is deleted directly.
 
 ### Example
 
@@ -129,6 +131,7 @@ const { status, data } = await apiInstance.testServiceDeleteTest(
 # **testServiceDeriveTestLinks**
 > DeriveTestLinksResponse testServiceDeriveTestLinks(body)
 
+Matches requirement repo_file anchors against tests\' file_path. Exact-file matches are auto-linked durably (the Quality Gate recomputes); directory-proximity matches are returned as candidates for an agent to confirm via LinkRequirement. Idempotent. When the product spans more than one repository, matching is skipped entirely (multi_repo_skipped=true) — tests carry no repo attribution, so a bare path match could cross-link.
 
 ### Example
 
@@ -183,6 +186,7 @@ const { status, data } = await apiInstance.testServiceDeriveTestLinks(
 # **testServiceGetTest**
 > GetTestResponse testServiceGetTest()
 
+Returns the suite or case with steps, parameters, latest execution, and server-populated counts.
 
 ### Example
 
@@ -234,6 +238,7 @@ const { status, data } = await apiInstance.testServiceGetTest(
 # **testServiceIngestTests**
 > IngestTestsResponse testServiceIngestTests(ingestTestsBody)
 
+Idempotent upsert keyed on (product, branch, external_id); branch is auto-created when absent (empty = main). The whole batch (1..1000 entries) is validated up front and applied in one transaction: on validation failure nothing is written and the per-entry errors are returned (HTTP 400, also attached as google.rpc.Status details for gRPC clients). Suites are found-or-created from suite_path; requirement_seq_nums auto-link cases to requirements (main only).
 
 ### Example
 
@@ -289,6 +294,7 @@ const { status, data } = await apiInstance.testServiceIngestTests(
 # **testServiceLinkRequirement**
 > object testServiceLinkRequirement(linkRequirementBody)
 
+Only cases can be linked, and only within one product. With branch empty (main) the durable link is written immediately and idempotently (duplicate links are a no-op) and requirement coverage recomputes. With a branch set, the call records a branch link PROPOSAL instead — reviewed via ReviewBranchLinkProposals and materialized when the branch merges.
 
 ### Example
 
@@ -344,6 +350,7 @@ const { status, data } = await apiInstance.testServiceLinkRequirement(
 # **testServiceListBranchLinkProposals**
 > ListBranchLinkProposalsResponse testServiceListBranchLinkProposals()
 
+Returns the link/unlink proposals recorded on the branch, optionally filtered by statuses (proposed | accepted | rejected). Accepted proposals become durable links when the branch merges.
 
 ### Example
 
@@ -398,6 +405,7 @@ const { status, data } = await apiInstance.testServiceListBranchLinkProposals(
 # **testServiceListLinks**
 > ListLinksResponse testServiceListLinks()
 
+On a branch view links resolve through copy-on-write (a COW copy surfaces its main source\'s links; branch-only tests have none) and read_only=true is returned so clients hide link editing.
 
 ### Example
 
@@ -452,6 +460,7 @@ const { status, data } = await apiInstance.testServiceListLinks(
 # **testServiceListTests**
 > ListTestsResponse testServiceListTests()
 
+Returns suites and cases as a flat list (parent_id encodes the tree) in the branch view (empty = main), with page_size/page_token pagination.
 
 ### Example
 
@@ -512,6 +521,7 @@ const { status, data } = await apiInstance.testServiceListTests(
 # **testServiceReviewBranchLinkProposals**
 > ReviewBranchLinkProposalsResponse testServiceReviewBranchLinkProposals(reviewBranchLinkProposalsBody)
 
+Applies decision (\"accepted\" | \"rejected\"), with an optional review_note, to the given proposal_ids (at least one required). Accepted proposals materialize into durable links at branch merge; rejected ones are dropped.
 
 ### Example
 
@@ -567,6 +577,7 @@ const { status, data } = await apiInstance.testServiceReviewBranchLinkProposals(
 # **testServiceUnlinkRequirement**
 > object testServiceUnlinkRequirement()
 
+With branch empty (main) the durable link is removed idempotently (removing a non-existent link is a no-op) and requirement coverage recomputes. With a branch set, the call withdraws that branch\'s pending link proposal for the (test, requirement) pair instead of touching main links.
 
 ### Example
 
@@ -624,6 +635,7 @@ const { status, data } = await apiInstance.testServiceUnlinkRequirement(
 # **testServiceUpdateTest**
 > UpdateTestResponse testServiceUpdateTest(updateTestBody)
 
+Scalar optional fields change only when present. Repeated/struct fields use replacement semantics behind set_* flags (set_tags, set_steps, set_custom_fields, ...): when the flag is true the paired value replaces the stored one entirely (empty clears); when false it is untouched. branch (empty = main) applies the edit copy-on-write.
 
 ### Example
 

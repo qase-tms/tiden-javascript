@@ -14,6 +14,9 @@
 
 
 
+/**
+ * RequirementSource is one provenance record of a requirement — where it came from: a repo file anchor (repo_path + optional line range), a documentation URL, manual input, an attachment, or an agent artifact.
+ */
 export interface RequirementSource {
     'id'?: string;
     'productId'?: string;

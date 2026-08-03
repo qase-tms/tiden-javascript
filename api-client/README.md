@@ -51,88 +51,88 @@ All URIs are relative to *https://api.tiden.ai*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*AgentRetrievalServiceApi* | [**agentRetrievalServiceAttributeChangedFiles**](docs/AgentRetrievalServiceApi.md#agentretrievalserviceattributechangedfiles) | **POST** /v1/products/{productId}/requirements/{requirementId}:attribute-changed-files | 
-*AgentRetrievalServiceApi* | [**agentRetrievalServiceDeclareRequirementEdgeIntent**](docs/AgentRetrievalServiceApi.md#agentretrievalservicedeclarerequirementedgeintent) | **POST** /v1/products/{productId}/requirement-edge-intents | 
-*AgentRetrievalServiceApi* | [**agentRetrievalServiceGetRequirementGraph**](docs/AgentRetrievalServiceApi.md#agentretrievalservicegetrequirementgraph) | **GET** /v1/products/{productId}/requirement-graph | 
-*AgentRetrievalServiceApi* | [**agentRetrievalServiceGetRequirementTestContext**](docs/AgentRetrievalServiceApi.md#agentretrievalservicegetrequirementtestcontext) | **GET** /v1/products/{productId}/requirements/{requirementId}/test-context | 
-*AgentRetrievalServiceApi* | [**agentRetrievalServiceGraphCoverageGaps**](docs/AgentRetrievalServiceApi.md#agentretrievalservicegraphcoveragegaps) | **GET** /v1/products/{productId}/requirements/graph-coverage-gaps | 
-*AgentRetrievalServiceApi* | [**agentRetrievalServiceListCoverageGaps**](docs/AgentRetrievalServiceApi.md#agentretrievalservicelistcoveragegaps) | **GET** /v1/products/{productId}/coverage-gaps | 
-*AgentRetrievalServiceApi* | [**agentRetrievalServiceListRequirementAnchors**](docs/AgentRetrievalServiceApi.md#agentretrievalservicelistrequirementanchors) | **GET** /v1/products/{productId}/requirement-anchors | 
-*AgentRetrievalServiceApi* | [**agentRetrievalServicePrepareTestGenerationContext**](docs/AgentRetrievalServiceApi.md#agentretrievalservicepreparetestgenerationcontext) | **POST** /v1/products/{productId}/test-generation-context:prepare | 
-*AgentRetrievalServiceApi* | [**agentRetrievalServiceRequirementImpact**](docs/AgentRetrievalServiceApi.md#agentretrievalservicerequirementimpact) | **GET** /v1/products/{productId}/requirements/impact | 
-*AgentRetrievalServiceApi* | [**agentRetrievalServiceRequirementNeighbors**](docs/AgentRetrievalServiceApi.md#agentretrievalservicerequirementneighbors) | **GET** /v1/products/{productId}/requirements/{requirementId}/neighbors | 
-*AgentRetrievalServiceApi* | [**agentRetrievalServiceResolveFeatureContext**](docs/AgentRetrievalServiceApi.md#agentretrievalserviceresolvefeaturecontext) | **GET** /v1/products/{productId}/feature-context | 
-*AgentRetrievalServiceApi* | [**agentRetrievalServiceWriteRequirementEdge**](docs/AgentRetrievalServiceApi.md#agentretrievalservicewriterequirementedge) | **POST** /v1/products/{productId}/requirement-edges | 
-*AgentRunServiceApi* | [**agentRunServiceCancelAgentRun**](docs/AgentRunServiceApi.md#agentrunservicecancelagentrun) | **POST** /v1/agent-runs/{id}:cancel | 
-*AgentRunServiceApi* | [**agentRunServiceGetAgentRun**](docs/AgentRunServiceApi.md#agentrunservicegetagentrun) | **GET** /v1/agent-runs/{id} | 
-*AgentRunServiceApi* | [**agentRunServiceListAgentRunEvents**](docs/AgentRunServiceApi.md#agentrunservicelistagentrunevents) | **GET** /v1/agent-runs/{runId}/events | 
-*AgentRunServiceApi* | [**agentRunServiceListAgentRuns**](docs/AgentRunServiceApi.md#agentrunservicelistagentruns) | **GET** /v1/agent-configs/{agentConfigId}/runs | 
-*AgentRunServiceApi* | [**agentRunServiceStartAgentRun**](docs/AgentRunServiceApi.md#agentrunservicestartagentrun) | **POST** /v1/agent-configs/{agentConfigId}/runs | 
-*AgentRunServiceApi* | [**agentRunServiceStreamAgentRun**](docs/AgentRunServiceApi.md#agentrunservicestreamagentrun) | **GET** /v1/agent-runs/{runId}/events:stream | 
-*AgentServiceApi* | [**agentServiceCreateAgentConfig**](docs/AgentServiceApi.md#agentservicecreateagentconfig) | **POST** /v1/products/{productId}/agent-configs | 
-*AgentServiceApi* | [**agentServiceDeleteAgentConfig**](docs/AgentServiceApi.md#agentservicedeleteagentconfig) | **DELETE** /v1/agent-configs/{id} | 
-*AgentServiceApi* | [**agentServiceGetAgentConfig**](docs/AgentServiceApi.md#agentservicegetagentconfig) | **GET** /v1/agent-configs/{id} | 
-*AgentServiceApi* | [**agentServiceListAgentConfigs**](docs/AgentServiceApi.md#agentservicelistagentconfigs) | **GET** /v1/products/{productId}/agent-configs | 
-*AgentServiceApi* | [**agentServiceListAgentTypes**](docs/AgentServiceApi.md#agentservicelistagenttypes) | **GET** /v1/agent-types | 
-*AuthServiceApi* | [**authServiceGetCurrentUser**](docs/AuthServiceApi.md#authservicegetcurrentuser) | **GET** /v1/auth/me | 
-*AuthServiceApi* | [**authServiceUpdateUserOnboarding**](docs/AuthServiceApi.md#authserviceupdateuseronboarding) | **PUT** /v1/auth/onboarding | 
-*BranchServiceApi* | [**branchServiceCreateBranch**](docs/BranchServiceApi.md#branchservicecreatebranch) | **POST** /v1/products/{productId}/branches | 
-*BranchServiceApi* | [**branchServiceDeleteBranch**](docs/BranchServiceApi.md#branchservicedeletebranch) | **DELETE** /v1/branches/{id} | 
-*BranchServiceApi* | [**branchServiceGetBranch**](docs/BranchServiceApi.md#branchservicegetbranch) | **GET** /v1/branches/{id} | 
-*BranchServiceApi* | [**branchServiceGetMergePreview**](docs/BranchServiceApi.md#branchservicegetmergepreview) | **GET** /v1/branches/{id}/merge-preview | 
-*BranchServiceApi* | [**branchServiceListBranches**](docs/BranchServiceApi.md#branchservicelistbranches) | **GET** /v1/products/{productId}/branches | 
-*BranchServiceApi* | [**branchServiceMergeBranch**](docs/BranchServiceApi.md#branchservicemergebranch) | **POST** /v1/branches/{id}/merge | 
-*ComponentServiceApi* | [**componentServiceCreateComponent**](docs/ComponentServiceApi.md#componentservicecreatecomponent) | **POST** /v1/products/{productId}/components | 
-*ComponentServiceApi* | [**componentServiceListComponents**](docs/ComponentServiceApi.md#componentservicelistcomponents) | **GET** /v1/products/{productId}/components | 
-*ComponentServiceApi* | [**componentServiceUpdateComponent**](docs/ComponentServiceApi.md#componentserviceupdatecomponent) | **PUT** /v1/components/{id} | 
-*EnvironmentServiceApi* | [**environmentServiceCreateEnvironment**](docs/EnvironmentServiceApi.md#environmentservicecreateenvironment) | **POST** /v1/products/{productId}/environments | 
-*EnvironmentServiceApi* | [**environmentServiceDeleteEnvironment**](docs/EnvironmentServiceApi.md#environmentservicedeleteenvironment) | **DELETE** /v1/environments/{id} | 
-*EnvironmentServiceApi* | [**environmentServiceGetEnvironment**](docs/EnvironmentServiceApi.md#environmentservicegetenvironment) | **GET** /v1/environments/{id} | 
-*EnvironmentServiceApi* | [**environmentServiceListEnvironments**](docs/EnvironmentServiceApi.md#environmentservicelistenvironments) | **GET** /v1/products/{productId}/environments | 
-*IntentServiceApi* | [**intentServiceDistillIntent**](docs/IntentServiceApi.md#intentservicedistillintent) | **POST** /v1/products/{productId}/intent:distill | 
-*IssueServiceApi* | [**issueServiceConfirmSourceMapUpload**](docs/IssueServiceApi.md#issueserviceconfirmsourcemapupload) | **POST** /v1/sourcemaps/{id}:confirm | Phase 3: server validates the staged object + atomically promotes to live. Exempt: addressed by source-map id (the product-gated entry point is CreateSourceMapUpload); source maps are observability infra, not a billed cap.
-*IssueServiceApi* | [**issueServiceCreateSourceMapUpload**](docs/IssueServiceApi.md#issueservicecreatesourcemapupload) | **POST** /v1/products/{productId}/sourcemaps | Phase 1: create a pending row, return a presigned PUT to a staging key.
-*ProductServiceApi* | [**productServiceCreateProduct**](docs/ProductServiceApi.md#productservicecreateproduct) | **POST** /v1/workspaces/{workspaceId}/products | 
-*ProductServiceApi* | [**productServiceGetProduct**](docs/ProductServiceApi.md#productservicegetproduct) | **GET** /v1/products/{id} | GetProduct fetches one product by id so the CLI / agents can resolve a bound product\&#39;s details (e.g. its name for &#x60;tiden doctor&#x60;) without paging the whole workspace list. Tenancy is enforced via the id\&#39;s TENANT_ANCHOR_PRODUCT anchor.
-*ProductServiceApi* | [**productServiceListProducts**](docs/ProductServiceApi.md#productservicelistproducts) | **GET** /v1/workspaces/{workspaceId}/products | 
-*ProductServiceApi* | [**productServiceVerifyProductSetup**](docs/ProductServiceApi.md#productserviceverifyproductsetup) | **POST** /v1/products/{productId}/setup:verify | 
-*QualityGateServiceApi* | [**qualityGateServiceAcceptRisk**](docs/QualityGateServiceApi.md#qualitygateserviceacceptrisk) | **POST** /v1/products/{productId}/quality-gate:accept-risk | Record a sign-off on a 🟡 (soft-signal) verdict so it becomes shippable. Hard-blocked (🔴) verdicts can\&#39;t be accepted. High-severity components need a distinct 2nd approver (ApproveRisk); low-severity self-approve.
-*QualityGateServiceApi* | [**qualityGateServiceApproveRisk**](docs/QualityGateServiceApi.md#qualitygateserviceapproverisk) | **POST** /v1/products/{productId}/quality-gate:approve-risk | Second-approver sign-off for a pending acceptance (must differ from the recorder).
-*QualityGateServiceApi* | [**qualityGateServiceComputeVerdict**](docs/QualityGateServiceApi.md#qualitygateservicecomputeverdict) | **POST** /v1/products/{productId}/quality-gate:compute | Compute (or recompute) the verdict for a release or branch scope and persist an immutable snapshot. Side-effecting; the engine is idempotent on the current data state (CAS on publish).
-*QualityGateServiceApi* | [**qualityGateServiceGetTraceability**](docs/QualityGateServiceApi.md#qualitygateservicegettraceability) | **GET** /v1/products/{productId}/quality-gate/traceability | The traceability-matrix slice the verdict was computed over (req x case by component), for the matrix page and audit.
-*QualityGateServiceApi* | [**qualityGateServiceGetVerdict**](docs/QualityGateServiceApi.md#qualitygateservicegetverdict) | **GET** /v1/products/{productId}/quality-gate | Latest non-invalidated verdict for a (scope, ref). On no-go the agent reads the structured component/criterion breakdown + fix hints from here.
-*ReleaseServiceApi* | [**releaseServiceCreateRelease**](docs/ReleaseServiceApi.md#releaseservicecreaterelease) | **POST** /v1/products/{productId}/releases | Create a release from an external source (CI/SDK). Idempotent upsert on (product, version, environment). The environment is matched by slug and auto-created if unknown.
-*ReleaseServiceApi* | [**releaseServiceGetRelease**](docs/ReleaseServiceApi.md#releaseservicegetrelease) | **GET** /v1/releases/{id} | 
-*ReleaseServiceApi* | [**releaseServiceListReleases**](docs/ReleaseServiceApi.md#releaseservicelistreleases) | **GET** /v1/products/{productId}/releases | 
-*RequirementServiceApi* | [**requirementServiceCreateRequirement**](docs/RequirementServiceApi.md#requirementservicecreaterequirement) | **POST** /v1/products/{productId}/requirements | 
-*RequirementServiceApi* | [**requirementServiceDeleteRequirement**](docs/RequirementServiceApi.md#requirementservicedeleterequirement) | **DELETE** /v1/requirements/{id} | 
-*RequirementServiceApi* | [**requirementServiceGetRequirement**](docs/RequirementServiceApi.md#requirementservicegetrequirement) | **GET** /v1/requirements/{id} | 
-*RequirementServiceApi* | [**requirementServiceListRequirements**](docs/RequirementServiceApi.md#requirementservicelistrequirements) | **GET** /v1/products/{productId}/requirements | 
-*RequirementServiceApi* | [**requirementServiceUpdateRequirement**](docs/RequirementServiceApi.md#requirementserviceupdaterequirement) | **PUT** /v1/requirements/{id} | 
-*TestRunServiceApi* | [**testRunServiceAbortTestRun**](docs/TestRunServiceApi.md#testrunserviceaborttestrun) | **POST** /v1/products/{productId}/runs/{runSeq}:abort | 
-*TestRunServiceApi* | [**testRunServiceCompleteTestRun**](docs/TestRunServiceApi.md#testrunservicecompletetestrun) | **POST** /v1/products/{productId}/runs/{runSeq}:complete | 
-*TestRunServiceApi* | [**testRunServiceCreateTestRun**](docs/TestRunServiceApi.md#testrunservicecreatetestrun) | **POST** /v1/products/{productId}/runs | 
-*TestRunServiceApi* | [**testRunServiceDeleteTestRun**](docs/TestRunServiceApi.md#testrunservicedeletetestrun) | **DELETE** /v1/products/{productId}/runs/{runSeq} | 
-*TestRunServiceApi* | [**testRunServiceGetRunAttachment**](docs/TestRunServiceApi.md#testrunservicegetrunattachment) | **GET** /v1/products/{productId}/attachments/{hash} | Resolves a content-hash (uploaded via the reporter multipart route POST /v1/products/{product_id}/attachments:upload) to a presigned download URL. Public so reporter/CLI clients and the SPA (JWT) can both fetch; ATTACHMENT_NOT_FOUND (→ 404) for an unknown hash — the drawer renders \&quot;attachment unavailable\&quot; on that.
-*TestRunServiceApi* | [**testRunServiceGetRunResult**](docs/TestRunServiceApi.md#testrunservicegetrunresult) | **GET** /v1/products/{productId}/runs/{runSeq}/results/{resultId} | 
-*TestRunServiceApi* | [**testRunServiceGetRunSummary**](docs/TestRunServiceApi.md#testrunservicegetrunsummary) | **GET** /v1/products/{productId}/runs/{runSeq}/summary | 
-*TestRunServiceApi* | [**testRunServiceGetTestRun**](docs/TestRunServiceApi.md#testrunservicegettestrun) | **GET** /v1/products/{productId}/runs/{runSeq} | 
-*TestRunServiceApi* | [**testRunServiceListRunResults**](docs/TestRunServiceApi.md#testrunservicelistrunresults) | **GET** /v1/products/{productId}/runs/{runSeq}/results | 
-*TestRunServiceApi* | [**testRunServiceListTestRuns**](docs/TestRunServiceApi.md#testrunservicelisttestruns) | **GET** /v1/products/{productId}/runs | 
-*TestRunServiceApi* | [**testRunServiceReportResults**](docs/TestRunServiceApi.md#testrunservicereportresults) | **POST** /v1/products/{productId}/runs/{runSeq}/results:report | 
-*TestServiceApi* | [**testServiceCreateTest**](docs/TestServiceApi.md#testservicecreatetest) | **POST** /v1/products/{productId}/tests | 
-*TestServiceApi* | [**testServiceDeleteTest**](docs/TestServiceApi.md#testservicedeletetest) | **DELETE** /v1/tests/{id} | 
-*TestServiceApi* | [**testServiceDeriveTestLinks**](docs/TestServiceApi.md#testservicederivetestlinks) | **POST** /v1/products/{productId}/test-links:derive | DeriveTestLinks matches requirement repo_file anchors against tests\&#39; file_path: exact-file matches are auto-linked (durable, moves the gate), directory-proximity matches are returned for an agent to confirm via LinkRequirement. Idempotent.
-*TestServiceApi* | [**testServiceGetTest**](docs/TestServiceApi.md#testservicegettest) | **GET** /v1/tests/{id} | 
-*TestServiceApi* | [**testServiceIngestTests**](docs/TestServiceApi.md#testserviceingesttests) | **POST** /v1/products/{productId}/tests:ingest | IngestTests is the reporter-friendly batch upsert endpoint. Idempotent on (product, branch, external_id). Server-validates the entire batch upfront, then either applies all changes or returns 422 with the per-entry errors. Max 1000 tests per call (enforced server-side).
-*TestServiceApi* | [**testServiceLinkRequirement**](docs/TestServiceApi.md#testservicelinkrequirement) | **POST** /v1/tests/{testId}/links | 
-*TestServiceApi* | [**testServiceListBranchLinkProposals**](docs/TestServiceApi.md#testservicelistbranchlinkproposals) | **GET** /v1/branches/{branchId}/link-proposals | 
-*TestServiceApi* | [**testServiceListLinks**](docs/TestServiceApi.md#testservicelistlinks) | **GET** /v1/tests/{testId}/links | 
-*TestServiceApi* | [**testServiceListTests**](docs/TestServiceApi.md#testservicelisttests) | **GET** /v1/products/{productId}/tests | 
-*TestServiceApi* | [**testServiceReviewBranchLinkProposals**](docs/TestServiceApi.md#testservicereviewbranchlinkproposals) | **POST** /v1/branches/{branchId}/link-proposals:review | 
-*TestServiceApi* | [**testServiceUnlinkRequirement**](docs/TestServiceApi.md#testserviceunlinkrequirement) | **DELETE** /v1/tests/{testId}/links/{requirementId} | 
-*TestServiceApi* | [**testServiceUpdateTest**](docs/TestServiceApi.md#testserviceupdatetest) | **PUT** /v1/tests/{id} | 
-*WorkspaceServiceApi* | [**workspaceServiceListWorkspaces**](docs/WorkspaceServiceApi.md#workspaceservicelistworkspaces) | **GET** /v1/workspaces | 
+*AgentRetrievalServiceApi* | [**agentRetrievalServiceAttributeChangedFiles**](docs/AgentRetrievalServiceApi.md#agentretrievalserviceattributechangedfiles) | **POST** /v1/products/{productId}/requirements/{requirementId}:attribute-changed-files | Attributes a requirement\&#39;s changed files to owning components.
+*AgentRetrievalServiceApi* | [**agentRetrievalServiceDeclareRequirementEdgeIntent**](docs/AgentRetrievalServiceApi.md#agentretrievalservicedeclarerequirementedgeintent) | **POST** /v1/products/{productId}/requirement-edge-intents | Records a deferred graph edge for endpoints not yet on main.
+*AgentRetrievalServiceApi* | [**agentRetrievalServiceGetRequirementGraph**](docs/AgentRetrievalServiceApi.md#agentretrievalservicegetrequirementgraph) | **GET** /v1/products/{productId}/requirement-graph | Returns the product\&#39;s full requirement graph.
+*AgentRetrievalServiceApi* | [**agentRetrievalServiceGetRequirementTestContext**](docs/AgentRetrievalServiceApi.md#agentretrievalservicegetrequirementtestcontext) | **GET** /v1/products/{productId}/requirements/{requirementId}/test-context | Builds the full test-authoring context pack for one requirement.
+*AgentRetrievalServiceApi* | [**agentRetrievalServiceGraphCoverageGaps**](docs/AgentRetrievalServiceApi.md#agentretrievalservicegraphcoveragegaps) | **GET** /v1/products/{productId}/requirements/graph-coverage-gaps | Filters a requirement set down to those without test coverage.
+*AgentRetrievalServiceApi* | [**agentRetrievalServiceListCoverageGaps**](docs/AgentRetrievalServiceApi.md#agentretrievalservicelistcoveragegaps) | **GET** /v1/products/{productId}/coverage-gaps | Lists requirements with insufficient test coverage.
+*AgentRetrievalServiceApi* | [**agentRetrievalServiceListRequirementAnchors**](docs/AgentRetrievalServiceApi.md#agentretrievalservicelistrequirementanchors) | **GET** /v1/products/{productId}/requirement-anchors | Lists the branch-effective code anchors of all requirements.
+*AgentRetrievalServiceApi* | [**agentRetrievalServicePrepareTestGenerationContext**](docs/AgentRetrievalServiceApi.md#agentretrievalservicepreparetestgenerationcontext) | **POST** /v1/products/{productId}/test-generation-context:prepare | Prepares a batched test-generation context for several requirements.
+*AgentRetrievalServiceApi* | [**agentRetrievalServiceRequirementImpact**](docs/AgentRetrievalServiceApi.md#agentretrievalservicerequirementimpact) | **GET** /v1/products/{productId}/requirements/impact | Computes the requirement blast radius of a set of changed files.
+*AgentRetrievalServiceApi* | [**agentRetrievalServiceRequirementNeighbors**](docs/AgentRetrievalServiceApi.md#agentretrievalservicerequirementneighbors) | **GET** /v1/products/{productId}/requirements/{requirementId}/neighbors | Lists the graph neighbors of one requirement.
+*AgentRetrievalServiceApi* | [**agentRetrievalServiceResolveFeatureContext**](docs/AgentRetrievalServiceApi.md#agentretrievalserviceresolvefeaturecontext) | **GET** /v1/products/{productId}/feature-context | Resolves a coding objective into feature-rooted requirement context.
+*AgentRetrievalServiceApi* | [**agentRetrievalServiceWriteRequirementEdge**](docs/AgentRetrievalServiceApi.md#agentretrievalservicewriterequirementedge) | **POST** /v1/products/{productId}/requirement-edges | Writes one semantic edge into the requirement graph.
+*AgentRunServiceApi* | [**agentRunServiceCancelAgentRun**](docs/AgentRunServiceApi.md#agentrunservicecancelagentrun) | **POST** /v1/agent-runs/{id}:cancel | Cancels a pending or running agent run.
+*AgentRunServiceApi* | [**agentRunServiceGetAgentRun**](docs/AgentRunServiceApi.md#agentrunservicegetagentrun) | **GET** /v1/agent-runs/{id} | Fetches one agent run by id.
+*AgentRunServiceApi* | [**agentRunServiceListAgentRunEvents**](docs/AgentRunServiceApi.md#agentrunservicelistagentrunevents) | **GET** /v1/agent-runs/{runId}/events | Lists the event log of an agent run.
+*AgentRunServiceApi* | [**agentRunServiceListAgentRuns**](docs/AgentRunServiceApi.md#agentrunservicelistagentruns) | **GET** /v1/agent-configs/{agentConfigId}/runs | Lists the runs of an agent configuration.
+*AgentRunServiceApi* | [**agentRunServiceStartAgentRun**](docs/AgentRunServiceApi.md#agentrunservicestartagentrun) | **POST** /v1/agent-configs/{agentConfigId}/runs | Starts a run of an agent configuration.
+*AgentRunServiceApi* | [**agentRunServiceStreamAgentRun**](docs/AgentRunServiceApi.md#agentrunservicestreamagentrun) | **GET** /v1/agent-runs/{runId}/events:stream | Streams an agent run\&#39;s events as they happen.
+*AgentServiceApi* | [**agentServiceCreateAgentConfig**](docs/AgentServiceApi.md#agentservicecreateagentconfig) | **POST** /v1/products/{productId}/agent-configs | Creates an agent configuration in a product.
+*AgentServiceApi* | [**agentServiceDeleteAgentConfig**](docs/AgentServiceApi.md#agentservicedeleteagentconfig) | **DELETE** /v1/agent-configs/{id} | Deletes an agent configuration.
+*AgentServiceApi* | [**agentServiceGetAgentConfig**](docs/AgentServiceApi.md#agentservicegetagentconfig) | **GET** /v1/agent-configs/{id} | Fetches one agent configuration by id.
+*AgentServiceApi* | [**agentServiceListAgentConfigs**](docs/AgentServiceApi.md#agentservicelistagentconfigs) | **GET** /v1/products/{productId}/agent-configs | Lists a product\&#39;s agent configurations.
+*AgentServiceApi* | [**agentServiceListAgentTypes**](docs/AgentServiceApi.md#agentservicelistagenttypes) | **GET** /v1/agent-types | Lists the catalog of available agent types.
+*AuthServiceApi* | [**authServiceGetCurrentUser**](docs/AuthServiceApi.md#authservicegetcurrentuser) | **GET** /v1/auth/me | Returns the authenticated user (whoami).
+*AuthServiceApi* | [**authServiceUpdateUserOnboarding**](docs/AuthServiceApi.md#authserviceupdateuseronboarding) | **PUT** /v1/auth/onboarding | Updates the caller\&#39;s onboarding progress flags.
+*BranchServiceApi* | [**branchServiceCreateBranch**](docs/BranchServiceApi.md#branchservicecreatebranch) | **POST** /v1/products/{productId}/branches | Creates a copy-on-write branch of a product\&#39;s main line.
+*BranchServiceApi* | [**branchServiceDeleteBranch**](docs/BranchServiceApi.md#branchservicedeletebranch) | **DELETE** /v1/branches/{id} | Deletes a branch and discards its copy-on-write changes.
+*BranchServiceApi* | [**branchServiceGetBranch**](docs/BranchServiceApi.md#branchservicegetbranch) | **GET** /v1/branches/{id} | Fetches one branch by id.
+*BranchServiceApi* | [**branchServiceGetMergePreview**](docs/BranchServiceApi.md#branchservicegetmergepreview) | **GET** /v1/branches/{id}/merge-preview | Previews the effect of merging a branch into main.
+*BranchServiceApi* | [**branchServiceListBranches**](docs/BranchServiceApi.md#branchservicelistbranches) | **GET** /v1/products/{productId}/branches | Lists a product\&#39;s branches.
+*BranchServiceApi* | [**branchServiceMergeBranch**](docs/BranchServiceApi.md#branchservicemergebranch) | **POST** /v1/branches/{id}/merge | Merges a branch\&#39;s changes into main and closes the branch.
+*ComponentServiceApi* | [**componentServiceCreateComponent**](docs/ComponentServiceApi.md#componentservicecreatecomponent) | **POST** /v1/products/{productId}/components | Creates a component in a product.
+*ComponentServiceApi* | [**componentServiceListComponents**](docs/ComponentServiceApi.md#componentservicelistcomponents) | **GET** /v1/products/{productId}/components | Lists a product\&#39;s components.
+*ComponentServiceApi* | [**componentServiceUpdateComponent**](docs/ComponentServiceApi.md#componentserviceupdatecomponent) | **PUT** /v1/components/{id} | Updates a component.
+*EnvironmentServiceApi* | [**environmentServiceCreateEnvironment**](docs/EnvironmentServiceApi.md#environmentservicecreateenvironment) | **POST** /v1/products/{productId}/environments | Creates an environment in a product.
+*EnvironmentServiceApi* | [**environmentServiceDeleteEnvironment**](docs/EnvironmentServiceApi.md#environmentservicedeleteenvironment) | **DELETE** /v1/environments/{id} | Deletes an environment.
+*EnvironmentServiceApi* | [**environmentServiceGetEnvironment**](docs/EnvironmentServiceApi.md#environmentservicegetenvironment) | **GET** /v1/environments/{id} | Fetches one environment by id.
+*EnvironmentServiceApi* | [**environmentServiceListEnvironments**](docs/EnvironmentServiceApi.md#environmentservicelistenvironments) | **GET** /v1/products/{productId}/environments | Lists a product\&#39;s environments.
+*IntentServiceApi* | [**intentServiceDistillIntent**](docs/IntentServiceApi.md#intentservicedistillintent) | **POST** /v1/products/{productId}/intent:distill | Distills a coding-session transcript into requirement changes.
+*IssueServiceApi* | [**issueServiceConfirmSourceMapUpload**](docs/IssueServiceApi.md#issueserviceconfirmsourcemapupload) | **POST** /v1/sourcemaps/{id}:confirm | Finalizes a source-map upload (phase 2 of 2).
+*IssueServiceApi* | [**issueServiceCreateSourceMapUpload**](docs/IssueServiceApi.md#issueservicecreatesourcemapupload) | **POST** /v1/products/{productId}/sourcemaps | Starts a source-map upload (phase 1 of 2).
+*ProductServiceApi* | [**productServiceCreateProduct**](docs/ProductServiceApi.md#productservicecreateproduct) | **POST** /v1/workspaces/{workspaceId}/products | Creates a product in a workspace.
+*ProductServiceApi* | [**productServiceGetProduct**](docs/ProductServiceApi.md#productservicegetproduct) | **GET** /v1/products/{id} | Fetches one product by id.
+*ProductServiceApi* | [**productServiceListProducts**](docs/ProductServiceApi.md#productservicelistproducts) | **GET** /v1/workspaces/{workspaceId}/products | Lists a workspace\&#39;s products.
+*ProductServiceApi* | [**productServiceVerifyProductSetup**](docs/ProductServiceApi.md#productserviceverifyproductsetup) | **POST** /v1/products/{productId}/setup:verify | Records a CLI setup verification snapshot for the product.
+*QualityGateServiceApi* | [**qualityGateServiceAcceptRisk**](docs/QualityGateServiceApi.md#qualitygateserviceacceptrisk) | **POST** /v1/products/{productId}/quality-gate:accept-risk | Signs off the residual risk on a soft-signal verdict.
+*QualityGateServiceApi* | [**qualityGateServiceApproveRisk**](docs/QualityGateServiceApi.md#qualitygateserviceapproverisk) | **POST** /v1/products/{productId}/quality-gate:approve-risk | Second-approver sign-off for a pending risk acceptance.
+*QualityGateServiceApi* | [**qualityGateServiceComputeVerdict**](docs/QualityGateServiceApi.md#qualitygateservicecomputeverdict) | **POST** /v1/products/{productId}/quality-gate:compute | Computes and persists a quality-gate verdict.
+*QualityGateServiceApi* | [**qualityGateServiceGetTraceability**](docs/QualityGateServiceApi.md#qualitygateservicegettraceability) | **GET** /v1/products/{productId}/quality-gate/traceability | Returns the traceability matrix behind a verdict.
+*QualityGateServiceApi* | [**qualityGateServiceGetVerdict**](docs/QualityGateServiceApi.md#qualitygateservicegetverdict) | **GET** /v1/products/{productId}/quality-gate | Fetches the latest verdict for a scope.
+*ReleaseServiceApi* | [**releaseServiceCreateRelease**](docs/ReleaseServiceApi.md#releaseservicecreaterelease) | **POST** /v1/products/{productId}/releases | Creates a release from an external source (CI/SDK).
+*ReleaseServiceApi* | [**releaseServiceGetRelease**](docs/ReleaseServiceApi.md#releaseservicegetrelease) | **GET** /v1/releases/{id} | Fetches one release by id.
+*ReleaseServiceApi* | [**releaseServiceListReleases**](docs/ReleaseServiceApi.md#releaseservicelistreleases) | **GET** /v1/products/{productId}/releases | Lists a product\&#39;s releases.
+*RequirementServiceApi* | [**requirementServiceCreateRequirement**](docs/RequirementServiceApi.md#requirementservicecreaterequirement) | **POST** /v1/products/{productId}/requirements | Creates a requirement.
+*RequirementServiceApi* | [**requirementServiceDeleteRequirement**](docs/RequirementServiceApi.md#requirementservicedeleterequirement) | **DELETE** /v1/requirements/{id} | Deletes a requirement.
+*RequirementServiceApi* | [**requirementServiceGetRequirement**](docs/RequirementServiceApi.md#requirementservicegetrequirement) | **GET** /v1/requirements/{id} | Fetches one requirement by id.
+*RequirementServiceApi* | [**requirementServiceListRequirements**](docs/RequirementServiceApi.md#requirementservicelistrequirements) | **GET** /v1/products/{productId}/requirements | Lists a product\&#39;s requirements.
+*RequirementServiceApi* | [**requirementServiceUpdateRequirement**](docs/RequirementServiceApi.md#requirementserviceupdaterequirement) | **PUT** /v1/requirements/{id} | Updates a requirement.
+*TestRunServiceApi* | [**testRunServiceAbortTestRun**](docs/TestRunServiceApi.md#testrunserviceaborttestrun) | **POST** /v1/products/{productId}/runs/{runSeq}:abort | Aborts a run.
+*TestRunServiceApi* | [**testRunServiceCompleteTestRun**](docs/TestRunServiceApi.md#testrunservicecompletetestrun) | **POST** /v1/products/{productId}/runs/{runSeq}:complete | Completes a run and computes its final verdict.
+*TestRunServiceApi* | [**testRunServiceCreateTestRun**](docs/TestRunServiceApi.md#testrunservicecreatetestrun) | **POST** /v1/products/{productId}/runs | Creates a test run to report CI results into.
+*TestRunServiceApi* | [**testRunServiceDeleteTestRun**](docs/TestRunServiceApi.md#testrunservicedeletetestrun) | **DELETE** /v1/products/{productId}/runs/{runSeq} | Deletes a test run.
+*TestRunServiceApi* | [**testRunServiceGetRunAttachment**](docs/TestRunServiceApi.md#testrunservicegetrunattachment) | **GET** /v1/products/{productId}/attachments/{hash} | Resolves an attachment content hash to a download URL.
+*TestRunServiceApi* | [**testRunServiceGetRunResult**](docs/TestRunServiceApi.md#testrunservicegetrunresult) | **GET** /v1/products/{productId}/runs/{runSeq}/results/{resultId} | Fetches one reported result by id.
+*TestRunServiceApi* | [**testRunServiceGetRunSummary**](docs/TestRunServiceApi.md#testrunservicegetrunsummary) | **GET** /v1/products/{productId}/runs/{runSeq}/summary | Returns per-suite and per-case rollups of a run.
+*TestRunServiceApi* | [**testRunServiceGetTestRun**](docs/TestRunServiceApi.md#testrunservicegettestrun) | **GET** /v1/products/{productId}/runs/{runSeq} | Fetches one test run by its sequence number.
+*TestRunServiceApi* | [**testRunServiceListRunResults**](docs/TestRunServiceApi.md#testrunservicelistrunresults) | **GET** /v1/products/{productId}/runs/{runSeq}/results | Lists a run\&#39;s reported results.
+*TestRunServiceApi* | [**testRunServiceListTestRuns**](docs/TestRunServiceApi.md#testrunservicelisttestruns) | **GET** /v1/products/{productId}/runs | Lists a product\&#39;s test runs.
+*TestRunServiceApi* | [**testRunServiceReportResults**](docs/TestRunServiceApi.md#testrunservicereportresults) | **POST** /v1/products/{productId}/runs/{runSeq}/results:report | Reports a batch of test results into a run.
+*TestServiceApi* | [**testServiceCreateTest**](docs/TestServiceApi.md#testservicecreatetest) | **POST** /v1/products/{productId}/tests | Creates a test suite or case.
+*TestServiceApi* | [**testServiceDeleteTest**](docs/TestServiceApi.md#testservicedeletetest) | **DELETE** /v1/tests/{id} | Deletes a test.
+*TestServiceApi* | [**testServiceDeriveTestLinks**](docs/TestServiceApi.md#testservicederivetestlinks) | **POST** /v1/products/{productId}/test-links:derive | Derives test-requirement links from shared file anchors.
+*TestServiceApi* | [**testServiceGetTest**](docs/TestServiceApi.md#testservicegettest) | **GET** /v1/tests/{id} | Fetches one test by id.
+*TestServiceApi* | [**testServiceIngestTests**](docs/TestServiceApi.md#testserviceingesttests) | **POST** /v1/products/{productId}/tests:ingest | Batch-upserts tests from a reporter (live-documentation ingest).
+*TestServiceApi* | [**testServiceLinkRequirement**](docs/TestServiceApi.md#testservicelinkrequirement) | **POST** /v1/tests/{testId}/links | Links a test case to a requirement.
+*TestServiceApi* | [**testServiceListBranchLinkProposals**](docs/TestServiceApi.md#testservicelistbranchlinkproposals) | **GET** /v1/branches/{branchId}/link-proposals | Lists a branch\&#39;s test-requirement link proposals.
+*TestServiceApi* | [**testServiceListLinks**](docs/TestServiceApi.md#testservicelistlinks) | **GET** /v1/tests/{testId}/links | Lists a test\&#39;s requirement links.
+*TestServiceApi* | [**testServiceListTests**](docs/TestServiceApi.md#testservicelisttests) | **GET** /v1/products/{productId}/tests | Lists a product\&#39;s tests.
+*TestServiceApi* | [**testServiceReviewBranchLinkProposals**](docs/TestServiceApi.md#testservicereviewbranchlinkproposals) | **POST** /v1/branches/{branchId}/link-proposals:review | Accepts or rejects branch link proposals.
+*TestServiceApi* | [**testServiceUnlinkRequirement**](docs/TestServiceApi.md#testserviceunlinkrequirement) | **DELETE** /v1/tests/{testId}/links/{requirementId} | Removes a test-requirement link.
+*TestServiceApi* | [**testServiceUpdateTest**](docs/TestServiceApi.md#testserviceupdatetest) | **PUT** /v1/tests/{id} | Updates a test suite or case.
+*WorkspaceServiceApi* | [**workspaceServiceListWorkspaces**](docs/WorkspaceServiceApi.md#workspaceservicelistworkspaces) | **GET** /v1/workspaces | Lists the workspaces the caller belongs to.
 
 
 ### Documentation For Models
@@ -261,6 +261,7 @@ Class | Method | HTTP request | Description
  - [MergeModification](docs/MergeModification.md)
  - [MergeStats](docs/MergeStats.md)
  - [NullValue](docs/NullValue.md)
+ - [OnboardingAnswers](docs/OnboardingAnswers.md)
  - [OpenDefect](docs/OpenDefect.md)
  - [PaginationRequest](docs/PaginationRequest.md)
  - [PaginationResponse](docs/PaginationResponse.md)

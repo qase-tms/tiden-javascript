@@ -17,6 +17,9 @@
 // @ts-ignore
 import type { RequirementSource } from './requirement-source';
 
+/**
+ * Requirement is one node of a product\'s requirement tree: parent_id encodes the hierarchy, position orders siblings, and seq_num is the product-wide sequence used in {CODE}-{seq} references. content is markdown. sources are embedded only when requested (ListRequirements.include_sources); otherwise clients rely on source_count.
+ */
 export interface Requirement {
     'id'?: string;
     'productId'?: string;

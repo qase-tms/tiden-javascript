@@ -1,5 +1,6 @@
 # ProductSetupState
 
+ProductSetupState is one recorded setup-verification snapshot for a (product, user): repo binding, git-hook wiring, and per-agent statuses.
 
 ## Properties
 

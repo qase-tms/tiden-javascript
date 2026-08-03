@@ -1,5 +1,6 @@
 # TestExecution
 
+TestExecution is the embedded latest-execution snapshot carried on tests and steps: reporter-provided status, duration, timing, and thread.
 
 ## Properties
 
@@ -10,6 +11,7 @@ Name | Type | Description | Notes
 **startTime** | **string** |  | [optional] [default to undefined]
 **endTime** | **string** |  | [optional] [default to undefined]
 **thread** | **string** |  | [optional] [default to undefined]
+**runSeq** | **number** | Test-run seq this execution came from (live-doc sync stamps it; 0 &#x3D; unknown/legacy — run seqs start at 1). Read-only: server-populated, never accepted from clients. | [optional] [default to undefined]
 
 ## Example
 
@@ -22,6 +24,7 @@ const instance: TestExecution = {
     startTime,
     endTime,
     thread,
+    runSeq,
 };
 ```
 

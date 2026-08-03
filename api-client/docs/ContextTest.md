@@ -1,5 +1,6 @@
 # ContextTest
 
+ContextTest is one test in a context pack, labeled by how it relates to the requirement (link_kind) and whether its coverage is stale.
 
 ## Properties
 

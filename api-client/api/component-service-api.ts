@@ -39,7 +39,8 @@ import type { UpdateComponentResponse } from '../model';
 export const ComponentServiceApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * 
+         * Components are the product\'s deployment/architectural units. repository (canonical repo id), component_paths (path-prefix scopes within it), and repository_aliases (local checkout paths) scope the component so changed files can be attributed to it. branch (empty = main) writes copy-on-write.
+         * @summary Creates a component in a product.
          * @param {string} productId 
          * @param {CreateComponentBody} createComponentBody 
          * @param {*} [options] Override http request option.
@@ -80,7 +81,8 @@ export const ComponentServiceApiAxiosParamCreator = function (configuration?: Co
             };
         },
         /**
-         * 
+         * Returns the components in the branch view (empty branch = main), with page_size/page_token pagination.
+         * @summary Lists a product\'s components.
          * @param {string} productId 
          * @param {number} [paginationPageSize] 
          * @param {string} [paginationPageToken] 
@@ -131,7 +133,8 @@ export const ComponentServiceApiAxiosParamCreator = function (configuration?: Co
             };
         },
         /**
-         * 
+         * name/description change only when present — omitted fields keep their stored value. Repository scoping uses explicit flags: set_repository, set_component_paths, and set_repository_aliases must be true for the paired value to be applied (including clearing it); false leaves the stored value untouched. branch (empty = main) writes copy-on-write.
+         * @summary Updates a component.
          * @param {string} id 
          * @param {UpdateComponentBody} updateComponentBody 
          * @param {*} [options] Override http request option.
@@ -181,7 +184,8 @@ export const ComponentServiceApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = ComponentServiceApiAxiosParamCreator(configuration)
     return {
         /**
-         * 
+         * Components are the product\'s deployment/architectural units. repository (canonical repo id), component_paths (path-prefix scopes within it), and repository_aliases (local checkout paths) scope the component so changed files can be attributed to it. branch (empty = main) writes copy-on-write.
+         * @summary Creates a component in a product.
          * @param {string} productId 
          * @param {CreateComponentBody} createComponentBody 
          * @param {*} [options] Override http request option.
@@ -194,7 +198,8 @@ export const ComponentServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Returns the components in the branch view (empty branch = main), with page_size/page_token pagination.
+         * @summary Lists a product\'s components.
          * @param {string} productId 
          * @param {number} [paginationPageSize] 
          * @param {string} [paginationPageToken] 
@@ -209,7 +214,8 @@ export const ComponentServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * name/description change only when present — omitted fields keep their stored value. Repository scoping uses explicit flags: set_repository, set_component_paths, and set_repository_aliases must be true for the paired value to be applied (including clearing it); false leaves the stored value untouched. branch (empty = main) writes copy-on-write.
+         * @summary Updates a component.
          * @param {string} id 
          * @param {UpdateComponentBody} updateComponentBody 
          * @param {*} [options] Override http request option.
@@ -231,7 +237,8 @@ export const ComponentServiceApiFactory = function (configuration?: Configuratio
     const localVarFp = ComponentServiceApiFp(configuration)
     return {
         /**
-         * 
+         * Components are the product\'s deployment/architectural units. repository (canonical repo id), component_paths (path-prefix scopes within it), and repository_aliases (local checkout paths) scope the component so changed files can be attributed to it. branch (empty = main) writes copy-on-write.
+         * @summary Creates a component in a product.
          * @param {ComponentServiceApiComponentServiceCreateComponentRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -240,7 +247,8 @@ export const ComponentServiceApiFactory = function (configuration?: Configuratio
             return localVarFp.componentServiceCreateComponent(requestParameters.productId, requestParameters.createComponentBody, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Returns the components in the branch view (empty branch = main), with page_size/page_token pagination.
+         * @summary Lists a product\'s components.
          * @param {ComponentServiceApiComponentServiceListComponentsRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -249,7 +257,8 @@ export const ComponentServiceApiFactory = function (configuration?: Configuratio
             return localVarFp.componentServiceListComponents(requestParameters.productId, requestParameters.paginationPageSize, requestParameters.paginationPageToken, requestParameters.branch, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * name/description change only when present — omitted fields keep their stored value. Repository scoping uses explicit flags: set_repository, set_component_paths, and set_repository_aliases must be true for the paired value to be applied (including clearing it); false leaves the stored value untouched. branch (empty = main) writes copy-on-write.
+         * @summary Updates a component.
          * @param {ComponentServiceApiComponentServiceUpdateComponentRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -296,7 +305,8 @@ export interface ComponentServiceApiComponentServiceUpdateComponentRequest {
  */
 export class ComponentServiceApi extends BaseAPI {
     /**
-     * 
+     * Components are the product\'s deployment/architectural units. repository (canonical repo id), component_paths (path-prefix scopes within it), and repository_aliases (local checkout paths) scope the component so changed files can be attributed to it. branch (empty = main) writes copy-on-write.
+     * @summary Creates a component in a product.
      * @param {ComponentServiceApiComponentServiceCreateComponentRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -306,7 +316,8 @@ export class ComponentServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Returns the components in the branch view (empty branch = main), with page_size/page_token pagination.
+     * @summary Lists a product\'s components.
      * @param {ComponentServiceApiComponentServiceListComponentsRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -316,7 +327,8 @@ export class ComponentServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * name/description change only when present — omitted fields keep their stored value. Repository scoping uses explicit flags: set_repository, set_component_paths, and set_repository_aliases must be true for the paired value to be applied (including clearing it); false leaves the stored value untouched. branch (empty = main) writes copy-on-write.
+     * @summary Updates a component.
      * @param {ComponentServiceApiComponentServiceUpdateComponentRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}

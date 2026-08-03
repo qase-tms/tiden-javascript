@@ -23,6 +23,9 @@ import type { ResultStep } from './result-step';
 // @ts-ignore
 import type { SuiteSegment } from './suite-segment';
 
+/**
+ * TestRunResult is one stored result row of a run: the reported payload plus case matching (test_id/test_seq_num when resolved) and retry attribution (attempt / is_latest_attempt per execution_key).
+ */
 export interface TestRunResult {
     'id'?: string;
     'runId'?: string;

@@ -14,6 +14,9 @@
 
 
 
+/**
+ * TestRequirementLink is one durable test-case-to-requirement coverage link on main; linked cases\' executions count toward the requirement\'s coverage.
+ */
 export interface TestRequirementLink {
     'id'?: string;
     'testId'?: string;

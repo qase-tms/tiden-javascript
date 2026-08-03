@@ -14,6 +14,9 @@
 
 
 
+/**
+ * TestParameter is one key/value of a parameterized test combination.
+ */
 export interface TestParameter {
     'key'?: string;
     'value'?: string;

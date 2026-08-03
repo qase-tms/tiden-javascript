@@ -14,6 +14,9 @@
 
 
 
+/**
+ * Component is a deployment/architectural unit of a product. The repository/component_paths/repository_aliases scope maps changed files to the component (shift-left v3).
+ */
 export interface Component {
     'id'?: string;
     'productId'?: string;

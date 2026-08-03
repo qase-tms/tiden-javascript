@@ -14,6 +14,9 @@
 
 
 
+/**
+ * AgentRunEvent is one timestamped log entry of an agent run: level + kind + human-readable message, with optional structured data_json.
+ */
 export interface AgentRunEvent {
     'id'?: string;
     'runId'?: string;

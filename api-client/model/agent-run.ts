@@ -17,6 +17,9 @@
 // @ts-ignore
 import type { AgentRunResult } from './agent-run-result';
 
+/**
+ * AgentRun is one execution of an agent config, from \"pending\" through a terminal status, with LLM token/cost accounting, an optional produced branch, and an optional structured result.
+ */
 export interface AgentRun {
     'id'?: string;
     'agentConfigId'?: string;

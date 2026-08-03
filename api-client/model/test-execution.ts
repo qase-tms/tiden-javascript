@@ -14,11 +14,18 @@
 
 
 
+/**
+ * TestExecution is the embedded latest-execution snapshot carried on tests and steps: reporter-provided status, duration, timing, and thread.
+ */
 export interface TestExecution {
     'durationMs'?: string;
     'status'?: string;
     'startTime'?: string;
     'endTime'?: string;
     'thread'?: string;
+    /**
+     * Test-run seq this execution came from (live-doc sync stamps it; 0 = unknown/legacy — run seqs start at 1). Read-only: server-populated, never accepted from clients.
+     */
+    'runSeq'?: number;
 }
 

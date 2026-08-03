@@ -1,5 +1,6 @@
 # StaleCoverageSignal
 
+StaleCoverageSignal flags a linked test last updated before its requirement\'s last update — coverage that may no longer verify the requirement.
 
 ## Properties
 

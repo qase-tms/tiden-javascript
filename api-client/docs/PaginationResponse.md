@@ -1,5 +1,6 @@
 # PaginationResponse
 
+PaginationResponse carries the cursor for the next page (empty = no further results) and the total row count for the query.
 
 ## Properties
 

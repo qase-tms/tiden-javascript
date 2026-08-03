@@ -4,11 +4,12 @@ All URIs are relative to *https://api.tiden.ai*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
-|[**intentServiceDistillIntent**](#intentservicedistillintent) | **POST** /v1/products/{productId}/intent:distill | |
+|[**intentServiceDistillIntent**](#intentservicedistillintent) | **POST** /v1/products/{productId}/intent:distill | Distills a coding-session transcript into requirement changes.|
 
 # **intentServiceDistillIntent**
 > DistillIntentResponse intentServiceDistillIntent(distillIntentBody)
 
+Runs an LLM reconciliation of the transcript against the product\'s requirement tree and writes the created/updated requirements to an intent/YYYY-MM-DD-<slug> branch for review (slug defaults to \"session\"; same-day non-open branch names get a -2..-9 suffix). Requires a usable llm.* workspace credential (credential_id overrides the default). An empty transcript is a readiness probe: configuration is validated and the call reports skipped=true without invoking the LLM.
 
 ### Example
 

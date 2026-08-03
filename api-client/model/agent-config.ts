@@ -14,6 +14,9 @@
 
 
 
+/**
+ * AgentConfig binds an agent type to a product with a name, inputs, optional LLM/data credential references, and an optional cron schedule.
+ */
 export interface AgentConfig {
     'id'?: string;
     'productId'?: string;

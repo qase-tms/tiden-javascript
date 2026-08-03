@@ -14,6 +14,9 @@
 
 
 
+/**
+ * CodebaseFile is one repository file excerpt included in codebase context.
+ */
 export interface CodebaseFile {
     'path'?: string;
     'language'?: string;

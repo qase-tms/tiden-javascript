@@ -1,5 +1,6 @@
 # CriterionResult
 
+CriterionResult is one criterion\'s outcome within a subject\'s verdict breakdown.
 
 ## Properties
 

@@ -1,5 +1,6 @@
 # DistillIntentBody
 
+DistillIntentRequest carries one coding session — the rendered transcript plus session metadata — to reconcile into the product\'s requirement tree.
 
 ## Properties
 

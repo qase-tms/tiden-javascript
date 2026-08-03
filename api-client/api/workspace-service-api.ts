@@ -31,7 +31,8 @@ import type { Status } from '../model';
 export const WorkspaceServiceApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * 
+         * Returns each workspace with its slug and organization id, paginated via pagination.page_size/page_token. The CLI uses it to resolve which workspace an API token operates in.
+         * @summary Lists the workspaces the caller belongs to.
          * @param {number} [paginationPageSize] 
          * @param {string} [paginationPageToken] 
          * @param {*} [options] Override http request option.
@@ -82,7 +83,8 @@ export const WorkspaceServiceApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = WorkspaceServiceApiAxiosParamCreator(configuration)
     return {
         /**
-         * 
+         * Returns each workspace with its slug and organization id, paginated via pagination.page_size/page_token. The CLI uses it to resolve which workspace an API token operates in.
+         * @summary Lists the workspaces the caller belongs to.
          * @param {number} [paginationPageSize] 
          * @param {string} [paginationPageToken] 
          * @param {*} [options] Override http request option.
@@ -104,7 +106,8 @@ export const WorkspaceServiceApiFactory = function (configuration?: Configuratio
     const localVarFp = WorkspaceServiceApiFp(configuration)
     return {
         /**
-         * 
+         * Returns each workspace with its slug and organization id, paginated via pagination.page_size/page_token. The CLI uses it to resolve which workspace an API token operates in.
+         * @summary Lists the workspaces the caller belongs to.
          * @param {WorkspaceServiceApiWorkspaceServiceListWorkspacesRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -129,7 +132,8 @@ export interface WorkspaceServiceApiWorkspaceServiceListWorkspacesRequest {
  */
 export class WorkspaceServiceApi extends BaseAPI {
     /**
-     * 
+     * Returns each workspace with its slug and organization id, paginated via pagination.page_size/page_token. The CLI uses it to resolve which workspace an API token operates in.
+     * @summary Lists the workspaces the caller belongs to.
      * @param {WorkspaceServiceApiWorkspaceServiceListWorkspacesRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}

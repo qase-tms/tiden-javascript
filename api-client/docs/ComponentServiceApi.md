@@ -4,13 +4,14 @@ All URIs are relative to *https://api.tiden.ai*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
-|[**componentServiceCreateComponent**](#componentservicecreatecomponent) | **POST** /v1/products/{productId}/components | |
-|[**componentServiceListComponents**](#componentservicelistcomponents) | **GET** /v1/products/{productId}/components | |
-|[**componentServiceUpdateComponent**](#componentserviceupdatecomponent) | **PUT** /v1/components/{id} | |
+|[**componentServiceCreateComponent**](#componentservicecreatecomponent) | **POST** /v1/products/{productId}/components | Creates a component in a product.|
+|[**componentServiceListComponents**](#componentservicelistcomponents) | **GET** /v1/products/{productId}/components | Lists a product\&#39;s components.|
+|[**componentServiceUpdateComponent**](#componentserviceupdatecomponent) | **PUT** /v1/components/{id} | Updates a component.|
 
 # **componentServiceCreateComponent**
 > CreateComponentResponse componentServiceCreateComponent(createComponentBody)
 
+Components are the product\'s deployment/architectural units. repository (canonical repo id), component_paths (path-prefix scopes within it), and repository_aliases (local checkout paths) scope the component so changed files can be attributed to it. branch (empty = main) writes copy-on-write.
 
 ### Example
 
@@ -66,6 +67,7 @@ const { status, data } = await apiInstance.componentServiceCreateComponent(
 # **componentServiceListComponents**
 > ListComponentsResponse componentServiceListComponents()
 
+Returns the components in the branch view (empty branch = main), with page_size/page_token pagination.
 
 ### Example
 
@@ -126,6 +128,7 @@ const { status, data } = await apiInstance.componentServiceListComponents(
 # **componentServiceUpdateComponent**
 > UpdateComponentResponse componentServiceUpdateComponent(updateComponentBody)
 
+name/description change only when present — omitted fields keep their stored value. Repository scoping uses explicit flags: set_repository, set_component_paths, and set_repository_aliases must be true for the paired value to be applied (including clearing it); false leaves the stored value untouched. branch (empty = main) writes copy-on-write.
 
 ### Example
 

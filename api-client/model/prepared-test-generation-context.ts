@@ -23,6 +23,9 @@ import type { ContextCitation } from './context-citation';
 // @ts-ignore
 import type { RequirementTestContext } from './requirement-test-context';
 
+/**
+ * PreparedTestGenerationContext is the batched output of PrepareTestGenerationContext: one RequirementTestContext per requested requirement plus shared codebase context, under one token budget.
+ */
 export interface PreparedTestGenerationContext {
     'productId'?: string;
     'branch'?: string;

@@ -38,6 +38,9 @@ import type { RequirementTestFields } from './requirement-test-fields';
 // @ts-ignore
 import type { StaleCoverageSignal } from './stale-coverage-signal';
 
+/**
+ * RequirementTestContext is the full test-authoring context pack for one requirement: its tree family, component, related tests by link kind, staleness signals, extracted test-oriented fields, agent memory, and the citations resolving every citation_id used in the pack.
+ */
 export interface RequirementTestContext {
     'requirement'?: Requirement;
     'parent'?: Requirement;

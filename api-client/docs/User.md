@@ -1,5 +1,6 @@
 # User
 
+User is a Tiden account as exposed to clients; credentials are never included.
 
 ## Properties
 

@@ -57,7 +57,8 @@ import type { UpdateTestResponse } from '../model';
 export const TestServiceApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * 
+         * kind selects \"suite\" | \"case\"; case-only fields (status, steps, execution, ...) are ignored for suites. parent_id nests the test under a suite; branch (empty = main) applies the write copy-on-write. Cases get a product-wide seq_num.
+         * @summary Creates a test suite or case.
          * @param {string} productId 
          * @param {CreateTestBody} createTestBody 
          * @param {*} [options] Override http request option.
@@ -98,7 +99,8 @@ export const TestServiceApiAxiosParamCreator = function (configuration?: Configu
             };
         },
         /**
-         * 
+         * On a branch (branch set, non-main) a main-row delete records a copy-on-write deletion marker that applies at merge; on main the row is deleted directly.
+         * @summary Deletes a test.
          * @param {string} id 
          * @param {string} [branch] 
          * @param {*} [options] Override http request option.
@@ -139,8 +141,8 @@ export const TestServiceApiAxiosParamCreator = function (configuration?: Configu
             };
         },
         /**
-         * 
-         * @summary DeriveTestLinks matches requirement repo_file anchors against tests\' file_path: exact-file matches are auto-linked (durable, moves the gate), directory-proximity matches are returned for an agent to confirm via LinkRequirement. Idempotent.
+         * Matches requirement repo_file anchors against tests\' file_path. Exact-file matches are auto-linked durably (the Quality Gate recomputes); directory-proximity matches are returned as candidates for an agent to confirm via LinkRequirement. Idempotent. When the product spans more than one repository, matching is skipped entirely (multi_repo_skipped=true) — tests carry no repo attribution, so a bare path match could cross-link.
+         * @summary Derives test-requirement links from shared file anchors.
          * @param {string} productId 
          * @param {object} body 
          * @param {*} [options] Override http request option.
@@ -181,7 +183,8 @@ export const TestServiceApiAxiosParamCreator = function (configuration?: Configu
             };
         },
         /**
-         * 
+         * Returns the suite or case with steps, parameters, latest execution, and server-populated counts.
+         * @summary Fetches one test by id.
          * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -217,8 +220,8 @@ export const TestServiceApiAxiosParamCreator = function (configuration?: Configu
             };
         },
         /**
-         * 
-         * @summary IngestTests is the reporter-friendly batch upsert endpoint. Idempotent on (product, branch, external_id). Server-validates the entire batch upfront, then either applies all changes or returns 422 with the per-entry errors. Max 1000 tests per call (enforced server-side).
+         * Idempotent upsert keyed on (product, branch, external_id); branch is auto-created when absent (empty = main). The whole batch (1..1000 entries) is validated up front and applied in one transaction: on validation failure nothing is written and the per-entry errors are returned (HTTP 400, also attached as google.rpc.Status details for gRPC clients). Suites are found-or-created from suite_path; requirement_seq_nums auto-link cases to requirements (main only).
+         * @summary Batch-upserts tests from a reporter (live-documentation ingest).
          * @param {string} productId 
          * @param {IngestTestsBody} ingestTestsBody 
          * @param {*} [options] Override http request option.
@@ -259,7 +262,8 @@ export const TestServiceApiAxiosParamCreator = function (configuration?: Configu
             };
         },
         /**
-         * 
+         * Only cases can be linked, and only within one product. With branch empty (main) the durable link is written immediately and idempotently (duplicate links are a no-op) and requirement coverage recomputes. With a branch set, the call records a branch link PROPOSAL instead — reviewed via ReviewBranchLinkProposals and materialized when the branch merges.
+         * @summary Links a test case to a requirement.
          * @param {string} testId 
          * @param {LinkRequirementBody} linkRequirementBody 
          * @param {*} [options] Override http request option.
@@ -300,7 +304,8 @@ export const TestServiceApiAxiosParamCreator = function (configuration?: Configu
             };
         },
         /**
-         * 
+         * Returns the link/unlink proposals recorded on the branch, optionally filtered by statuses (proposed | accepted | rejected). Accepted proposals become durable links when the branch merges.
+         * @summary Lists a branch\'s test-requirement link proposals.
          * @param {string} branchId 
          * @param {Array<string>} [statuses] 
          * @param {*} [options] Override http request option.
@@ -341,7 +346,8 @@ export const TestServiceApiAxiosParamCreator = function (configuration?: Configu
             };
         },
         /**
-         * 
+         * On a branch view links resolve through copy-on-write (a COW copy surfaces its main source\'s links; branch-only tests have none) and read_only=true is returned so clients hide link editing.
+         * @summary Lists a test\'s requirement links.
          * @param {string} testId 
          * @param {string} [branch] when set, links are read-only via COW
          * @param {*} [options] Override http request option.
@@ -382,7 +388,8 @@ export const TestServiceApiAxiosParamCreator = function (configuration?: Configu
             };
         },
         /**
-         * 
+         * Returns suites and cases as a flat list (parent_id encodes the tree) in the branch view (empty = main), with page_size/page_token pagination.
+         * @summary Lists a product\'s tests.
          * @param {string} productId 
          * @param {number} [paginationPageSize] 
          * @param {string} [paginationPageToken] 
@@ -433,7 +440,8 @@ export const TestServiceApiAxiosParamCreator = function (configuration?: Configu
             };
         },
         /**
-         * 
+         * Applies decision (\"accepted\" | \"rejected\"), with an optional review_note, to the given proposal_ids (at least one required). Accepted proposals materialize into durable links at branch merge; rejected ones are dropped.
+         * @summary Accepts or rejects branch link proposals.
          * @param {string} branchId 
          * @param {ReviewBranchLinkProposalsBody} reviewBranchLinkProposalsBody 
          * @param {*} [options] Override http request option.
@@ -474,7 +482,8 @@ export const TestServiceApiAxiosParamCreator = function (configuration?: Configu
             };
         },
         /**
-         * 
+         * With branch empty (main) the durable link is removed idempotently (removing a non-existent link is a no-op) and requirement coverage recomputes. With a branch set, the call withdraws that branch\'s pending link proposal for the (test, requirement) pair instead of touching main links.
+         * @summary Removes a test-requirement link.
          * @param {string} testId 
          * @param {string} requirementId 
          * @param {string} [branch] 
@@ -519,7 +528,8 @@ export const TestServiceApiAxiosParamCreator = function (configuration?: Configu
             };
         },
         /**
-         * 
+         * Scalar optional fields change only when present. Repeated/struct fields use replacement semantics behind set_* flags (set_tags, set_steps, set_custom_fields, ...): when the flag is true the paired value replaces the stored one entirely (empty clears); when false it is untouched. branch (empty = main) applies the edit copy-on-write.
+         * @summary Updates a test suite or case.
          * @param {string} id 
          * @param {UpdateTestBody} updateTestBody 
          * @param {*} [options] Override http request option.
@@ -569,7 +579,8 @@ export const TestServiceApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = TestServiceApiAxiosParamCreator(configuration)
     return {
         /**
-         * 
+         * kind selects \"suite\" | \"case\"; case-only fields (status, steps, execution, ...) are ignored for suites. parent_id nests the test under a suite; branch (empty = main) applies the write copy-on-write. Cases get a product-wide seq_num.
+         * @summary Creates a test suite or case.
          * @param {string} productId 
          * @param {CreateTestBody} createTestBody 
          * @param {*} [options] Override http request option.
@@ -582,7 +593,8 @@ export const TestServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * On a branch (branch set, non-main) a main-row delete records a copy-on-write deletion marker that applies at merge; on main the row is deleted directly.
+         * @summary Deletes a test.
          * @param {string} id 
          * @param {string} [branch] 
          * @param {*} [options] Override http request option.
@@ -595,8 +607,8 @@ export const TestServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
-         * @summary DeriveTestLinks matches requirement repo_file anchors against tests\' file_path: exact-file matches are auto-linked (durable, moves the gate), directory-proximity matches are returned for an agent to confirm via LinkRequirement. Idempotent.
+         * Matches requirement repo_file anchors against tests\' file_path. Exact-file matches are auto-linked durably (the Quality Gate recomputes); directory-proximity matches are returned as candidates for an agent to confirm via LinkRequirement. Idempotent. When the product spans more than one repository, matching is skipped entirely (multi_repo_skipped=true) — tests carry no repo attribution, so a bare path match could cross-link.
+         * @summary Derives test-requirement links from shared file anchors.
          * @param {string} productId 
          * @param {object} body 
          * @param {*} [options] Override http request option.
@@ -609,7 +621,8 @@ export const TestServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Returns the suite or case with steps, parameters, latest execution, and server-populated counts.
+         * @summary Fetches one test by id.
          * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -621,8 +634,8 @@ export const TestServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
-         * @summary IngestTests is the reporter-friendly batch upsert endpoint. Idempotent on (product, branch, external_id). Server-validates the entire batch upfront, then either applies all changes or returns 422 with the per-entry errors. Max 1000 tests per call (enforced server-side).
+         * Idempotent upsert keyed on (product, branch, external_id); branch is auto-created when absent (empty = main). The whole batch (1..1000 entries) is validated up front and applied in one transaction: on validation failure nothing is written and the per-entry errors are returned (HTTP 400, also attached as google.rpc.Status details for gRPC clients). Suites are found-or-created from suite_path; requirement_seq_nums auto-link cases to requirements (main only).
+         * @summary Batch-upserts tests from a reporter (live-documentation ingest).
          * @param {string} productId 
          * @param {IngestTestsBody} ingestTestsBody 
          * @param {*} [options] Override http request option.
@@ -635,7 +648,8 @@ export const TestServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Only cases can be linked, and only within one product. With branch empty (main) the durable link is written immediately and idempotently (duplicate links are a no-op) and requirement coverage recomputes. With a branch set, the call records a branch link PROPOSAL instead — reviewed via ReviewBranchLinkProposals and materialized when the branch merges.
+         * @summary Links a test case to a requirement.
          * @param {string} testId 
          * @param {LinkRequirementBody} linkRequirementBody 
          * @param {*} [options] Override http request option.
@@ -648,7 +662,8 @@ export const TestServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Returns the link/unlink proposals recorded on the branch, optionally filtered by statuses (proposed | accepted | rejected). Accepted proposals become durable links when the branch merges.
+         * @summary Lists a branch\'s test-requirement link proposals.
          * @param {string} branchId 
          * @param {Array<string>} [statuses] 
          * @param {*} [options] Override http request option.
@@ -661,7 +676,8 @@ export const TestServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * On a branch view links resolve through copy-on-write (a COW copy surfaces its main source\'s links; branch-only tests have none) and read_only=true is returned so clients hide link editing.
+         * @summary Lists a test\'s requirement links.
          * @param {string} testId 
          * @param {string} [branch] when set, links are read-only via COW
          * @param {*} [options] Override http request option.
@@ -674,7 +690,8 @@ export const TestServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Returns suites and cases as a flat list (parent_id encodes the tree) in the branch view (empty = main), with page_size/page_token pagination.
+         * @summary Lists a product\'s tests.
          * @param {string} productId 
          * @param {number} [paginationPageSize] 
          * @param {string} [paginationPageToken] 
@@ -689,7 +706,8 @@ export const TestServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Applies decision (\"accepted\" | \"rejected\"), with an optional review_note, to the given proposal_ids (at least one required). Accepted proposals materialize into durable links at branch merge; rejected ones are dropped.
+         * @summary Accepts or rejects branch link proposals.
          * @param {string} branchId 
          * @param {ReviewBranchLinkProposalsBody} reviewBranchLinkProposalsBody 
          * @param {*} [options] Override http request option.
@@ -702,7 +720,8 @@ export const TestServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * With branch empty (main) the durable link is removed idempotently (removing a non-existent link is a no-op) and requirement coverage recomputes. With a branch set, the call withdraws that branch\'s pending link proposal for the (test, requirement) pair instead of touching main links.
+         * @summary Removes a test-requirement link.
          * @param {string} testId 
          * @param {string} requirementId 
          * @param {string} [branch] 
@@ -716,7 +735,8 @@ export const TestServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Scalar optional fields change only when present. Repeated/struct fields use replacement semantics behind set_* flags (set_tags, set_steps, set_custom_fields, ...): when the flag is true the paired value replaces the stored one entirely (empty clears); when false it is untouched. branch (empty = main) applies the edit copy-on-write.
+         * @summary Updates a test suite or case.
          * @param {string} id 
          * @param {UpdateTestBody} updateTestBody 
          * @param {*} [options] Override http request option.
@@ -738,7 +758,8 @@ export const TestServiceApiFactory = function (configuration?: Configuration, ba
     const localVarFp = TestServiceApiFp(configuration)
     return {
         /**
-         * 
+         * kind selects \"suite\" | \"case\"; case-only fields (status, steps, execution, ...) are ignored for suites. parent_id nests the test under a suite; branch (empty = main) applies the write copy-on-write. Cases get a product-wide seq_num.
+         * @summary Creates a test suite or case.
          * @param {TestServiceApiTestServiceCreateTestRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -747,7 +768,8 @@ export const TestServiceApiFactory = function (configuration?: Configuration, ba
             return localVarFp.testServiceCreateTest(requestParameters.productId, requestParameters.createTestBody, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * On a branch (branch set, non-main) a main-row delete records a copy-on-write deletion marker that applies at merge; on main the row is deleted directly.
+         * @summary Deletes a test.
          * @param {TestServiceApiTestServiceDeleteTestRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -756,8 +778,8 @@ export const TestServiceApiFactory = function (configuration?: Configuration, ba
             return localVarFp.testServiceDeleteTest(requestParameters.id, requestParameters.branch, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
-         * @summary DeriveTestLinks matches requirement repo_file anchors against tests\' file_path: exact-file matches are auto-linked (durable, moves the gate), directory-proximity matches are returned for an agent to confirm via LinkRequirement. Idempotent.
+         * Matches requirement repo_file anchors against tests\' file_path. Exact-file matches are auto-linked durably (the Quality Gate recomputes); directory-proximity matches are returned as candidates for an agent to confirm via LinkRequirement. Idempotent. When the product spans more than one repository, matching is skipped entirely (multi_repo_skipped=true) — tests carry no repo attribution, so a bare path match could cross-link.
+         * @summary Derives test-requirement links from shared file anchors.
          * @param {TestServiceApiTestServiceDeriveTestLinksRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -766,7 +788,8 @@ export const TestServiceApiFactory = function (configuration?: Configuration, ba
             return localVarFp.testServiceDeriveTestLinks(requestParameters.productId, requestParameters.body, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Returns the suite or case with steps, parameters, latest execution, and server-populated counts.
+         * @summary Fetches one test by id.
          * @param {TestServiceApiTestServiceGetTestRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -775,8 +798,8 @@ export const TestServiceApiFactory = function (configuration?: Configuration, ba
             return localVarFp.testServiceGetTest(requestParameters.id, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
-         * @summary IngestTests is the reporter-friendly batch upsert endpoint. Idempotent on (product, branch, external_id). Server-validates the entire batch upfront, then either applies all changes or returns 422 with the per-entry errors. Max 1000 tests per call (enforced server-side).
+         * Idempotent upsert keyed on (product, branch, external_id); branch is auto-created when absent (empty = main). The whole batch (1..1000 entries) is validated up front and applied in one transaction: on validation failure nothing is written and the per-entry errors are returned (HTTP 400, also attached as google.rpc.Status details for gRPC clients). Suites are found-or-created from suite_path; requirement_seq_nums auto-link cases to requirements (main only).
+         * @summary Batch-upserts tests from a reporter (live-documentation ingest).
          * @param {TestServiceApiTestServiceIngestTestsRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -785,7 +808,8 @@ export const TestServiceApiFactory = function (configuration?: Configuration, ba
             return localVarFp.testServiceIngestTests(requestParameters.productId, requestParameters.ingestTestsBody, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Only cases can be linked, and only within one product. With branch empty (main) the durable link is written immediately and idempotently (duplicate links are a no-op) and requirement coverage recomputes. With a branch set, the call records a branch link PROPOSAL instead — reviewed via ReviewBranchLinkProposals and materialized when the branch merges.
+         * @summary Links a test case to a requirement.
          * @param {TestServiceApiTestServiceLinkRequirementRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -794,7 +818,8 @@ export const TestServiceApiFactory = function (configuration?: Configuration, ba
             return localVarFp.testServiceLinkRequirement(requestParameters.testId, requestParameters.linkRequirementBody, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Returns the link/unlink proposals recorded on the branch, optionally filtered by statuses (proposed | accepted | rejected). Accepted proposals become durable links when the branch merges.
+         * @summary Lists a branch\'s test-requirement link proposals.
          * @param {TestServiceApiTestServiceListBranchLinkProposalsRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -803,7 +828,8 @@ export const TestServiceApiFactory = function (configuration?: Configuration, ba
             return localVarFp.testServiceListBranchLinkProposals(requestParameters.branchId, requestParameters.statuses, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * On a branch view links resolve through copy-on-write (a COW copy surfaces its main source\'s links; branch-only tests have none) and read_only=true is returned so clients hide link editing.
+         * @summary Lists a test\'s requirement links.
          * @param {TestServiceApiTestServiceListLinksRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -812,7 +838,8 @@ export const TestServiceApiFactory = function (configuration?: Configuration, ba
             return localVarFp.testServiceListLinks(requestParameters.testId, requestParameters.branch, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Returns suites and cases as a flat list (parent_id encodes the tree) in the branch view (empty = main), with page_size/page_token pagination.
+         * @summary Lists a product\'s tests.
          * @param {TestServiceApiTestServiceListTestsRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -821,7 +848,8 @@ export const TestServiceApiFactory = function (configuration?: Configuration, ba
             return localVarFp.testServiceListTests(requestParameters.productId, requestParameters.paginationPageSize, requestParameters.paginationPageToken, requestParameters.branch, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Applies decision (\"accepted\" | \"rejected\"), with an optional review_note, to the given proposal_ids (at least one required). Accepted proposals materialize into durable links at branch merge; rejected ones are dropped.
+         * @summary Accepts or rejects branch link proposals.
          * @param {TestServiceApiTestServiceReviewBranchLinkProposalsRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -830,7 +858,8 @@ export const TestServiceApiFactory = function (configuration?: Configuration, ba
             return localVarFp.testServiceReviewBranchLinkProposals(requestParameters.branchId, requestParameters.reviewBranchLinkProposalsBody, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * With branch empty (main) the durable link is removed idempotently (removing a non-existent link is a no-op) and requirement coverage recomputes. With a branch set, the call withdraws that branch\'s pending link proposal for the (test, requirement) pair instead of touching main links.
+         * @summary Removes a test-requirement link.
          * @param {TestServiceApiTestServiceUnlinkRequirementRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -839,7 +868,8 @@ export const TestServiceApiFactory = function (configuration?: Configuration, ba
             return localVarFp.testServiceUnlinkRequirement(requestParameters.testId, requestParameters.requirementId, requestParameters.branch, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Scalar optional fields change only when present. Repeated/struct fields use replacement semantics behind set_* flags (set_tags, set_steps, set_custom_fields, ...): when the flag is true the paired value replaces the stored one entirely (empty clears); when false it is untouched. branch (empty = main) applies the edit copy-on-write.
+         * @summary Updates a test suite or case.
          * @param {TestServiceApiTestServiceUpdateTestRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -970,7 +1000,8 @@ export interface TestServiceApiTestServiceUpdateTestRequest {
  */
 export class TestServiceApi extends BaseAPI {
     /**
-     * 
+     * kind selects \"suite\" | \"case\"; case-only fields (status, steps, execution, ...) are ignored for suites. parent_id nests the test under a suite; branch (empty = main) applies the write copy-on-write. Cases get a product-wide seq_num.
+     * @summary Creates a test suite or case.
      * @param {TestServiceApiTestServiceCreateTestRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -980,7 +1011,8 @@ export class TestServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * On a branch (branch set, non-main) a main-row delete records a copy-on-write deletion marker that applies at merge; on main the row is deleted directly.
+     * @summary Deletes a test.
      * @param {TestServiceApiTestServiceDeleteTestRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -990,8 +1022,8 @@ export class TestServiceApi extends BaseAPI {
     }
 
     /**
-     * 
-     * @summary DeriveTestLinks matches requirement repo_file anchors against tests\' file_path: exact-file matches are auto-linked (durable, moves the gate), directory-proximity matches are returned for an agent to confirm via LinkRequirement. Idempotent.
+     * Matches requirement repo_file anchors against tests\' file_path. Exact-file matches are auto-linked durably (the Quality Gate recomputes); directory-proximity matches are returned as candidates for an agent to confirm via LinkRequirement. Idempotent. When the product spans more than one repository, matching is skipped entirely (multi_repo_skipped=true) — tests carry no repo attribution, so a bare path match could cross-link.
+     * @summary Derives test-requirement links from shared file anchors.
      * @param {TestServiceApiTestServiceDeriveTestLinksRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1001,7 +1033,8 @@ export class TestServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Returns the suite or case with steps, parameters, latest execution, and server-populated counts.
+     * @summary Fetches one test by id.
      * @param {TestServiceApiTestServiceGetTestRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1011,8 +1044,8 @@ export class TestServiceApi extends BaseAPI {
     }
 
     /**
-     * 
-     * @summary IngestTests is the reporter-friendly batch upsert endpoint. Idempotent on (product, branch, external_id). Server-validates the entire batch upfront, then either applies all changes or returns 422 with the per-entry errors. Max 1000 tests per call (enforced server-side).
+     * Idempotent upsert keyed on (product, branch, external_id); branch is auto-created when absent (empty = main). The whole batch (1..1000 entries) is validated up front and applied in one transaction: on validation failure nothing is written and the per-entry errors are returned (HTTP 400, also attached as google.rpc.Status details for gRPC clients). Suites are found-or-created from suite_path; requirement_seq_nums auto-link cases to requirements (main only).
+     * @summary Batch-upserts tests from a reporter (live-documentation ingest).
      * @param {TestServiceApiTestServiceIngestTestsRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1022,7 +1055,8 @@ export class TestServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Only cases can be linked, and only within one product. With branch empty (main) the durable link is written immediately and idempotently (duplicate links are a no-op) and requirement coverage recomputes. With a branch set, the call records a branch link PROPOSAL instead — reviewed via ReviewBranchLinkProposals and materialized when the branch merges.
+     * @summary Links a test case to a requirement.
      * @param {TestServiceApiTestServiceLinkRequirementRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1032,7 +1066,8 @@ export class TestServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Returns the link/unlink proposals recorded on the branch, optionally filtered by statuses (proposed | accepted | rejected). Accepted proposals become durable links when the branch merges.
+     * @summary Lists a branch\'s test-requirement link proposals.
      * @param {TestServiceApiTestServiceListBranchLinkProposalsRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1042,7 +1077,8 @@ export class TestServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * On a branch view links resolve through copy-on-write (a COW copy surfaces its main source\'s links; branch-only tests have none) and read_only=true is returned so clients hide link editing.
+     * @summary Lists a test\'s requirement links.
      * @param {TestServiceApiTestServiceListLinksRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1052,7 +1088,8 @@ export class TestServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Returns suites and cases as a flat list (parent_id encodes the tree) in the branch view (empty = main), with page_size/page_token pagination.
+     * @summary Lists a product\'s tests.
      * @param {TestServiceApiTestServiceListTestsRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1062,7 +1099,8 @@ export class TestServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Applies decision (\"accepted\" | \"rejected\"), with an optional review_note, to the given proposal_ids (at least one required). Accepted proposals materialize into durable links at branch merge; rejected ones are dropped.
+     * @summary Accepts or rejects branch link proposals.
      * @param {TestServiceApiTestServiceReviewBranchLinkProposalsRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1072,7 +1110,8 @@ export class TestServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * With branch empty (main) the durable link is removed idempotently (removing a non-existent link is a no-op) and requirement coverage recomputes. With a branch set, the call withdraws that branch\'s pending link proposal for the (test, requirement) pair instead of touching main links.
+     * @summary Removes a test-requirement link.
      * @param {TestServiceApiTestServiceUnlinkRequirementRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1082,7 +1121,8 @@ export class TestServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Scalar optional fields change only when present. Repeated/struct fields use replacement semantics behind set_* flags (set_tags, set_steps, set_custom_fields, ...): when the flag is true the paired value replaces the stored one entirely (empty clears); when false it is untouched. branch (empty = main) applies the edit copy-on-write.
+     * @summary Updates a test suite or case.
      * @param {TestServiceApiTestServiceUpdateTestRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}

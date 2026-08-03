@@ -1,5 +1,6 @@
 # Workspace
 
+Workspace is the team-level container products live in; slug is its stable URL identifier.
 
 ## Properties
 

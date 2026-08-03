@@ -1,5 +1,6 @@
 # IngestStats
 
+IngestStats is the per-batch outcome: creation/update counters and the operation_id grouping the batch\'s history rows.
 
 ## Properties
 

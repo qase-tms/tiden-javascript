@@ -1,5 +1,6 @@
 # Product
 
+Product is the top-level container for requirements, tests, runs, and releases. code is the reference prefix for entity sequence numbers ({CODE}-{seq}).
 
 ## Properties
 

@@ -29,6 +29,9 @@ import type { VerdictScope } from './verdict-scope';
 // @ts-ignore
 import type { VerdictStatus } from './verdict-status';
 
+/**
+ * Verdict is one immutable quality-gate decision snapshot for a (scope, ref): overall status, per-subject criterion breakdowns, and agent-actionable fix hints. invalidated_at marks snapshots superseded by newer data.
+ */
 export interface Verdict {
     'id'?: string;
     'productId'?: string;

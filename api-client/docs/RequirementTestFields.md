@@ -1,5 +1,6 @@
 # RequirementTestFields
 
+RequirementTestFields are test-relevant facts extracted from the requirement\'s content for test authoring.
 
 ## Properties
 

@@ -14,6 +14,9 @@
 
 
 
+/**
+ * BranchRequirementLinkProposal is one proposed test-requirement link recorded on a branch; accepted proposals materialize into durable links when the branch merges to main.
+ */
 export interface BranchRequirementLinkProposal {
     'id'?: string;
     'branchId'?: string;

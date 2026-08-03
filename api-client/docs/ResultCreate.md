@@ -1,5 +1,6 @@
 # ResultCreate
 
+ResultCreate is one reported test result (Qase v2 ResultCreate-compatible; see the section note above for transformer deltas). id is the idempotency key — resending the same id is counted as a duplicate and skipped.
 
 ## Properties
 

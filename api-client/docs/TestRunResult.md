@@ -1,5 +1,6 @@
 # TestRunResult
 
+TestRunResult is one stored result row of a run: the reported payload plus case matching (test_id/test_seq_num when resolved) and retry attribution (attempt / is_latest_attempt per execution_key).
 
 ## Properties
 

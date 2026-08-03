@@ -1,5 +1,6 @@
 # DistillIntentResponse
 
+DistillIntentResponse reports where the distilled changes were written and the per-kind change counts, or why distillation was skipped.
 
 ## Properties
 

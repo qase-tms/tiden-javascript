@@ -17,6 +17,9 @@
 // @ts-ignore
 import type { ProductSetupAgentStatus } from './product-setup-agent-status';
 
+/**
+ * ProductSetupState is one recorded setup-verification snapshot for a (product, user): repo binding, git-hook wiring, and per-agent statuses.
+ */
 export interface ProductSetupState {
     'productId'?: string;
     'userId'?: string;

@@ -1,5 +1,6 @@
 # IngestTest
 
+IngestTest is one reporter-observed test, identified by external_id within its suite_path (root to leaf).
 
 ## Properties
 

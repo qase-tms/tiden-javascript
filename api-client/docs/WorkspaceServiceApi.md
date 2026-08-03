@@ -4,11 +4,12 @@ All URIs are relative to *https://api.tiden.ai*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
-|[**workspaceServiceListWorkspaces**](#workspaceservicelistworkspaces) | **GET** /v1/workspaces | |
+|[**workspaceServiceListWorkspaces**](#workspaceservicelistworkspaces) | **GET** /v1/workspaces | Lists the workspaces the caller belongs to.|
 
 # **workspaceServiceListWorkspaces**
 > ListWorkspacesResponse workspaceServiceListWorkspaces()
 
+Returns each workspace with its slug and organization id, paginated via pagination.page_size/page_token. The CLI uses it to resolve which workspace an API token operates in.
 
 ### Example
 

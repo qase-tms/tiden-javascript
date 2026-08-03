@@ -14,6 +14,9 @@
 
 
 
+/**
+ * RequirementAnchor is one (requirement, repo-relative path) code-anchor pair.
+ */
 export interface RequirementAnchor {
     'requirementId'?: string;
     'repoPath'?: string;

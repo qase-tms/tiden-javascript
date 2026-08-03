@@ -1,5 +1,6 @@
 # SourceMap
 
+SourceMap is the metadata of one uploaded source map, keyed by debug_id for matching against incoming error events.
 
 ## Properties
 

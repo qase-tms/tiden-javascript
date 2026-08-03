@@ -33,7 +33,8 @@ import type { Status } from '../model';
 export const IntentServiceApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * 
+         * Runs an LLM reconciliation of the transcript against the product\'s requirement tree and writes the created/updated requirements to an intent/YYYY-MM-DD-<slug> branch for review (slug defaults to \"session\"; same-day non-open branch names get a -2..-9 suffix). Requires a usable llm.* workspace credential (credential_id overrides the default). An empty transcript is a readiness probe: configuration is validated and the call reports skipped=true without invoking the LLM.
+         * @summary Distills a coding-session transcript into requirement changes.
          * @param {string} productId Product whose requirement tree the intent is reconciled against.
          * @param {DistillIntentBody} distillIntentBody 
          * @param {*} [options] Override http request option.
@@ -83,7 +84,8 @@ export const IntentServiceApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = IntentServiceApiAxiosParamCreator(configuration)
     return {
         /**
-         * 
+         * Runs an LLM reconciliation of the transcript against the product\'s requirement tree and writes the created/updated requirements to an intent/YYYY-MM-DD-<slug> branch for review (slug defaults to \"session\"; same-day non-open branch names get a -2..-9 suffix). Requires a usable llm.* workspace credential (credential_id overrides the default). An empty transcript is a readiness probe: configuration is validated and the call reports skipped=true without invoking the LLM.
+         * @summary Distills a coding-session transcript into requirement changes.
          * @param {string} productId Product whose requirement tree the intent is reconciled against.
          * @param {DistillIntentBody} distillIntentBody 
          * @param {*} [options] Override http request option.
@@ -105,7 +107,8 @@ export const IntentServiceApiFactory = function (configuration?: Configuration, 
     const localVarFp = IntentServiceApiFp(configuration)
     return {
         /**
-         * 
+         * Runs an LLM reconciliation of the transcript against the product\'s requirement tree and writes the created/updated requirements to an intent/YYYY-MM-DD-<slug> branch for review (slug defaults to \"session\"; same-day non-open branch names get a -2..-9 suffix). Requires a usable llm.* workspace credential (credential_id overrides the default). An empty transcript is a readiness probe: configuration is validated and the call reports skipped=true without invoking the LLM.
+         * @summary Distills a coding-session transcript into requirement changes.
          * @param {IntentServiceApiIntentServiceDistillIntentRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -133,7 +136,8 @@ export interface IntentServiceApiIntentServiceDistillIntentRequest {
  */
 export class IntentServiceApi extends BaseAPI {
     /**
-     * 
+     * Runs an LLM reconciliation of the transcript against the product\'s requirement tree and writes the created/updated requirements to an intent/YYYY-MM-DD-<slug> branch for review (slug defaults to \"session\"; same-day non-open branch names get a -2..-9 suffix). Requires a usable llm.* workspace credential (credential_id overrides the default). An empty transcript is a readiness probe: configuration is validated and the call reports skipped=true without invoking the LLM.
+     * @summary Distills a coding-session transcript into requirement changes.
      * @param {IntentServiceApiIntentServiceDistillIntentRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}

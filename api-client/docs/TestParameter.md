@@ -1,5 +1,6 @@
 # TestParameter
 
+TestParameter is one key/value of a parameterized test combination.
 
 ## Properties
 

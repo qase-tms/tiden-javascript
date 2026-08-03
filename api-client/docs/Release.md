@@ -1,5 +1,6 @@
 # Release
 
+Release is one shipped version of a product in an environment, upserted from CI keyed on (product, version, environment).
 
 ## Properties
 

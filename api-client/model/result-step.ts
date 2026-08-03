@@ -23,6 +23,9 @@ import type { ResultStepExecution } from './result-step-execution';
 // @ts-ignore
 import type { StepCode } from './step-code';
 
+/**
+ * ResultStep is one reported step of a result; steps nest recursively.
+ */
 export interface ResultStep {
     'type'?: string;
     'data'?: ResultStepData;

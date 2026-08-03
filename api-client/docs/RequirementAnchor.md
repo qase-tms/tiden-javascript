@@ -1,5 +1,6 @@
 # RequirementAnchor
 
+RequirementAnchor is one (requirement, repo-relative path) code-anchor pair.
 
 ## Properties
 

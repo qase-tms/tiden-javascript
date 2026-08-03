@@ -14,6 +14,9 @@
 
 
 
+/**
+ * Workspace is the team-level container products live in; slug is its stable URL identifier.
+ */
 export interface Workspace {
     'id'?: string;
     'name'?: string;

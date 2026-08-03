@@ -122,6 +122,7 @@ export * from './merge-branch-response';
 export * from './merge-modification';
 export * from './merge-stats';
 export * from './null-value';
+export * from './onboarding-answers';
 export * from './open-defect';
 export * from './pagination-request';
 export * from './pagination-response';

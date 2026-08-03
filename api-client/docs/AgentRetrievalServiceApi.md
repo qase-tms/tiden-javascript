@@ -4,22 +4,23 @@ All URIs are relative to *https://api.tiden.ai*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
-|[**agentRetrievalServiceAttributeChangedFiles**](#agentretrievalserviceattributechangedfiles) | **POST** /v1/products/{productId}/requirements/{requirementId}:attribute-changed-files | |
-|[**agentRetrievalServiceDeclareRequirementEdgeIntent**](#agentretrievalservicedeclarerequirementedgeintent) | **POST** /v1/products/{productId}/requirement-edge-intents | |
-|[**agentRetrievalServiceGetRequirementGraph**](#agentretrievalservicegetrequirementgraph) | **GET** /v1/products/{productId}/requirement-graph | |
-|[**agentRetrievalServiceGetRequirementTestContext**](#agentretrievalservicegetrequirementtestcontext) | **GET** /v1/products/{productId}/requirements/{requirementId}/test-context | |
-|[**agentRetrievalServiceGraphCoverageGaps**](#agentretrievalservicegraphcoveragegaps) | **GET** /v1/products/{productId}/requirements/graph-coverage-gaps | |
-|[**agentRetrievalServiceListCoverageGaps**](#agentretrievalservicelistcoveragegaps) | **GET** /v1/products/{productId}/coverage-gaps | |
-|[**agentRetrievalServiceListRequirementAnchors**](#agentretrievalservicelistrequirementanchors) | **GET** /v1/products/{productId}/requirement-anchors | |
-|[**agentRetrievalServicePrepareTestGenerationContext**](#agentretrievalservicepreparetestgenerationcontext) | **POST** /v1/products/{productId}/test-generation-context:prepare | |
-|[**agentRetrievalServiceRequirementImpact**](#agentretrievalservicerequirementimpact) | **GET** /v1/products/{productId}/requirements/impact | |
-|[**agentRetrievalServiceRequirementNeighbors**](#agentretrievalservicerequirementneighbors) | **GET** /v1/products/{productId}/requirements/{requirementId}/neighbors | |
-|[**agentRetrievalServiceResolveFeatureContext**](#agentretrievalserviceresolvefeaturecontext) | **GET** /v1/products/{productId}/feature-context | |
-|[**agentRetrievalServiceWriteRequirementEdge**](#agentretrievalservicewriterequirementedge) | **POST** /v1/products/{productId}/requirement-edges | |
+|[**agentRetrievalServiceAttributeChangedFiles**](#agentretrievalserviceattributechangedfiles) | **POST** /v1/products/{productId}/requirements/{requirementId}:attribute-changed-files | Attributes a requirement\&#39;s changed files to owning components.|
+|[**agentRetrievalServiceDeclareRequirementEdgeIntent**](#agentretrievalservicedeclarerequirementedgeintent) | **POST** /v1/products/{productId}/requirement-edge-intents | Records a deferred graph edge for endpoints not yet on main.|
+|[**agentRetrievalServiceGetRequirementGraph**](#agentretrievalservicegetrequirementgraph) | **GET** /v1/products/{productId}/requirement-graph | Returns the product\&#39;s full requirement graph.|
+|[**agentRetrievalServiceGetRequirementTestContext**](#agentretrievalservicegetrequirementtestcontext) | **GET** /v1/products/{productId}/requirements/{requirementId}/test-context | Builds the full test-authoring context pack for one requirement.|
+|[**agentRetrievalServiceGraphCoverageGaps**](#agentretrievalservicegraphcoveragegaps) | **GET** /v1/products/{productId}/requirements/graph-coverage-gaps | Filters a requirement set down to those without test coverage.|
+|[**agentRetrievalServiceListCoverageGaps**](#agentretrievalservicelistcoveragegaps) | **GET** /v1/products/{productId}/coverage-gaps | Lists requirements with insufficient test coverage.|
+|[**agentRetrievalServiceListRequirementAnchors**](#agentretrievalservicelistrequirementanchors) | **GET** /v1/products/{productId}/requirement-anchors | Lists the branch-effective code anchors of all requirements.|
+|[**agentRetrievalServicePrepareTestGenerationContext**](#agentretrievalservicepreparetestgenerationcontext) | **POST** /v1/products/{productId}/test-generation-context:prepare | Prepares a batched test-generation context for several requirements.|
+|[**agentRetrievalServiceRequirementImpact**](#agentretrievalservicerequirementimpact) | **GET** /v1/products/{productId}/requirements/impact | Computes the requirement blast radius of a set of changed files.|
+|[**agentRetrievalServiceRequirementNeighbors**](#agentretrievalservicerequirementneighbors) | **GET** /v1/products/{productId}/requirements/{requirementId}/neighbors | Lists the graph neighbors of one requirement.|
+|[**agentRetrievalServiceResolveFeatureContext**](#agentretrievalserviceresolvefeaturecontext) | **GET** /v1/products/{productId}/feature-context | Resolves a coding objective into feature-rooted requirement context.|
+|[**agentRetrievalServiceWriteRequirementEdge**](#agentretrievalservicewriterequirementedge) | **POST** /v1/products/{productId}/requirement-edges | Writes one semantic edge into the requirement graph.|
 
 # **agentRetrievalServiceAttributeChangedFiles**
 > AttributeChangedFilesResponse agentRetrievalServiceAttributeChangedFiles(attributeChangedFilesBody)
 
+Maps repo-qualified changed files to components via the main-branch component scopes, declares one idempotent impacts_component edge intent per touched component, and sets requirement.component_id when the files resolve to exactly one component (clears it when they span several). All files must belong to a single repository; unmatched files are returned.
 
 ### Example
 
@@ -78,6 +79,7 @@ const { status, data } = await apiInstance.agentRetrievalServiceAttributeChanged
 # **agentRetrievalServiceDeclareRequirementEdgeIntent**
 > DeclareRequirementEdgeIntentResponse agentRetrievalServiceDeclareRequirementEdgeIntent(declareRequirementEdgeIntentBody)
 
+Stores an edge intent on the given branch (empty = main) instead of writing the edge immediately; the intent materializes into a real edge when the branch merges to main. Endpoint and edge_type rules match WriteRequirementEdge.
 
 ### Example
 
@@ -133,6 +135,7 @@ const { status, data } = await apiInstance.agentRetrievalServiceDeclareRequireme
 # **agentRetrievalServiceGetRequirementGraph**
 > GetRequirementGraphResponse agentRetrievalServiceGetRequirementGraph()
 
+Returns every graph node (requirements plus component nodes reached via impacts_component edges, discriminated by kind) and every edge with its type, source kind, and confidence — for whole-product visualization or offline analysis.
 
 ### Example
 
@@ -184,6 +187,7 @@ const { status, data } = await apiInstance.agentRetrievalServiceGetRequirementGr
 # **agentRetrievalServiceGetRequirementTestContext**
 > GetRequirementTestContextResponse agentRetrievalServiceGetRequirementTestContext()
 
+Returns the requirement with its parent/children/siblings, component, linked/proposed/relevant tests, stale-coverage signals, extracted test-oriented fields (acceptance criteria, edge cases, ...), agent memory, and citations, resolved in the branch view (empty branch = main). budget caps the pack\'s approximate token size; truncation_signals reports what was cut to fit.
 
 ### Example
 
@@ -199,7 +203,7 @@ const apiInstance = new AgentRetrievalServiceApi(configuration);
 let productId: string; // (default to undefined)
 let requirementId: string; // (default to undefined)
 let branch: string; // (optional) (default to undefined)
-let budget: number; // (optional) (default to undefined)
+let budget: number; //budget bounds the pack\'s approximate token size: smaller budgets shrink per-list limits and trim long excerpts; <= 0 uses server defaults. (optional) (default to undefined)
 
 const { status, data } = await apiInstance.agentRetrievalServiceGetRequirementTestContext(
     productId,
@@ -216,7 +220,7 @@ const { status, data } = await apiInstance.agentRetrievalServiceGetRequirementTe
 | **productId** | [**string**] |  | defaults to undefined|
 | **requirementId** | [**string**] |  | defaults to undefined|
 | **branch** | [**string**] |  | (optional) defaults to undefined|
-| **budget** | [**number**] |  | (optional) defaults to undefined|
+| **budget** | [**number**] | budget bounds the pack\&#39;s approximate token size: smaller budgets shrink per-list limits and trim long excerpts; &lt;&#x3D; 0 uses server defaults. | (optional) defaults to undefined|
 
 
 ### Return type
@@ -244,6 +248,7 @@ const { status, data } = await apiInstance.agentRetrievalServiceGetRequirementTe
 # **agentRetrievalServiceGraphCoverageGaps**
 > GraphCoverageGapsResponse agentRetrievalServiceGraphCoverageGaps()
 
+Returns the subset of the given requirement_ids that have zero live test links. Typically chained after RequirementImpact or RequirementNeighbors to find the uncovered part of a blast radius.
 
 ### Example
 
@@ -298,6 +303,7 @@ const { status, data } = await apiInstance.agentRetrievalServiceGraphCoverageGap
 # **agentRetrievalServiceListCoverageGaps**
 > ListCoverageGapsResponse agentRetrievalServiceListCoverageGaps()
 
+Returns the product\'s branch-effective coverage gaps, ranked for agent triage. Filter by coverage status (none | partial | covered | stale | unknown), component, free-text query, or a feature subtree via root_requirement_id. Paginated via pagination.page_size/page_token.
 
 ### Example
 
@@ -370,6 +376,7 @@ const { status, data } = await apiInstance.agentRetrievalServiceListCoverageGaps
 # **agentRetrievalServiceListRequirementAnchors**
 > ListRequirementAnchorsResponse agentRetrievalServiceListRequirementAnchors()
 
+Returns every (requirement_id, repo_path) pair from repo_file source anchors as seen from branch (empty = main), so a client can map file paths to requirements without fetching full requirements.
 
 ### Example
 
@@ -424,6 +431,7 @@ const { status, data } = await apiInstance.agentRetrievalServiceListRequirementA
 # **agentRetrievalServicePrepareTestGenerationContext**
 > PrepareTestGenerationContextResponse agentRetrievalServicePrepareTestGenerationContext(prepareTestGenerationContextBody)
 
+Aggregates a GetRequirementTestContext pack per requirement_id plus codebase hints (framework, test command, style examples) under a shared token_budget. POST is used for the large request body only — the call computes a context and writes nothing.
 
 ### Example
 
@@ -479,6 +487,7 @@ const { status, data } = await apiInstance.agentRetrievalServicePrepareTestGener
 # **agentRetrievalServiceRequirementImpact**
 > RequirementImpactResponse agentRetrievalServiceRequirementImpact()
 
+Resolves repo_paths to seed requirements via their repo_file source anchors, then expands the requirement graph up to depth hops (default 3) over the given edge_types (empty = all canonical types). Returns the affected requirement ids, the tests covering any of them, and the affected requirements with no live test links.
 
 ### Example
 
@@ -539,6 +548,7 @@ const { status, data } = await apiInstance.agentRetrievalServiceRequirementImpac
 # **agentRetrievalServiceRequirementNeighbors**
 > RequirementNeighborsResponse agentRetrievalServiceRequirementNeighbors()
 
+Traverses the requirement graph from requirement_id up to depth hops (default 1) over the given edge_types (empty = all canonical types) and returns the reachable requirement ids.
 
 ### Example
 
@@ -599,6 +609,7 @@ const { status, data } = await apiInstance.agentRetrievalServiceRequirementNeigh
 # **agentRetrievalServiceResolveFeatureContext**
 > ResolveFeatureContextResponse agentRetrievalServiceResolveFeatureContext()
 
+Retrieves the requirement-graph slices relevant to the free-text objective (and optional changed repo_paths): per feature, the root requirement, the touched nodes with their code anchors, the branch-effective coverage of that slice, and the retrieval signals (vector | fts | anchor) that surfaced the seeds. k bounds each retrieval signal\'s breadth.
 
 ### Example
 
@@ -662,6 +673,7 @@ const { status, data } = await apiInstance.agentRetrievalServiceResolveFeatureCo
 # **agentRetrievalServiceWriteRequirementEdge**
 > WriteRequirementEdgeResponse agentRetrievalServiceWriteRequirementEdge(writeRequirementEdgeBody)
 
+Creates a src->dst edge with exactly one destination endpoint: dst_requirement_id (edge_type depends_on | traces_to) or dst_component_id (edge_type impacts_component). confidence is required — an explicit 0.0 is valid, omitted is not. The edge is attributed to agent_run_id; the created edge id is returned.
 
 ### Example
 

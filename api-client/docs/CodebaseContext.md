@@ -1,5 +1,6 @@
 # CodebaseContext
 
+CodebaseContext carries repository hints for test generation: relevant source/test files, the detected framework and test command, and style/ fixture examples to imitate.
 
 ## Properties
 

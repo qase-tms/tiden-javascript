@@ -13,10 +13,21 @@
  */
 
 
+// May contain unused imports in some cases
+// @ts-ignore
+import type { OnboardingAnswers } from './onboarding-answers';
 
+/**
+ * UpdateUserOnboardingRequest latches onboarding flags: each true field stamps its timestamp; false leaves the flag unchanged. wizard_step and answers are ordinary mutable state: an unset field is left untouched, a set one replaces the stored value.
+ */
 export interface UpdateUserOnboardingRequest {
     'cliVerified'?: boolean;
     'dismissed'?: boolean;
     'completed'?: boolean;
+    /**
+     * Wizard screen to resume at; one of \"\", you-org, start, product, reqgen, repos, agents, plan, done.
+     */
+    'wizardStep'?: string;
+    'answers'?: OnboardingAnswers;
 }
 

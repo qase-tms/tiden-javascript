@@ -1,5 +1,6 @@
 # AgentMemoryContext
 
+AgentMemoryContext is one agent-memory entry surfaced into a context pack.
 
 ## Properties
 

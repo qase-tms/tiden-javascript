@@ -45,7 +45,8 @@ import type { StreamResultOfAgentRunEvent } from '../model';
 export const AgentRunServiceApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * 
+         * Transitions the run to \"cancelled\" and records the reason (default \"cancelled by user\"). Only pending/running runs transition; a run that already finished is returned unchanged, so the call is safe to retry.
+         * @summary Cancels a pending or running agent run.
          * @param {string} id 
          * @param {CancelAgentRunBody} cancelAgentRunBody 
          * @param {*} [options] Override http request option.
@@ -86,7 +87,8 @@ export const AgentRunServiceApiAxiosParamCreator = function (configuration?: Con
             };
         },
         /**
-         * 
+         * Returns the run with its status, trigger, timing, LLM token/cost counters, error summary, the branch it produced (if any), and the structured result when the run reported one.
+         * @summary Fetches one agent run by id.
          * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -122,7 +124,8 @@ export const AgentRunServiceApiAxiosParamCreator = function (configuration?: Con
             };
         },
         /**
-         * 
+         * Returns the run\'s timestamped events (level, kind, message, structured data) with page_size/page_token pagination — the polling alternative to StreamAgentRun.
+         * @summary Lists the event log of an agent run.
          * @param {string} runId 
          * @param {number} [pageSize] 
          * @param {string} [pageToken] 
@@ -168,7 +171,8 @@ export const AgentRunServiceApiAxiosParamCreator = function (configuration?: Con
             };
         },
         /**
-         * 
+         * Returns the config\'s runs, newest first, with page_size/page_token pagination.
+         * @summary Lists the runs of an agent configuration.
          * @param {string} agentConfigId 
          * @param {number} [pageSize] 
          * @param {string} [pageToken] 
@@ -214,7 +218,8 @@ export const AgentRunServiceApiAxiosParamCreator = function (configuration?: Con
             };
         },
         /**
-         * 
+         * Enqueues a new run (status \"pending\") and notifies the agent worker to pick it up; the call returns without waiting for execution. Fails when the config is disabled. inputs_override_json overrides the config\'s inputs_json for this run only, without persisting it. Follow progress via GetAgentRun or ListAgentRunEvents.
+         * @summary Starts a run of an agent configuration.
          * @param {string} agentConfigId 
          * @param {StartAgentRunBody} startAgentRunBody 
          * @param {*} [options] Override http request option.
@@ -255,7 +260,8 @@ export const AgentRunServiceApiAxiosParamCreator = function (configuration?: Con
             };
         },
         /**
-         * 
+         * Server-streams AgentRunEvent messages for the run, resuming after after_event_id when set (empty streams from the beginning). Over REST the gateway delivers the stream as chunked newline-delimited JSON.
+         * @summary Streams an agent run\'s events as they happen.
          * @param {string} runId 
          * @param {string} [afterEventId] resume from this event id (cursor); empty starts from the beginning.
          * @param {*} [options] Override http request option.
@@ -305,7 +311,8 @@ export const AgentRunServiceApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = AgentRunServiceApiAxiosParamCreator(configuration)
     return {
         /**
-         * 
+         * Transitions the run to \"cancelled\" and records the reason (default \"cancelled by user\"). Only pending/running runs transition; a run that already finished is returned unchanged, so the call is safe to retry.
+         * @summary Cancels a pending or running agent run.
          * @param {string} id 
          * @param {CancelAgentRunBody} cancelAgentRunBody 
          * @param {*} [options] Override http request option.
@@ -318,7 +325,8 @@ export const AgentRunServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Returns the run with its status, trigger, timing, LLM token/cost counters, error summary, the branch it produced (if any), and the structured result when the run reported one.
+         * @summary Fetches one agent run by id.
          * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -330,7 +338,8 @@ export const AgentRunServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Returns the run\'s timestamped events (level, kind, message, structured data) with page_size/page_token pagination — the polling alternative to StreamAgentRun.
+         * @summary Lists the event log of an agent run.
          * @param {string} runId 
          * @param {number} [pageSize] 
          * @param {string} [pageToken] 
@@ -344,7 +353,8 @@ export const AgentRunServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Returns the config\'s runs, newest first, with page_size/page_token pagination.
+         * @summary Lists the runs of an agent configuration.
          * @param {string} agentConfigId 
          * @param {number} [pageSize] 
          * @param {string} [pageToken] 
@@ -358,7 +368,8 @@ export const AgentRunServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Enqueues a new run (status \"pending\") and notifies the agent worker to pick it up; the call returns without waiting for execution. Fails when the config is disabled. inputs_override_json overrides the config\'s inputs_json for this run only, without persisting it. Follow progress via GetAgentRun or ListAgentRunEvents.
+         * @summary Starts a run of an agent configuration.
          * @param {string} agentConfigId 
          * @param {StartAgentRunBody} startAgentRunBody 
          * @param {*} [options] Override http request option.
@@ -371,7 +382,8 @@ export const AgentRunServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Server-streams AgentRunEvent messages for the run, resuming after after_event_id when set (empty streams from the beginning). Over REST the gateway delivers the stream as chunked newline-delimited JSON.
+         * @summary Streams an agent run\'s events as they happen.
          * @param {string} runId 
          * @param {string} [afterEventId] resume from this event id (cursor); empty starts from the beginning.
          * @param {*} [options] Override http request option.
@@ -393,7 +405,8 @@ export const AgentRunServiceApiFactory = function (configuration?: Configuration
     const localVarFp = AgentRunServiceApiFp(configuration)
     return {
         /**
-         * 
+         * Transitions the run to \"cancelled\" and records the reason (default \"cancelled by user\"). Only pending/running runs transition; a run that already finished is returned unchanged, so the call is safe to retry.
+         * @summary Cancels a pending or running agent run.
          * @param {AgentRunServiceApiAgentRunServiceCancelAgentRunRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -402,7 +415,8 @@ export const AgentRunServiceApiFactory = function (configuration?: Configuration
             return localVarFp.agentRunServiceCancelAgentRun(requestParameters.id, requestParameters.cancelAgentRunBody, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Returns the run with its status, trigger, timing, LLM token/cost counters, error summary, the branch it produced (if any), and the structured result when the run reported one.
+         * @summary Fetches one agent run by id.
          * @param {AgentRunServiceApiAgentRunServiceGetAgentRunRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -411,7 +425,8 @@ export const AgentRunServiceApiFactory = function (configuration?: Configuration
             return localVarFp.agentRunServiceGetAgentRun(requestParameters.id, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Returns the run\'s timestamped events (level, kind, message, structured data) with page_size/page_token pagination — the polling alternative to StreamAgentRun.
+         * @summary Lists the event log of an agent run.
          * @param {AgentRunServiceApiAgentRunServiceListAgentRunEventsRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -420,7 +435,8 @@ export const AgentRunServiceApiFactory = function (configuration?: Configuration
             return localVarFp.agentRunServiceListAgentRunEvents(requestParameters.runId, requestParameters.pageSize, requestParameters.pageToken, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Returns the config\'s runs, newest first, with page_size/page_token pagination.
+         * @summary Lists the runs of an agent configuration.
          * @param {AgentRunServiceApiAgentRunServiceListAgentRunsRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -429,7 +445,8 @@ export const AgentRunServiceApiFactory = function (configuration?: Configuration
             return localVarFp.agentRunServiceListAgentRuns(requestParameters.agentConfigId, requestParameters.pageSize, requestParameters.pageToken, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Enqueues a new run (status \"pending\") and notifies the agent worker to pick it up; the call returns without waiting for execution. Fails when the config is disabled. inputs_override_json overrides the config\'s inputs_json for this run only, without persisting it. Follow progress via GetAgentRun or ListAgentRunEvents.
+         * @summary Starts a run of an agent configuration.
          * @param {AgentRunServiceApiAgentRunServiceStartAgentRunRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -438,7 +455,8 @@ export const AgentRunServiceApiFactory = function (configuration?: Configuration
             return localVarFp.agentRunServiceStartAgentRun(requestParameters.agentConfigId, requestParameters.startAgentRunBody, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Server-streams AgentRunEvent messages for the run, resuming after after_event_id when set (empty streams from the beginning). Over REST the gateway delivers the stream as chunked newline-delimited JSON.
+         * @summary Streams an agent run\'s events as they happen.
          * @param {AgentRunServiceApiAgentRunServiceStreamAgentRunRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -513,7 +531,8 @@ export interface AgentRunServiceApiAgentRunServiceStreamAgentRunRequest {
  */
 export class AgentRunServiceApi extends BaseAPI {
     /**
-     * 
+     * Transitions the run to \"cancelled\" and records the reason (default \"cancelled by user\"). Only pending/running runs transition; a run that already finished is returned unchanged, so the call is safe to retry.
+     * @summary Cancels a pending or running agent run.
      * @param {AgentRunServiceApiAgentRunServiceCancelAgentRunRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -523,7 +542,8 @@ export class AgentRunServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Returns the run with its status, trigger, timing, LLM token/cost counters, error summary, the branch it produced (if any), and the structured result when the run reported one.
+     * @summary Fetches one agent run by id.
      * @param {AgentRunServiceApiAgentRunServiceGetAgentRunRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -533,7 +553,8 @@ export class AgentRunServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Returns the run\'s timestamped events (level, kind, message, structured data) with page_size/page_token pagination — the polling alternative to StreamAgentRun.
+     * @summary Lists the event log of an agent run.
      * @param {AgentRunServiceApiAgentRunServiceListAgentRunEventsRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -543,7 +564,8 @@ export class AgentRunServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Returns the config\'s runs, newest first, with page_size/page_token pagination.
+     * @summary Lists the runs of an agent configuration.
      * @param {AgentRunServiceApiAgentRunServiceListAgentRunsRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -553,7 +575,8 @@ export class AgentRunServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Enqueues a new run (status \"pending\") and notifies the agent worker to pick it up; the call returns without waiting for execution. Fails when the config is disabled. inputs_override_json overrides the config\'s inputs_json for this run only, without persisting it. Follow progress via GetAgentRun or ListAgentRunEvents.
+     * @summary Starts a run of an agent configuration.
      * @param {AgentRunServiceApiAgentRunServiceStartAgentRunRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -563,7 +586,8 @@ export class AgentRunServiceApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Server-streams AgentRunEvent messages for the run, resuming after after_event_id when set (empty streams from the beginning). Over REST the gateway delivers the stream as chunked newline-delimited JSON.
+     * @summary Streams an agent run\'s events as they happen.
      * @param {AgentRunServiceApiAgentRunServiceStreamAgentRunRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
