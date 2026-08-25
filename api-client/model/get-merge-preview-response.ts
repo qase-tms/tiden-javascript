@@ -21,6 +21,9 @@ import type { Component } from './component';
 import type { ComponentMergeModification } from './component-merge-modification';
 // May contain unused imports in some cases
 // @ts-ignore
+import type { MergeIntentSessionState } from './merge-intent-session-state';
+// May contain unused imports in some cases
+// @ts-ignore
 import type { MergeModification } from './merge-modification';
 // May contain unused imports in some cases
 // @ts-ignore
@@ -41,7 +44,7 @@ export interface GetMergePreviewResponse {
     'deletions'?: Array<Requirement>;
     'stats'?: MergeStats;
     /**
-     * Test-side merge effects (Phase 4 extension). Empty when the branch holds no test changes.
+     * Test-side merge effects. Empty when the branch holds no test changes.
      */
     'testAdditions'?: Array<Test>;
     'testModifications'?: Array<TestMergeModification>;
@@ -52,5 +55,6 @@ export interface GetMergePreviewResponse {
     'componentAdditions'?: Array<Component>;
     'componentModifications'?: Array<ComponentMergeModification>;
     'componentDeletions'?: Array<Component>;
+    'intentSession'?: MergeIntentSessionState;
 }
 

@@ -12,7 +12,7 @@ Name | Type | Description | Notes
 **edgeType** | **string** | edge_type must be \&quot;depends_on\&quot;/\&quot;traces_to\&quot; (req→req) or \&quot;impacts_component\&quot; (req→component). | [optional] [default to undefined]
 **confidence** | **number** | confidence must be provided; explicit 0.0 is valid, omitted is not. | [optional] [default to undefined]
 **rationale** | **string** |  | [optional] [default to undefined]
-**dstComponentId** | **string** | dst_component_id sets a req→component endpoint (shift-left v3). Mutually exclusive with dst_requirement_id. | [optional] [default to undefined]
+**dstComponentId** | **string** | dst_component_id sets a req→component endpoint. Mutually exclusive with dst_requirement_id. | [optional] [default to undefined]
 
 ## Example
 

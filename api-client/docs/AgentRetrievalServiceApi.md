@@ -4,8 +4,11 @@ All URIs are relative to *https://api.tiden.ai*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
+|[**agentRetrievalServiceAdvanceRepoWatermark**](#agentretrievalserviceadvancerepowatermark) | **POST** /v1/products/{productId}/repo-watermark:advance | Advances the drift watermark of one repository.|
 |[**agentRetrievalServiceAttributeChangedFiles**](#agentretrievalserviceattributechangedfiles) | **POST** /v1/products/{productId}/requirements/{requirementId}:attribute-changed-files | Attributes a requirement\&#39;s changed files to owning components.|
 |[**agentRetrievalServiceDeclareRequirementEdgeIntent**](#agentretrievalservicedeclarerequirementedgeintent) | **POST** /v1/products/{productId}/requirement-edge-intents | Records a deferred graph edge for endpoints not yet on main.|
+|[**agentRetrievalServiceGetIssueFixContext**](#agentretrievalservicegetissuefixcontext) | **GET** /v1/products/{productId}/issues/{issueId}/fix-context | Returns everything needed to fix one error, in a single call: the issue, its latest occurrence with symbolicated stack frames, the repository files those frames implicate, where the error is happening by environment, and — for each requirement those files implement — whether a test already covers it.|
+|[**agentRetrievalServiceGetRepoWatermark**](#agentretrievalservicegetrepowatermark) | **GET** /v1/products/{productId}/repo-watermark | Returns the drift watermark of one repository.|
 |[**agentRetrievalServiceGetRequirementGraph**](#agentretrievalservicegetrequirementgraph) | **GET** /v1/products/{productId}/requirement-graph | Returns the product\&#39;s full requirement graph.|
 |[**agentRetrievalServiceGetRequirementTestContext**](#agentretrievalservicegetrequirementtestcontext) | **GET** /v1/products/{productId}/requirements/{requirementId}/test-context | Builds the full test-authoring context pack for one requirement.|
 |[**agentRetrievalServiceGraphCoverageGaps**](#agentretrievalservicegraphcoveragegaps) | **GET** /v1/products/{productId}/requirements/graph-coverage-gaps | Filters a requirement set down to those without test coverage.|
@@ -16,6 +19,62 @@ All URIs are relative to *https://api.tiden.ai*
 |[**agentRetrievalServiceRequirementNeighbors**](#agentretrievalservicerequirementneighbors) | **GET** /v1/products/{productId}/requirements/{requirementId}/neighbors | Lists the graph neighbors of one requirement.|
 |[**agentRetrievalServiceResolveFeatureContext**](#agentretrievalserviceresolvefeaturecontext) | **GET** /v1/products/{productId}/feature-context | Resolves a coding objective into feature-rooted requirement context.|
 |[**agentRetrievalServiceWriteRequirementEdge**](#agentretrievalservicewriterequirementedge) | **POST** /v1/products/{productId}/requirement-edges | Writes one semantic edge into the requirement graph.|
+
+# **agentRetrievalServiceAdvanceRepoWatermark**
+> AdvanceRepoWatermarkResponse agentRetrievalServiceAdvanceRepoWatermark(advanceRepoWatermarkBody)
+
+reason baseline inserts the first watermark and never overwrites; empty_sync is a compare-and-set on expected_current_sha (a delta run that found nothing requirement-worthy); bootstrap writes unconditionally (an explicit full re-generation). The sync_merge advance happens server-side when a sync branch merges, and ingest happens inside the codebase agent — both are rejected here. advanced=false means a lost ordering race, never an error: the watermark can under-advance and self-heal, but never move backwards.
+
+### Example
+
+```typescript
+import {
+    AgentRetrievalServiceApi,
+    Configuration,
+    AdvanceRepoWatermarkBody
+} from '@tiden/api-client';
+
+const configuration = new Configuration();
+const apiInstance = new AgentRetrievalServiceApi(configuration);
+
+let productId: string; // (default to undefined)
+let advanceRepoWatermarkBody: AdvanceRepoWatermarkBody; //
+
+const { status, data } = await apiInstance.agentRetrievalServiceAdvanceRepoWatermark(
+    productId,
+    advanceRepoWatermarkBody
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **advanceRepoWatermarkBody** | **AdvanceRepoWatermarkBody**|  | |
+| **productId** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+**AdvanceRepoWatermarkResponse**
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | A successful response. |  -  |
+|**0** | An unexpected error response. |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **agentRetrievalServiceAttributeChangedFiles**
 > AttributeChangedFilesResponse agentRetrievalServiceAttributeChangedFiles(attributeChangedFilesBody)
@@ -121,6 +180,122 @@ const { status, data } = await apiInstance.agentRetrievalServiceDeclareRequireme
 ### HTTP request headers
 
  - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | A successful response. |  -  |
+|**0** | An unexpected error response. |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **agentRetrievalServiceGetIssueFixContext**
+> GetIssueFixContextResponse agentRetrievalServiceGetIssueFixContext()
+
+Prefer this over stitching together GetIssue, GetIssueEventStats and requirement lookups: it is one round-trip, and it reports which file path matched which requirement so a wrong match is visible rather than silent.
+
+### Example
+
+```typescript
+import {
+    AgentRetrievalServiceApi,
+    Configuration
+} from '@tiden/api-client';
+
+const configuration = new Configuration();
+const apiInstance = new AgentRetrievalServiceApi(configuration);
+
+let productId: string; // (default to undefined)
+let issueId: string; // (default to undefined)
+let branch: string; //branch scopes the requirement lookup to a branch\'s effective view. \"\" = main. (optional) (default to undefined)
+let maxFrames: number; //max_frames bounds how many stack frames come back. <= 0 uses the server default (10); the cap is 50. (optional) (default to undefined)
+
+const { status, data } = await apiInstance.agentRetrievalServiceGetIssueFixContext(
+    productId,
+    issueId,
+    branch,
+    maxFrames
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **productId** | [**string**] |  | defaults to undefined|
+| **issueId** | [**string**] |  | defaults to undefined|
+| **branch** | [**string**] | branch scopes the requirement lookup to a branch\&#39;s effective view. \&quot;\&quot; &#x3D; main. | (optional) defaults to undefined|
+| **maxFrames** | [**number**] | max_frames bounds how many stack frames come back. &lt;&#x3D; 0 uses the server default (10); the cap is 50. | (optional) defaults to undefined|
+
+
+### Return type
+
+**GetIssueFixContextResponse**
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | A successful response. |  -  |
+|**0** | An unexpected error response. |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **agentRetrievalServiceGetRepoWatermark**
+> GetRepoWatermarkResponse agentRetrievalServiceGetRepoWatermark()
+
+The watermark is the git commit the requirements tree on main reflects the repository up to (\"github.com/org/repo\" canonical id). `tiden intent start` compares it against the repo\'s actual main HEAD to detect drift — commits that reached the code outside the intent loop. An unset watermark means the repository was never reconciled; the client baselines it.
+
+### Example
+
+```typescript
+import {
+    AgentRetrievalServiceApi,
+    Configuration
+} from '@tiden/api-client';
+
+const configuration = new Configuration();
+const apiInstance = new AgentRetrievalServiceApi(configuration);
+
+let productId: string; // (default to undefined)
+let repository: string; //Canonical repo id (\"github.com/org/repo\" — the components.repository format), never a local path and never a clone URL. (optional) (default to undefined)
+
+const { status, data } = await apiInstance.agentRetrievalServiceGetRepoWatermark(
+    productId,
+    repository
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **productId** | [**string**] |  | defaults to undefined|
+| **repository** | [**string**] | Canonical repo id (\&quot;github.com/org/repo\&quot; — the components.repository format), never a local path and never a clone URL. | (optional) defaults to undefined|
+
+
+### Return type
+
+**GetRepoWatermarkResponse**
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 
@@ -504,12 +679,16 @@ let productId: string; // (default to undefined)
 let repoPaths: Array<string>; //repo_paths is the set of changed file paths (e.g. from a merged PR). The backend resolves these to seeded requirement IDs via requirement_sources. (optional) (default to undefined)
 let depth: number; //depth controls how many hops the graph traversal expands beyond the seeds. Defaults to 3 on the server if <= 0. (optional) (default to undefined)
 let edgeTypes: Array<string>; //edge_types filters which edge types to traverse. Empty = all canonical types. (optional) (default to undefined)
+let repository: string; //repository scopes repo_paths to one repository: the canonical repo id (e.g. \"github.com/acme/backend\") OR a local checkout alias resolved via component repository_aliases — same semantics as ChangedFile.repository.  Anchors carry only a repo-relative path, so identical paths in different repositories (\".github/workflows/ci.yml\", \"Makefile\", \"CLAUDE.md\") collide. When set, a seed is kept only if its requirement\'s component resolves to this repository; requirements with no component still seed (fail-open) and are counted in ImpactCoverage.unverified_repository_seeds.  Empty = no repository filtering (pre-existing behaviour). (optional) (default to undefined)
+let minConfidence: number; //min_confidence bounds which edges the traversal may step onto: a NULL confidence always passes (parent edges carry none, so the requirement tree is never pruned), and a derived edge (co_anchored/covers, confidence = 1/fan-out) below the floor is not admitted. Default 0 = no floor, the pre-existing unbounded behaviour — every caller that omits this field sees byte-identical results to before it existed. A caller that wants to bound a hub-file\'s fan-out (e.g. the intent-loop close gate) sets it explicitly; impact-analysis callers that want the deliberately broad radius leave it at 0. (optional) (default to undefined)
 
 const { status, data } = await apiInstance.agentRetrievalServiceRequirementImpact(
     productId,
     repoPaths,
     depth,
-    edgeTypes
+    edgeTypes,
+    repository,
+    minConfidence
 );
 ```
 
@@ -521,6 +700,8 @@ const { status, data } = await apiInstance.agentRetrievalServiceRequirementImpac
 | **repoPaths** | **Array&lt;string&gt;** | repo_paths is the set of changed file paths (e.g. from a merged PR). The backend resolves these to seeded requirement IDs via requirement_sources. | (optional) defaults to undefined|
 | **depth** | [**number**] | depth controls how many hops the graph traversal expands beyond the seeds. Defaults to 3 on the server if &lt;&#x3D; 0. | (optional) defaults to undefined|
 | **edgeTypes** | **Array&lt;string&gt;** | edge_types filters which edge types to traverse. Empty &#x3D; all canonical types. | (optional) defaults to undefined|
+| **repository** | [**string**] | repository scopes repo_paths to one repository: the canonical repo id (e.g. \&quot;github.com/acme/backend\&quot;) OR a local checkout alias resolved via component repository_aliases — same semantics as ChangedFile.repository.  Anchors carry only a repo-relative path, so identical paths in different repositories (\&quot;.github/workflows/ci.yml\&quot;, \&quot;Makefile\&quot;, \&quot;CLAUDE.md\&quot;) collide. When set, a seed is kept only if its requirement\&#39;s component resolves to this repository; requirements with no component still seed (fail-open) and are counted in ImpactCoverage.unverified_repository_seeds.  Empty &#x3D; no repository filtering (pre-existing behaviour). | (optional) defaults to undefined|
+| **minConfidence** | [**number**] | min_confidence bounds which edges the traversal may step onto: a NULL confidence always passes (parent edges carry none, so the requirement tree is never pruned), and a derived edge (co_anchored/covers, confidence &#x3D; 1/fan-out) below the floor is not admitted. Default 0 &#x3D; no floor, the pre-existing unbounded behaviour — every caller that omits this field sees byte-identical results to before it existed. A caller that wants to bound a hub-file\&#39;s fan-out (e.g. the intent-loop close gate) sets it explicitly; impact-analysis callers that want the deliberately broad radius leave it at 0. | (optional) defaults to undefined|
 
 
 ### Return type

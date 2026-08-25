@@ -13,6 +13,9 @@
  */
 
 
+// May contain unused imports in some cases
+// @ts-ignore
+import type { RequirementTier } from './requirement-tier';
 
 /**
  * RequirementRef is a feature-root header: the requirement the seeds resolve up to, carrying its \"why\" (description).
@@ -22,5 +25,12 @@ export interface RequirementRef {
     'seqNum'?: number;
     'title'?: string;
     'description'?: string;
+    'tier'?: RequirementTier;
+    /**
+     * resources are the root\'s branch-effective repo_file anchor paths, same meaning as TouchedNode.resources (a root can carry the session\'s evidence).
+     */
+    'resources'?: Array<string>;
 }
+
+
 

@@ -18,8 +18,18 @@ export interface CreateBranchBody {
     'name'?: string;
     'description'?: string;
     /**
-     * Set by the agent worker when an agent run is creating the branch on behalf of a user. Surfaced on the Branch message + UI banner.
+     * Set when an agent run is creating the branch on behalf of a user. Surfaced on the Branch message + UI banner.
      */
     'createdByAgentRunId'?: string;
+    /**
+     * Sync metadata (drift-sync v1): a sync/<...> branch records the git range its requirement delta covered — repository is the canonical repo id, base = the repo watermark the delta was computed from, target = repo main HEAD at sync time. On merge, the watermark advances base→target (CAS). Set all three or none; leave unset on every non-sync branch.
+     */
+    'syncRepository'?: string;
+    'syncBaseSha'?: string;
+    'syncTargetSha'?: string;
+    /**
+     * Coding agent creating this branch on the caller\'s behalf (e.g. \"claude-code\", \"codex\"), so name + description + agent can be set in one explicit create. Validated server-side against a fixed allowlist; an unrecognized value is stored as empty string, never as free text.
+     */
+    'createdByAgent'?: string;
 }
 

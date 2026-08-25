@@ -14,6 +14,9 @@
 
 
 
+/**
+ * - CRITERION_STATUS_NOT_APPLICABLE: e.g. prod issues (Stream B) on branch scope
+ */
 
 export const CriterionStatus = {
     CriterionStatusUnspecified: 'CRITERION_STATUS_UNSPECIFIED',

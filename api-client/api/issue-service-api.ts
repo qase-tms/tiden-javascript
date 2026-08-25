@@ -22,20 +22,82 @@ import { DUMMY_BASE_URL, assertParamExists, setApiKeyToObject, setBasicAuthToObj
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS, type RequestArgs, BaseAPI, RequiredError, operationServerMap } from '../base';
 // @ts-ignore
+import type { BulkUpdateIssueStatusBody } from '../model';
+// @ts-ignore
+import type { BulkUpdateIssueStatusResponse } from '../model';
+// @ts-ignore
 import type { ConfirmSourceMapUploadResponse } from '../model';
 // @ts-ignore
 import type { CreateSourceMapUploadBody } from '../model';
 // @ts-ignore
 import type { CreateSourceMapUploadResponse } from '../model';
 // @ts-ignore
+import type { GetIssueEventResponse } from '../model';
+// @ts-ignore
+import type { GetIssueEventStatsResponse } from '../model';
+// @ts-ignore
+import type { GetIssueResponse } from '../model';
+// @ts-ignore
+import type { ListIssueEventsResponse } from '../model';
+// @ts-ignore
+import type { ListIssuesResponse } from '../model';
+// @ts-ignore
+import type { ListReleaseIssuesResponse } from '../model';
+// @ts-ignore
 import type { Status } from '../model';
+// @ts-ignore
+import type { UpdateIssueStatusBody } from '../model';
+// @ts-ignore
+import type { UpdateIssueStatusResponse } from '../model';
 /**
  * IssueServiceApi - axios parameter creator
  */
 export const IssueServiceApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * Validates the staged object and atomically promotes it to live, so error events carrying the same debug_id resolve to original sources. Returns metadata only — never a download URL (source maps stay private). Billing-exempt: addressed by source-map id (the product-gated entry point is CreateSourceMapUpload); source maps are observability infra, not a billed cap.
+         * 
+         * @summary Sets the same status on many issues at once. Every id must belong to the given product.
+         * @param {string} productId 
+         * @param {BulkUpdateIssueStatusBody} bulkUpdateIssueStatusBody 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        issueServiceBulkUpdateIssueStatus: async (productId: string, bulkUpdateIssueStatusBody: BulkUpdateIssueStatusBody, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'productId' is not null or undefined
+            assertParamExists('issueServiceBulkUpdateIssueStatus', 'productId', productId)
+            // verify required parameter 'bulkUpdateIssueStatusBody' is not null or undefined
+            assertParamExists('issueServiceBulkUpdateIssueStatus', 'bulkUpdateIssueStatusBody', bulkUpdateIssueStatusBody)
+            const localVarPath = `/v1/products/{productId}/issues:bulkSetStatus`
+                .replace(`{${"productId"}}`, encodeURIComponent(String(productId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication BearerAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(bulkUpdateIssueStatusBody, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Validates the staged object and atomically promotes it to live, so error events carrying the same debug_id resolve to original sources. Returns metadata only — never a download URL (source maps stay private).
          * @summary Finalizes a source-map upload (phase 2 of 2).
          * @param {string} id 
          * @param {object} body 
@@ -118,6 +180,344 @@ export const IssueServiceApiAxiosParamCreator = function (configuration?: Config
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * The occurrence carries server-resolved (symbolicated) stack frames with the surrounding source lines, which is what identifies the code to fix.
+         * @summary Gets one issue together with its most recent occurrence.
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        issueServiceGetIssue: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('issueServiceGetIssue', 'id', id)
+            const localVarPath = `/v1/issues/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication BearerAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Use this when the occurrence that matters is not the most recent one — for example the production occurrence of an issue whose latest event came from staging.
+         * @summary Gets one occurrence of an issue with symbolicated stack frames.
+         * @param {string} id issue id
+         * @param {string} eventId issue_events.id (row id, not the SDK event_id)
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        issueServiceGetIssueEvent: async (id: string, eventId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('issueServiceGetIssueEvent', 'id', id)
+            // verify required parameter 'eventId' is not null or undefined
+            assertParamExists('issueServiceGetIssueEvent', 'eventId', eventId)
+            const localVarPath = `/v1/issues/{id}/events/{eventId}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)))
+                .replace(`{${"eventId"}}`, encodeURIComponent(String(eventId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication BearerAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * An issue carries no environment of its own — environment lives on each occurrence — so this is how you tell a production outage from dev noise.
+         * @summary Returns occurrence statistics for one issue: counts bucketed over time plus a per-environment split.
+         * @param {string} id issue id
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        issueServiceGetIssueEventStats: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('issueServiceGetIssueEventStats', 'id', id)
+            const localVarPath = `/v1/issues/{id}/stats`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication BearerAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Stack frames are not resolved here — fetch a single occurrence for those.
+         * @summary Lists an issue\'s individual occurrences, most recent first.
+         * @param {string} id issue id
+         * @param {number} [paginationPageSize] 
+         * @param {string} [paginationPageToken] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        issueServiceListIssueEvents: async (id: string, paginationPageSize?: number, paginationPageToken?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('issueServiceListIssueEvents', 'id', id)
+            const localVarPath = `/v1/issues/{id}/events`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication BearerAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            if (paginationPageSize !== undefined) {
+                localVarQueryParameter['pagination.pageSize'] = paginationPageSize;
+            }
+
+            if (paginationPageToken !== undefined) {
+                localVarQueryParameter['pagination.pageToken'] = paginationPageToken;
+            }
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * An issue is a group of error events sharing a fingerprint. Filter by status, environment, release, component, platform, level, and a trailing last-seen window; sort by last_seen (default), first_seen, or times_seen. Results are paginated with an opaque keyset cursor carried in pagination.page_token.
+         * @summary Lists a product\'s issues, most recently active first.
+         * @param {string} productId 
+         * @param {string} [status] unresolved|resolved|ignored, \&quot;\&quot; &#x3D; all
+         * @param {string} [environmentId] optional filter
+         * @param {string} [releaseId] optional filter
+         * @param {string} [sort] last_seen|first_seen|times_seen
+         * @param {number} [paginationPageSize] 
+         * @param {string} [paginationPageToken] 
+         * @param {string} [componentId] optional: filter by attributed component
+         * @param {Array<string>} [platforms] optional: filter by platform (platform dropdown, OR within)
+         * @param {Array<string>} [levels] optional: filter by level (token bar, OR within)
+         * @param {string} [period] optional last-seen window: 3m|1h|12h|1d|7d|30d (\&quot;\&quot; &#x3D; all time)
+         * @param {string} [search] optional: case-insensitive match on title/culprit
+         * @param {string} [signal] optional saved-view predicate: blocking|spiking|new|regressed
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        issueServiceListIssues: async (productId: string, status?: string, environmentId?: string, releaseId?: string, sort?: string, paginationPageSize?: number, paginationPageToken?: string, componentId?: string, platforms?: Array<string>, levels?: Array<string>, period?: string, search?: string, signal?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'productId' is not null or undefined
+            assertParamExists('issueServiceListIssues', 'productId', productId)
+            const localVarPath = `/v1/products/{productId}/issues`
+                .replace(`{${"productId"}}`, encodeURIComponent(String(productId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication BearerAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            if (status !== undefined) {
+                localVarQueryParameter['status'] = status;
+            }
+
+            if (environmentId !== undefined) {
+                localVarQueryParameter['environmentId'] = environmentId;
+            }
+
+            if (releaseId !== undefined) {
+                localVarQueryParameter['releaseId'] = releaseId;
+            }
+
+            if (sort !== undefined) {
+                localVarQueryParameter['sort'] = sort;
+            }
+
+            if (paginationPageSize !== undefined) {
+                localVarQueryParameter['pagination.pageSize'] = paginationPageSize;
+            }
+
+            if (paginationPageToken !== undefined) {
+                localVarQueryParameter['pagination.pageToken'] = paginationPageToken;
+            }
+
+            if (componentId !== undefined) {
+                localVarQueryParameter['componentId'] = componentId;
+            }
+
+            if (platforms) {
+                localVarQueryParameter['platforms'] = platforms;
+            }
+
+            if (levels) {
+                localVarQueryParameter['levels'] = levels;
+            }
+
+            if (period !== undefined) {
+                localVarQueryParameter['period'] = period;
+            }
+
+            if (search !== undefined) {
+                localVarQueryParameter['search'] = search;
+            }
+
+            if (signal !== undefined) {
+                localVarQueryParameter['signal'] = signal;
+            }
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Returns the issues attributable to a release: those first seen in it, plus a count of every issue seen during it. The post-deploy regression check.
+         * @param {string} releaseId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        issueServiceListReleaseIssues: async (releaseId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'releaseId' is not null or undefined
+            assertParamExists('issueServiceListReleaseIssues', 'releaseId', releaseId)
+            const localVarPath = `/v1/releases/{releaseId}/issues`
+                .replace(`{${"releaseId"}}`, encodeURIComponent(String(releaseId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication BearerAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Every transition is recorded with its actor and is reversible. A resolved issue that recurs is reopened automatically and stamped as a regression.
+         * @summary Sets one issue\'s status to unresolved, resolved, or ignored.
+         * @param {string} id 
+         * @param {UpdateIssueStatusBody} updateIssueStatusBody 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        issueServiceUpdateIssueStatus: async (id: string, updateIssueStatusBody: UpdateIssueStatusBody, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('issueServiceUpdateIssueStatus', 'id', id)
+            // verify required parameter 'updateIssueStatusBody' is not null or undefined
+            assertParamExists('issueServiceUpdateIssueStatus', 'updateIssueStatusBody', updateIssueStatusBody)
+            const localVarPath = `/v1/issues/{id}:setStatus`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication BearerAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(updateIssueStatusBody, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
@@ -128,7 +528,21 @@ export const IssueServiceApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = IssueServiceApiAxiosParamCreator(configuration)
     return {
         /**
-         * Validates the staged object and atomically promotes it to live, so error events carrying the same debug_id resolve to original sources. Returns metadata only — never a download URL (source maps stay private). Billing-exempt: addressed by source-map id (the product-gated entry point is CreateSourceMapUpload); source maps are observability infra, not a billed cap.
+         * 
+         * @summary Sets the same status on many issues at once. Every id must belong to the given product.
+         * @param {string} productId 
+         * @param {BulkUpdateIssueStatusBody} bulkUpdateIssueStatusBody 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async issueServiceBulkUpdateIssueStatus(productId: string, bulkUpdateIssueStatusBody: BulkUpdateIssueStatusBody, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<BulkUpdateIssueStatusResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.issueServiceBulkUpdateIssueStatus(productId, bulkUpdateIssueStatusBody, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['IssueServiceApi.issueServiceBulkUpdateIssueStatus']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Validates the staged object and atomically promotes it to live, so error events carrying the same debug_id resolve to original sources. Returns metadata only — never a download URL (source maps stay private).
          * @summary Finalizes a source-map upload (phase 2 of 2).
          * @param {string} id 
          * @param {object} body 
@@ -155,6 +569,113 @@ export const IssueServiceApiFp = function(configuration?: Configuration) {
             const localVarOperationServerBasePath = operationServerMap['IssueServiceApi.issueServiceCreateSourceMapUpload']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
+        /**
+         * The occurrence carries server-resolved (symbolicated) stack frames with the surrounding source lines, which is what identifies the code to fix.
+         * @summary Gets one issue together with its most recent occurrence.
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async issueServiceGetIssue(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetIssueResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.issueServiceGetIssue(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['IssueServiceApi.issueServiceGetIssue']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Use this when the occurrence that matters is not the most recent one — for example the production occurrence of an issue whose latest event came from staging.
+         * @summary Gets one occurrence of an issue with symbolicated stack frames.
+         * @param {string} id issue id
+         * @param {string} eventId issue_events.id (row id, not the SDK event_id)
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async issueServiceGetIssueEvent(id: string, eventId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetIssueEventResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.issueServiceGetIssueEvent(id, eventId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['IssueServiceApi.issueServiceGetIssueEvent']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * An issue carries no environment of its own — environment lives on each occurrence — so this is how you tell a production outage from dev noise.
+         * @summary Returns occurrence statistics for one issue: counts bucketed over time plus a per-environment split.
+         * @param {string} id issue id
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async issueServiceGetIssueEventStats(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetIssueEventStatsResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.issueServiceGetIssueEventStats(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['IssueServiceApi.issueServiceGetIssueEventStats']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Stack frames are not resolved here — fetch a single occurrence for those.
+         * @summary Lists an issue\'s individual occurrences, most recent first.
+         * @param {string} id issue id
+         * @param {number} [paginationPageSize] 
+         * @param {string} [paginationPageToken] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async issueServiceListIssueEvents(id: string, paginationPageSize?: number, paginationPageToken?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ListIssueEventsResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.issueServiceListIssueEvents(id, paginationPageSize, paginationPageToken, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['IssueServiceApi.issueServiceListIssueEvents']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * An issue is a group of error events sharing a fingerprint. Filter by status, environment, release, component, platform, level, and a trailing last-seen window; sort by last_seen (default), first_seen, or times_seen. Results are paginated with an opaque keyset cursor carried in pagination.page_token.
+         * @summary Lists a product\'s issues, most recently active first.
+         * @param {string} productId 
+         * @param {string} [status] unresolved|resolved|ignored, \&quot;\&quot; &#x3D; all
+         * @param {string} [environmentId] optional filter
+         * @param {string} [releaseId] optional filter
+         * @param {string} [sort] last_seen|first_seen|times_seen
+         * @param {number} [paginationPageSize] 
+         * @param {string} [paginationPageToken] 
+         * @param {string} [componentId] optional: filter by attributed component
+         * @param {Array<string>} [platforms] optional: filter by platform (platform dropdown, OR within)
+         * @param {Array<string>} [levels] optional: filter by level (token bar, OR within)
+         * @param {string} [period] optional last-seen window: 3m|1h|12h|1d|7d|30d (\&quot;\&quot; &#x3D; all time)
+         * @param {string} [search] optional: case-insensitive match on title/culprit
+         * @param {string} [signal] optional saved-view predicate: blocking|spiking|new|regressed
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async issueServiceListIssues(productId: string, status?: string, environmentId?: string, releaseId?: string, sort?: string, paginationPageSize?: number, paginationPageToken?: string, componentId?: string, platforms?: Array<string>, levels?: Array<string>, period?: string, search?: string, signal?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ListIssuesResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.issueServiceListIssues(productId, status, environmentId, releaseId, sort, paginationPageSize, paginationPageToken, componentId, platforms, levels, period, search, signal, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['IssueServiceApi.issueServiceListIssues']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Returns the issues attributable to a release: those first seen in it, plus a count of every issue seen during it. The post-deploy regression check.
+         * @param {string} releaseId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async issueServiceListReleaseIssues(releaseId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ListReleaseIssuesResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.issueServiceListReleaseIssues(releaseId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['IssueServiceApi.issueServiceListReleaseIssues']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Every transition is recorded with its actor and is reversible. A resolved issue that recurs is reopened automatically and stamped as a regression.
+         * @summary Sets one issue\'s status to unresolved, resolved, or ignored.
+         * @param {string} id 
+         * @param {UpdateIssueStatusBody} updateIssueStatusBody 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async issueServiceUpdateIssueStatus(id: string, updateIssueStatusBody: UpdateIssueStatusBody, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UpdateIssueStatusResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.issueServiceUpdateIssueStatus(id, updateIssueStatusBody, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['IssueServiceApi.issueServiceUpdateIssueStatus']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
     }
 };
 
@@ -165,7 +686,17 @@ export const IssueServiceApiFactory = function (configuration?: Configuration, b
     const localVarFp = IssueServiceApiFp(configuration)
     return {
         /**
-         * Validates the staged object and atomically promotes it to live, so error events carrying the same debug_id resolve to original sources. Returns metadata only — never a download URL (source maps stay private). Billing-exempt: addressed by source-map id (the product-gated entry point is CreateSourceMapUpload); source maps are observability infra, not a billed cap.
+         * 
+         * @summary Sets the same status on many issues at once. Every id must belong to the given product.
+         * @param {IssueServiceApiIssueServiceBulkUpdateIssueStatusRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        issueServiceBulkUpdateIssueStatus(requestParameters: IssueServiceApiIssueServiceBulkUpdateIssueStatusRequest, options?: RawAxiosRequestConfig): AxiosPromise<BulkUpdateIssueStatusResponse> {
+            return localVarFp.issueServiceBulkUpdateIssueStatus(requestParameters.productId, requestParameters.bulkUpdateIssueStatusBody, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Validates the staged object and atomically promotes it to live, so error events carrying the same debug_id resolve to original sources. Returns metadata only — never a download URL (source maps stay private).
          * @summary Finalizes a source-map upload (phase 2 of 2).
          * @param {IssueServiceApiIssueServiceConfirmSourceMapUploadRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
@@ -184,8 +715,87 @@ export const IssueServiceApiFactory = function (configuration?: Configuration, b
         issueServiceCreateSourceMapUpload(requestParameters: IssueServiceApiIssueServiceCreateSourceMapUploadRequest, options?: RawAxiosRequestConfig): AxiosPromise<CreateSourceMapUploadResponse> {
             return localVarFp.issueServiceCreateSourceMapUpload(requestParameters.productId, requestParameters.createSourceMapUploadBody, options).then((request) => request(axios, basePath));
         },
+        /**
+         * The occurrence carries server-resolved (symbolicated) stack frames with the surrounding source lines, which is what identifies the code to fix.
+         * @summary Gets one issue together with its most recent occurrence.
+         * @param {IssueServiceApiIssueServiceGetIssueRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        issueServiceGetIssue(requestParameters: IssueServiceApiIssueServiceGetIssueRequest, options?: RawAxiosRequestConfig): AxiosPromise<GetIssueResponse> {
+            return localVarFp.issueServiceGetIssue(requestParameters.id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Use this when the occurrence that matters is not the most recent one — for example the production occurrence of an issue whose latest event came from staging.
+         * @summary Gets one occurrence of an issue with symbolicated stack frames.
+         * @param {IssueServiceApiIssueServiceGetIssueEventRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        issueServiceGetIssueEvent(requestParameters: IssueServiceApiIssueServiceGetIssueEventRequest, options?: RawAxiosRequestConfig): AxiosPromise<GetIssueEventResponse> {
+            return localVarFp.issueServiceGetIssueEvent(requestParameters.id, requestParameters.eventId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * An issue carries no environment of its own — environment lives on each occurrence — so this is how you tell a production outage from dev noise.
+         * @summary Returns occurrence statistics for one issue: counts bucketed over time plus a per-environment split.
+         * @param {IssueServiceApiIssueServiceGetIssueEventStatsRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        issueServiceGetIssueEventStats(requestParameters: IssueServiceApiIssueServiceGetIssueEventStatsRequest, options?: RawAxiosRequestConfig): AxiosPromise<GetIssueEventStatsResponse> {
+            return localVarFp.issueServiceGetIssueEventStats(requestParameters.id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Stack frames are not resolved here — fetch a single occurrence for those.
+         * @summary Lists an issue\'s individual occurrences, most recent first.
+         * @param {IssueServiceApiIssueServiceListIssueEventsRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        issueServiceListIssueEvents(requestParameters: IssueServiceApiIssueServiceListIssueEventsRequest, options?: RawAxiosRequestConfig): AxiosPromise<ListIssueEventsResponse> {
+            return localVarFp.issueServiceListIssueEvents(requestParameters.id, requestParameters.paginationPageSize, requestParameters.paginationPageToken, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * An issue is a group of error events sharing a fingerprint. Filter by status, environment, release, component, platform, level, and a trailing last-seen window; sort by last_seen (default), first_seen, or times_seen. Results are paginated with an opaque keyset cursor carried in pagination.page_token.
+         * @summary Lists a product\'s issues, most recently active first.
+         * @param {IssueServiceApiIssueServiceListIssuesRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        issueServiceListIssues(requestParameters: IssueServiceApiIssueServiceListIssuesRequest, options?: RawAxiosRequestConfig): AxiosPromise<ListIssuesResponse> {
+            return localVarFp.issueServiceListIssues(requestParameters.productId, requestParameters.status, requestParameters.environmentId, requestParameters.releaseId, requestParameters.sort, requestParameters.paginationPageSize, requestParameters.paginationPageToken, requestParameters.componentId, requestParameters.platforms, requestParameters.levels, requestParameters.period, requestParameters.search, requestParameters.signal, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Returns the issues attributable to a release: those first seen in it, plus a count of every issue seen during it. The post-deploy regression check.
+         * @param {IssueServiceApiIssueServiceListReleaseIssuesRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        issueServiceListReleaseIssues(requestParameters: IssueServiceApiIssueServiceListReleaseIssuesRequest, options?: RawAxiosRequestConfig): AxiosPromise<ListReleaseIssuesResponse> {
+            return localVarFp.issueServiceListReleaseIssues(requestParameters.releaseId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Every transition is recorded with its actor and is reversible. A resolved issue that recurs is reopened automatically and stamped as a regression.
+         * @summary Sets one issue\'s status to unresolved, resolved, or ignored.
+         * @param {IssueServiceApiIssueServiceUpdateIssueStatusRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        issueServiceUpdateIssueStatus(requestParameters: IssueServiceApiIssueServiceUpdateIssueStatusRequest, options?: RawAxiosRequestConfig): AxiosPromise<UpdateIssueStatusResponse> {
+            return localVarFp.issueServiceUpdateIssueStatus(requestParameters.id, requestParameters.updateIssueStatusBody, options).then((request) => request(axios, basePath));
+        },
     };
 };
+
+/**
+ * Request parameters for issueServiceBulkUpdateIssueStatus operation in IssueServiceApi.
+ */
+export interface IssueServiceApiIssueServiceBulkUpdateIssueStatusRequest {
+    readonly productId: string
+
+    readonly bulkUpdateIssueStatusBody: BulkUpdateIssueStatusBody
+}
 
 /**
  * Request parameters for issueServiceConfirmSourceMapUpload operation in IssueServiceApi.
@@ -206,11 +816,145 @@ export interface IssueServiceApiIssueServiceCreateSourceMapUploadRequest {
 }
 
 /**
+ * Request parameters for issueServiceGetIssue operation in IssueServiceApi.
+ */
+export interface IssueServiceApiIssueServiceGetIssueRequest {
+    readonly id: string
+}
+
+/**
+ * Request parameters for issueServiceGetIssueEvent operation in IssueServiceApi.
+ */
+export interface IssueServiceApiIssueServiceGetIssueEventRequest {
+    /**
+     * issue id
+     */
+    readonly id: string
+
+    /**
+     * issue_events.id (row id, not the SDK event_id)
+     */
+    readonly eventId: string
+}
+
+/**
+ * Request parameters for issueServiceGetIssueEventStats operation in IssueServiceApi.
+ */
+export interface IssueServiceApiIssueServiceGetIssueEventStatsRequest {
+    /**
+     * issue id
+     */
+    readonly id: string
+}
+
+/**
+ * Request parameters for issueServiceListIssueEvents operation in IssueServiceApi.
+ */
+export interface IssueServiceApiIssueServiceListIssueEventsRequest {
+    /**
+     * issue id
+     */
+    readonly id: string
+
+    readonly paginationPageSize?: number
+
+    readonly paginationPageToken?: string
+}
+
+/**
+ * Request parameters for issueServiceListIssues operation in IssueServiceApi.
+ */
+export interface IssueServiceApiIssueServiceListIssuesRequest {
+    readonly productId: string
+
+    /**
+     * unresolved|resolved|ignored, \&quot;\&quot; &#x3D; all
+     */
+    readonly status?: string
+
+    /**
+     * optional filter
+     */
+    readonly environmentId?: string
+
+    /**
+     * optional filter
+     */
+    readonly releaseId?: string
+
+    /**
+     * last_seen|first_seen|times_seen
+     */
+    readonly sort?: string
+
+    readonly paginationPageSize?: number
+
+    readonly paginationPageToken?: string
+
+    /**
+     * optional: filter by attributed component
+     */
+    readonly componentId?: string
+
+    /**
+     * optional: filter by platform (platform dropdown, OR within)
+     */
+    readonly platforms?: Array<string>
+
+    /**
+     * optional: filter by level (token bar, OR within)
+     */
+    readonly levels?: Array<string>
+
+    /**
+     * optional last-seen window: 3m|1h|12h|1d|7d|30d (\&quot;\&quot; &#x3D; all time)
+     */
+    readonly period?: string
+
+    /**
+     * optional: case-insensitive match on title/culprit
+     */
+    readonly search?: string
+
+    /**
+     * optional saved-view predicate: blocking|spiking|new|regressed
+     */
+    readonly signal?: string
+}
+
+/**
+ * Request parameters for issueServiceListReleaseIssues operation in IssueServiceApi.
+ */
+export interface IssueServiceApiIssueServiceListReleaseIssuesRequest {
+    readonly releaseId: string
+}
+
+/**
+ * Request parameters for issueServiceUpdateIssueStatus operation in IssueServiceApi.
+ */
+export interface IssueServiceApiIssueServiceUpdateIssueStatusRequest {
+    readonly id: string
+
+    readonly updateIssueStatusBody: UpdateIssueStatusBody
+}
+
+/**
  * IssueServiceApi - object-oriented interface
  */
 export class IssueServiceApi extends BaseAPI {
     /**
-     * Validates the staged object and atomically promotes it to live, so error events carrying the same debug_id resolve to original sources. Returns metadata only — never a download URL (source maps stay private). Billing-exempt: addressed by source-map id (the product-gated entry point is CreateSourceMapUpload); source maps are observability infra, not a billed cap.
+     * 
+     * @summary Sets the same status on many issues at once. Every id must belong to the given product.
+     * @param {IssueServiceApiIssueServiceBulkUpdateIssueStatusRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public issueServiceBulkUpdateIssueStatus(requestParameters: IssueServiceApiIssueServiceBulkUpdateIssueStatusRequest, options?: RawAxiosRequestConfig) {
+        return IssueServiceApiFp(this.configuration).issueServiceBulkUpdateIssueStatus(requestParameters.productId, requestParameters.bulkUpdateIssueStatusBody, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Validates the staged object and atomically promotes it to live, so error events carrying the same debug_id resolve to original sources. Returns metadata only — never a download URL (source maps stay private).
      * @summary Finalizes a source-map upload (phase 2 of 2).
      * @param {IssueServiceApiIssueServiceConfirmSourceMapUploadRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
@@ -229,6 +973,83 @@ export class IssueServiceApi extends BaseAPI {
      */
     public issueServiceCreateSourceMapUpload(requestParameters: IssueServiceApiIssueServiceCreateSourceMapUploadRequest, options?: RawAxiosRequestConfig) {
         return IssueServiceApiFp(this.configuration).issueServiceCreateSourceMapUpload(requestParameters.productId, requestParameters.createSourceMapUploadBody, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * The occurrence carries server-resolved (symbolicated) stack frames with the surrounding source lines, which is what identifies the code to fix.
+     * @summary Gets one issue together with its most recent occurrence.
+     * @param {IssueServiceApiIssueServiceGetIssueRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public issueServiceGetIssue(requestParameters: IssueServiceApiIssueServiceGetIssueRequest, options?: RawAxiosRequestConfig) {
+        return IssueServiceApiFp(this.configuration).issueServiceGetIssue(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Use this when the occurrence that matters is not the most recent one — for example the production occurrence of an issue whose latest event came from staging.
+     * @summary Gets one occurrence of an issue with symbolicated stack frames.
+     * @param {IssueServiceApiIssueServiceGetIssueEventRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public issueServiceGetIssueEvent(requestParameters: IssueServiceApiIssueServiceGetIssueEventRequest, options?: RawAxiosRequestConfig) {
+        return IssueServiceApiFp(this.configuration).issueServiceGetIssueEvent(requestParameters.id, requestParameters.eventId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * An issue carries no environment of its own — environment lives on each occurrence — so this is how you tell a production outage from dev noise.
+     * @summary Returns occurrence statistics for one issue: counts bucketed over time plus a per-environment split.
+     * @param {IssueServiceApiIssueServiceGetIssueEventStatsRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public issueServiceGetIssueEventStats(requestParameters: IssueServiceApiIssueServiceGetIssueEventStatsRequest, options?: RawAxiosRequestConfig) {
+        return IssueServiceApiFp(this.configuration).issueServiceGetIssueEventStats(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Stack frames are not resolved here — fetch a single occurrence for those.
+     * @summary Lists an issue\'s individual occurrences, most recent first.
+     * @param {IssueServiceApiIssueServiceListIssueEventsRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public issueServiceListIssueEvents(requestParameters: IssueServiceApiIssueServiceListIssueEventsRequest, options?: RawAxiosRequestConfig) {
+        return IssueServiceApiFp(this.configuration).issueServiceListIssueEvents(requestParameters.id, requestParameters.paginationPageSize, requestParameters.paginationPageToken, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * An issue is a group of error events sharing a fingerprint. Filter by status, environment, release, component, platform, level, and a trailing last-seen window; sort by last_seen (default), first_seen, or times_seen. Results are paginated with an opaque keyset cursor carried in pagination.page_token.
+     * @summary Lists a product\'s issues, most recently active first.
+     * @param {IssueServiceApiIssueServiceListIssuesRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public issueServiceListIssues(requestParameters: IssueServiceApiIssueServiceListIssuesRequest, options?: RawAxiosRequestConfig) {
+        return IssueServiceApiFp(this.configuration).issueServiceListIssues(requestParameters.productId, requestParameters.status, requestParameters.environmentId, requestParameters.releaseId, requestParameters.sort, requestParameters.paginationPageSize, requestParameters.paginationPageToken, requestParameters.componentId, requestParameters.platforms, requestParameters.levels, requestParameters.period, requestParameters.search, requestParameters.signal, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Returns the issues attributable to a release: those first seen in it, plus a count of every issue seen during it. The post-deploy regression check.
+     * @param {IssueServiceApiIssueServiceListReleaseIssuesRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public issueServiceListReleaseIssues(requestParameters: IssueServiceApiIssueServiceListReleaseIssuesRequest, options?: RawAxiosRequestConfig) {
+        return IssueServiceApiFp(this.configuration).issueServiceListReleaseIssues(requestParameters.releaseId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Every transition is recorded with its actor and is reversible. A resolved issue that recurs is reopened automatically and stamped as a regression.
+     * @summary Sets one issue\'s status to unresolved, resolved, or ignored.
+     * @param {IssueServiceApiIssueServiceUpdateIssueStatusRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public issueServiceUpdateIssueStatus(requestParameters: IssueServiceApiIssueServiceUpdateIssueStatusRequest, options?: RawAxiosRequestConfig) {
+        return IssueServiceApiFp(this.configuration).issueServiceUpdateIssueStatus(requestParameters.id, requestParameters.updateIssueStatusBody, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

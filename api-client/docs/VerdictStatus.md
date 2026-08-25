@@ -1,5 +1,6 @@
 # VerdictStatus
 
+- VERDICT_STATUS_RISK_ACCEPTED: v2 (soft-gate override) — reserved
 
 ## Enum
 

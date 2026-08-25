@@ -30,6 +30,8 @@ import type { GetBranchResponse } from '../model';
 // @ts-ignore
 import type { GetMergePreviewResponse } from '../model';
 // @ts-ignore
+import type { ListBranchCodeLinksResponse } from '../model';
+// @ts-ignore
 import type { ListBranchesResponse } from '../model';
 // @ts-ignore
 import type { MergeBranchBody } from '../model';
@@ -37,6 +39,14 @@ import type { MergeBranchBody } from '../model';
 import type { MergeBranchResponse } from '../model';
 // @ts-ignore
 import type { Status } from '../model';
+// @ts-ignore
+import type { UpdateBranchBody } from '../model';
+// @ts-ignore
+import type { UpdateBranchResponse } from '../model';
+// @ts-ignore
+import type { UpsertBranchCodeLinksBody } from '../model';
+// @ts-ignore
+import type { UpsertBranchCodeLinksResponse } from '../model';
 /**
  * BranchServiceApi - axios parameter creator
  */
@@ -196,14 +206,52 @@ export const BranchServiceApiAxiosParamCreator = function (configuration?: Confi
             };
         },
         /**
-         * Returns every branch including main. Set include_stats to add per-branch change counts vs main (additions/modifications/deletions per entity kind, plus conflicts).
-         * @summary Lists a product\'s branches.
-         * @param {string} productId 
-         * @param {boolean} [includeStats] When true, each returned Branch carries BranchChangeStats (per-branch change counts vs main).
+         * Returns every link recorded for the branch, pull requests before git branches, then most recently updated first.
+         * @summary Lists a branch\'s durable code links (git branches, pull requests).
+         * @param {string} branchId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        branchServiceListBranches: async (productId: string, includeStats?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        branchServiceListBranchCodeLinks: async (branchId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'branchId' is not null or undefined
+            assertParamExists('branchServiceListBranchCodeLinks', 'branchId', branchId)
+            const localVarPath = `/v1/branches/{branchId}/code-links`
+                .replace(`{${"branchId"}}`, encodeURIComponent(String(branchId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication BearerAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Returns every branch including main. Set include_stats to add per-branch change counts vs main (additions/modifications/deletions per entity kind, plus conflicts). Set include_status to add loop/latest-run/code-link/ intent-capture signals (Branch.loop/.latest_run/.code_links/.intent) — independent of include_stats, each is its own fixed-query-count batch read, so a caller that needs only the branch list is not charged for it.
+         * @summary Lists a product\'s branches.
+         * @param {string} productId 
+         * @param {boolean} [includeStats] When true, each returned Branch carries BranchChangeStats (per-branch change counts vs main).
+         * @param {boolean} [includeStatus] When true, each returned Branch carries loop/latest-run/code-link/intent status signals (Branch.loop, .latest_run, .code_links, .intent). Kept separate from include_stats: the sidebar branch dropdown calls List without stats and must not pay for this extra work either.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        branchServiceListBranches: async (productId: string, includeStats?: boolean, includeStatus?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'productId' is not null or undefined
             assertParamExists('branchServiceListBranches', 'productId', productId)
             const localVarPath = `/v1/products/{productId}/branches`
@@ -224,6 +272,10 @@ export const BranchServiceApiAxiosParamCreator = function (configuration?: Confi
 
             if (includeStats !== undefined) {
                 localVarQueryParameter['includeStats'] = includeStats;
+            }
+
+            if (includeStatus !== undefined) {
+                localVarQueryParameter['includeStatus'] = includeStatus;
             }
 
             localVarHeaderParameter['Accept'] = 'application/json';
@@ -273,6 +325,90 @@ export const BranchServiceApiAxiosParamCreator = function (configuration?: Confi
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
             localVarRequestOptions.data = serializeDataIfNeeded(mergeBranchBody, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Both request fields are optional: an absent field leaves the branch\'s current value unchanged, a present field (including an empty string) sets it. created_by_agent is validated server-side against a fixed allowlist — an unrecognized value is stored as empty string.
+         * @summary Updates a branch\'s description and/or created_by_agent.
+         * @param {string} id 
+         * @param {UpdateBranchBody} updateBranchBody 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        branchServiceUpdateBranch: async (id: string, updateBranchBody: UpdateBranchBody, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('branchServiceUpdateBranch', 'id', id)
+            // verify required parameter 'updateBranchBody' is not null or undefined
+            assertParamExists('branchServiceUpdateBranch', 'updateBranchBody', updateBranchBody)
+            const localVarPath = `/v1/branches/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication BearerAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(updateBranchBody, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Each entry is keyed by (kind, repository, ref): a repeat of an existing key updates url/title/state/base_sha/head_sha instead of duplicating. kind must be \"git_branch\" or \"pull_request\"; state must be \"\", \"open\", \"merged\", or \"closed\". Fails closed on the first invalid entry — nothing is written if any entry is invalid.
+         * @summary Upserts a batch of code links onto a branch.
+         * @param {string} branchId 
+         * @param {UpsertBranchCodeLinksBody} upsertBranchCodeLinksBody 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        branchServiceUpsertBranchCodeLinks: async (branchId: string, upsertBranchCodeLinksBody: UpsertBranchCodeLinksBody, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'branchId' is not null or undefined
+            assertParamExists('branchServiceUpsertBranchCodeLinks', 'branchId', branchId)
+            // verify required parameter 'upsertBranchCodeLinksBody' is not null or undefined
+            assertParamExists('branchServiceUpsertBranchCodeLinks', 'upsertBranchCodeLinksBody', upsertBranchCodeLinksBody)
+            const localVarPath = `/v1/branches/{branchId}/code-links`
+                .replace(`{${"branchId"}}`, encodeURIComponent(String(branchId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication BearerAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(upsertBranchCodeLinksBody, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -342,15 +478,29 @@ export const BranchServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Returns every branch including main. Set include_stats to add per-branch change counts vs main (additions/modifications/deletions per entity kind, plus conflicts).
-         * @summary Lists a product\'s branches.
-         * @param {string} productId 
-         * @param {boolean} [includeStats] When true, each returned Branch carries BranchChangeStats (per-branch change counts vs main).
+         * Returns every link recorded for the branch, pull requests before git branches, then most recently updated first.
+         * @summary Lists a branch\'s durable code links (git branches, pull requests).
+         * @param {string} branchId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async branchServiceListBranches(productId: string, includeStats?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ListBranchesResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.branchServiceListBranches(productId, includeStats, options);
+        async branchServiceListBranchCodeLinks(branchId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ListBranchCodeLinksResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.branchServiceListBranchCodeLinks(branchId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['BranchServiceApi.branchServiceListBranchCodeLinks']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Returns every branch including main. Set include_stats to add per-branch change counts vs main (additions/modifications/deletions per entity kind, plus conflicts). Set include_status to add loop/latest-run/code-link/ intent-capture signals (Branch.loop/.latest_run/.code_links/.intent) — independent of include_stats, each is its own fixed-query-count batch read, so a caller that needs only the branch list is not charged for it.
+         * @summary Lists a product\'s branches.
+         * @param {string} productId 
+         * @param {boolean} [includeStats] When true, each returned Branch carries BranchChangeStats (per-branch change counts vs main).
+         * @param {boolean} [includeStatus] When true, each returned Branch carries loop/latest-run/code-link/intent status signals (Branch.loop, .latest_run, .code_links, .intent). Kept separate from include_stats: the sidebar branch dropdown calls List without stats and must not pay for this extra work either.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async branchServiceListBranches(productId: string, includeStats?: boolean, includeStatus?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ListBranchesResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.branchServiceListBranches(productId, includeStats, includeStatus, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['BranchServiceApi.branchServiceListBranches']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -367,6 +517,34 @@ export const BranchServiceApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.branchServiceMergeBranch(id, mergeBranchBody, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['BranchServiceApi.branchServiceMergeBranch']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Both request fields are optional: an absent field leaves the branch\'s current value unchanged, a present field (including an empty string) sets it. created_by_agent is validated server-side against a fixed allowlist — an unrecognized value is stored as empty string.
+         * @summary Updates a branch\'s description and/or created_by_agent.
+         * @param {string} id 
+         * @param {UpdateBranchBody} updateBranchBody 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async branchServiceUpdateBranch(id: string, updateBranchBody: UpdateBranchBody, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UpdateBranchResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.branchServiceUpdateBranch(id, updateBranchBody, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['BranchServiceApi.branchServiceUpdateBranch']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Each entry is keyed by (kind, repository, ref): a repeat of an existing key updates url/title/state/base_sha/head_sha instead of duplicating. kind must be \"git_branch\" or \"pull_request\"; state must be \"\", \"open\", \"merged\", or \"closed\". Fails closed on the first invalid entry — nothing is written if any entry is invalid.
+         * @summary Upserts a batch of code links onto a branch.
+         * @param {string} branchId 
+         * @param {UpsertBranchCodeLinksBody} upsertBranchCodeLinksBody 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async branchServiceUpsertBranchCodeLinks(branchId: string, upsertBranchCodeLinksBody: UpsertBranchCodeLinksBody, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UpsertBranchCodeLinksResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.branchServiceUpsertBranchCodeLinks(branchId, upsertBranchCodeLinksBody, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['BranchServiceApi.branchServiceUpsertBranchCodeLinks']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -419,14 +597,24 @@ export const BranchServiceApiFactory = function (configuration?: Configuration, 
             return localVarFp.branchServiceGetMergePreview(requestParameters.id, options).then((request) => request(axios, basePath));
         },
         /**
-         * Returns every branch including main. Set include_stats to add per-branch change counts vs main (additions/modifications/deletions per entity kind, plus conflicts).
+         * Returns every link recorded for the branch, pull requests before git branches, then most recently updated first.
+         * @summary Lists a branch\'s durable code links (git branches, pull requests).
+         * @param {BranchServiceApiBranchServiceListBranchCodeLinksRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        branchServiceListBranchCodeLinks(requestParameters: BranchServiceApiBranchServiceListBranchCodeLinksRequest, options?: RawAxiosRequestConfig): AxiosPromise<ListBranchCodeLinksResponse> {
+            return localVarFp.branchServiceListBranchCodeLinks(requestParameters.branchId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Returns every branch including main. Set include_stats to add per-branch change counts vs main (additions/modifications/deletions per entity kind, plus conflicts). Set include_status to add loop/latest-run/code-link/ intent-capture signals (Branch.loop/.latest_run/.code_links/.intent) — independent of include_stats, each is its own fixed-query-count batch read, so a caller that needs only the branch list is not charged for it.
          * @summary Lists a product\'s branches.
          * @param {BranchServiceApiBranchServiceListBranchesRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         branchServiceListBranches(requestParameters: BranchServiceApiBranchServiceListBranchesRequest, options?: RawAxiosRequestConfig): AxiosPromise<ListBranchesResponse> {
-            return localVarFp.branchServiceListBranches(requestParameters.productId, requestParameters.includeStats, options).then((request) => request(axios, basePath));
+            return localVarFp.branchServiceListBranches(requestParameters.productId, requestParameters.includeStats, requestParameters.includeStatus, options).then((request) => request(axios, basePath));
         },
         /**
          * Applies the branch\'s additions/modifications/deletions to main in one transaction. Every conflicting entity requires a resolutions entry keyed \"req:<uuid>\", \"test:<uuid>\", or \"comp:<uuid>\" with value KEEP_BRANCH or KEEP_MAIN — otherwise the call fails with UNRESOLVED_CONFLICT and nothing is applied. Only open branches can merge; main cannot merge into itself.
@@ -437,6 +625,26 @@ export const BranchServiceApiFactory = function (configuration?: Configuration, 
          */
         branchServiceMergeBranch(requestParameters: BranchServiceApiBranchServiceMergeBranchRequest, options?: RawAxiosRequestConfig): AxiosPromise<MergeBranchResponse> {
             return localVarFp.branchServiceMergeBranch(requestParameters.id, requestParameters.mergeBranchBody, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Both request fields are optional: an absent field leaves the branch\'s current value unchanged, a present field (including an empty string) sets it. created_by_agent is validated server-side against a fixed allowlist — an unrecognized value is stored as empty string.
+         * @summary Updates a branch\'s description and/or created_by_agent.
+         * @param {BranchServiceApiBranchServiceUpdateBranchRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        branchServiceUpdateBranch(requestParameters: BranchServiceApiBranchServiceUpdateBranchRequest, options?: RawAxiosRequestConfig): AxiosPromise<UpdateBranchResponse> {
+            return localVarFp.branchServiceUpdateBranch(requestParameters.id, requestParameters.updateBranchBody, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Each entry is keyed by (kind, repository, ref): a repeat of an existing key updates url/title/state/base_sha/head_sha instead of duplicating. kind must be \"git_branch\" or \"pull_request\"; state must be \"\", \"open\", \"merged\", or \"closed\". Fails closed on the first invalid entry — nothing is written if any entry is invalid.
+         * @summary Upserts a batch of code links onto a branch.
+         * @param {BranchServiceApiBranchServiceUpsertBranchCodeLinksRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        branchServiceUpsertBranchCodeLinks(requestParameters: BranchServiceApiBranchServiceUpsertBranchCodeLinksRequest, options?: RawAxiosRequestConfig): AxiosPromise<UpsertBranchCodeLinksResponse> {
+            return localVarFp.branchServiceUpsertBranchCodeLinks(requestParameters.branchId, requestParameters.upsertBranchCodeLinksBody, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -472,6 +680,13 @@ export interface BranchServiceApiBranchServiceGetMergePreviewRequest {
 }
 
 /**
+ * Request parameters for branchServiceListBranchCodeLinks operation in BranchServiceApi.
+ */
+export interface BranchServiceApiBranchServiceListBranchCodeLinksRequest {
+    readonly branchId: string
+}
+
+/**
  * Request parameters for branchServiceListBranches operation in BranchServiceApi.
  */
 export interface BranchServiceApiBranchServiceListBranchesRequest {
@@ -481,6 +696,11 @@ export interface BranchServiceApiBranchServiceListBranchesRequest {
      * When true, each returned Branch carries BranchChangeStats (per-branch change counts vs main).
      */
     readonly includeStats?: boolean
+
+    /**
+     * When true, each returned Branch carries loop/latest-run/code-link/intent status signals (Branch.loop, .latest_run, .code_links, .intent). Kept separate from include_stats: the sidebar branch dropdown calls List without stats and must not pay for this extra work either.
+     */
+    readonly includeStatus?: boolean
 }
 
 /**
@@ -490,6 +710,24 @@ export interface BranchServiceApiBranchServiceMergeBranchRequest {
     readonly id: string
 
     readonly mergeBranchBody: MergeBranchBody
+}
+
+/**
+ * Request parameters for branchServiceUpdateBranch operation in BranchServiceApi.
+ */
+export interface BranchServiceApiBranchServiceUpdateBranchRequest {
+    readonly id: string
+
+    readonly updateBranchBody: UpdateBranchBody
+}
+
+/**
+ * Request parameters for branchServiceUpsertBranchCodeLinks operation in BranchServiceApi.
+ */
+export interface BranchServiceApiBranchServiceUpsertBranchCodeLinksRequest {
+    readonly branchId: string
+
+    readonly upsertBranchCodeLinksBody: UpsertBranchCodeLinksBody
 }
 
 /**
@@ -541,14 +779,25 @@ export class BranchServiceApi extends BaseAPI {
     }
 
     /**
-     * Returns every branch including main. Set include_stats to add per-branch change counts vs main (additions/modifications/deletions per entity kind, plus conflicts).
+     * Returns every link recorded for the branch, pull requests before git branches, then most recently updated first.
+     * @summary Lists a branch\'s durable code links (git branches, pull requests).
+     * @param {BranchServiceApiBranchServiceListBranchCodeLinksRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public branchServiceListBranchCodeLinks(requestParameters: BranchServiceApiBranchServiceListBranchCodeLinksRequest, options?: RawAxiosRequestConfig) {
+        return BranchServiceApiFp(this.configuration).branchServiceListBranchCodeLinks(requestParameters.branchId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Returns every branch including main. Set include_stats to add per-branch change counts vs main (additions/modifications/deletions per entity kind, plus conflicts). Set include_status to add loop/latest-run/code-link/ intent-capture signals (Branch.loop/.latest_run/.code_links/.intent) — independent of include_stats, each is its own fixed-query-count batch read, so a caller that needs only the branch list is not charged for it.
      * @summary Lists a product\'s branches.
      * @param {BranchServiceApiBranchServiceListBranchesRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
     public branchServiceListBranches(requestParameters: BranchServiceApiBranchServiceListBranchesRequest, options?: RawAxiosRequestConfig) {
-        return BranchServiceApiFp(this.configuration).branchServiceListBranches(requestParameters.productId, requestParameters.includeStats, options).then((request) => request(this.axios, this.basePath));
+        return BranchServiceApiFp(this.configuration).branchServiceListBranches(requestParameters.productId, requestParameters.includeStats, requestParameters.includeStatus, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -560,6 +809,28 @@ export class BranchServiceApi extends BaseAPI {
      */
     public branchServiceMergeBranch(requestParameters: BranchServiceApiBranchServiceMergeBranchRequest, options?: RawAxiosRequestConfig) {
         return BranchServiceApiFp(this.configuration).branchServiceMergeBranch(requestParameters.id, requestParameters.mergeBranchBody, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Both request fields are optional: an absent field leaves the branch\'s current value unchanged, a present field (including an empty string) sets it. created_by_agent is validated server-side against a fixed allowlist — an unrecognized value is stored as empty string.
+     * @summary Updates a branch\'s description and/or created_by_agent.
+     * @param {BranchServiceApiBranchServiceUpdateBranchRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public branchServiceUpdateBranch(requestParameters: BranchServiceApiBranchServiceUpdateBranchRequest, options?: RawAxiosRequestConfig) {
+        return BranchServiceApiFp(this.configuration).branchServiceUpdateBranch(requestParameters.id, requestParameters.updateBranchBody, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Each entry is keyed by (kind, repository, ref): a repeat of an existing key updates url/title/state/base_sha/head_sha instead of duplicating. kind must be \"git_branch\" or \"pull_request\"; state must be \"\", \"open\", \"merged\", or \"closed\". Fails closed on the first invalid entry — nothing is written if any entry is invalid.
+     * @summary Upserts a batch of code links onto a branch.
+     * @param {BranchServiceApiBranchServiceUpsertBranchCodeLinksRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public branchServiceUpsertBranchCodeLinks(requestParameters: BranchServiceApiBranchServiceUpsertBranchCodeLinksRequest, options?: RawAxiosRequestConfig) {
+        return BranchServiceApiFp(this.configuration).branchServiceUpsertBranchCodeLinks(requestParameters.branchId, requestParameters.upsertBranchCodeLinksBody, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

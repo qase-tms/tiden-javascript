@@ -7,8 +7,10 @@ All URIs are relative to *https://api.tiden.ai*
 |[**qualityGateServiceAcceptRisk**](#qualitygateserviceacceptrisk) | **POST** /v1/products/{productId}/quality-gate:accept-risk | Signs off the residual risk on a soft-signal verdict.|
 |[**qualityGateServiceApproveRisk**](#qualitygateserviceapproverisk) | **POST** /v1/products/{productId}/quality-gate:approve-risk | Second-approver sign-off for a pending risk acceptance.|
 |[**qualityGateServiceComputeVerdict**](#qualitygateservicecomputeverdict) | **POST** /v1/products/{productId}/quality-gate:compute | Computes and persists a quality-gate verdict.|
+|[**qualityGateServiceGetSessionProgress**](#qualitygateservicegetsessionprogress) | **POST** /v1/products/{productId}/quality-gate:session-progress | Returns one intent session\&#39;s per-requirement progress slice.|
 |[**qualityGateServiceGetTraceability**](#qualitygateservicegettraceability) | **GET** /v1/products/{productId}/quality-gate/traceability | Returns the traceability matrix behind a verdict.|
 |[**qualityGateServiceGetVerdict**](#qualitygateservicegetverdict) | **GET** /v1/products/{productId}/quality-gate | Fetches the latest verdict for a scope.|
+|[**qualityGateServiceRecordSessionRiskAcceptances**](#qualitygateservicerecordsessionriskacceptances) | **POST** /v1/products/{productId}/quality-gate:session-acceptances | Records one intent session\&#39;s risk acceptances and test deferrals.|
 
 # **qualityGateServiceAcceptRisk**
 > AcceptRiskResponse qualityGateServiceAcceptRisk(acceptRiskBody)
@@ -125,7 +127,7 @@ const { status, data } = await apiInstance.qualityGateServiceApproveRisk(
 # **qualityGateServiceComputeVerdict**
 > ComputeVerdictResponse qualityGateServiceComputeVerdict(computeVerdictBody)
 
-Computes (or recomputes) the go/no-go verdict for a scope — RELEASE (release_id required), BRANCH (branch name required), or MAIN — and persists an immutable snapshot. Side-effecting, but idempotent on the current data state (CAS on publish): recomputing unchanged data yields the same verdict. subject_type/subject_id narrow the returned breakdown to one component/feature/product subject.
+Computes (or recomputes) the go/no-go verdict for a scope — RELEASE (release_id required), BRANCH (branch name required), or MAIN — and persists an immutable snapshot. Side-effecting, but idempotent on the current data state: recomputing unchanged data yields the same verdict. subject_type/subject_id narrow the returned breakdown to one component/feature/product subject.
 
 ### Example
 
@@ -159,6 +161,62 @@ const { status, data } = await apiInstance.qualityGateServiceComputeVerdict(
 ### Return type
 
 **ComputeVerdictResponse**
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | A successful response. |  -  |
+|**0** | An unexpected error response. |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **qualityGateServiceGetSessionProgress**
+> GetSessionProgressResponse qualityGateServiceGetSessionProgress(getSessionProgressBody)
+
+For the supplied requirement ids (the session\'s slice of interest) on the intent branch\'s merge-preview view, returns each requirement\'s coverage ladder step (no_test → not_run → failing → verified), its linked tests with per-test status and session attribution, a summary, an advisory `ready` flag, and deterministic next actions. Read-only; unknown requirement ids are silently omitted.
+
+### Example
+
+```typescript
+import {
+    QualityGateServiceApi,
+    Configuration,
+    GetSessionProgressBody
+} from '@tiden/api-client';
+
+const configuration = new Configuration();
+const apiInstance = new QualityGateServiceApi(configuration);
+
+let productId: string; // (default to undefined)
+let getSessionProgressBody: GetSessionProgressBody; //
+
+const { status, data } = await apiInstance.qualityGateServiceGetSessionProgress(
+    productId,
+    getSessionProgressBody
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **getSessionProgressBody** | **GetSessionProgressBody**|  | |
+| **productId** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+**GetSessionProgressResponse**
 
 ### Authorization
 
@@ -301,6 +359,62 @@ const { status, data } = await apiInstance.qualityGateServiceGetVerdict(
 ### HTTP request headers
 
  - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | A successful response. |  -  |
+|**0** | An unexpected error response. |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **qualityGateServiceRecordSessionRiskAcceptances**
+> RecordSessionRiskAcceptancesResponse qualityGateServiceRecordSessionRiskAcceptances(recordSessionRiskAcceptancesBody)
+
+Persists the close-policy ledger of a single intent session as agent_artifact provenance rows on that session\'s draft requirement. A re-run REPLACES this session\'s records for the same requirement set — keyed by (phase, session, requirement set), deliberately NOT by criterion, so a corrected criterion supersedes the earlier judgement instead of leaving two contradicting ones. Every other row on the draft is carried over.  ORDERING: this endpoint rewrites the draft\'s whole source array. A caller that also writes sources to the same draft (the CLI\'s close extends the session_reconcile row in its own PUT) MUST call this FIRST and then RE-FETCH the requirement before building that write — a request assembled from a snapshot taken before this call silently erases the rows this call wrote.  Validation is STRUCTURAL only: a known criterion, non-empty single-line evidence, a known follow-up kind, requirement refs that resolve on the intent branch, and a draft that lives there. The server never judges whether a reason is a good one — that judgment belongs to the agent\'s instructions and to the human reading merge-preview.
+
+### Example
+
+```typescript
+import {
+    QualityGateServiceApi,
+    Configuration,
+    RecordSessionRiskAcceptancesBody
+} from '@tiden/api-client';
+
+const configuration = new Configuration();
+const apiInstance = new QualityGateServiceApi(configuration);
+
+let productId: string; // (default to undefined)
+let recordSessionRiskAcceptancesBody: RecordSessionRiskAcceptancesBody; //
+
+const { status, data } = await apiInstance.qualityGateServiceRecordSessionRiskAcceptances(
+    productId,
+    recordSessionRiskAcceptancesBody
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **recordSessionRiskAcceptancesBody** | **RecordSessionRiskAcceptancesBody**|  | |
+| **productId** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+**RecordSessionRiskAcceptancesResponse**
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 

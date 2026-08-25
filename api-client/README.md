@@ -51,8 +51,11 @@ All URIs are relative to *https://api.tiden.ai*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
+*AgentRetrievalServiceApi* | [**agentRetrievalServiceAdvanceRepoWatermark**](docs/AgentRetrievalServiceApi.md#agentretrievalserviceadvancerepowatermark) | **POST** /v1/products/{productId}/repo-watermark:advance | Advances the drift watermark of one repository.
 *AgentRetrievalServiceApi* | [**agentRetrievalServiceAttributeChangedFiles**](docs/AgentRetrievalServiceApi.md#agentretrievalserviceattributechangedfiles) | **POST** /v1/products/{productId}/requirements/{requirementId}:attribute-changed-files | Attributes a requirement\&#39;s changed files to owning components.
 *AgentRetrievalServiceApi* | [**agentRetrievalServiceDeclareRequirementEdgeIntent**](docs/AgentRetrievalServiceApi.md#agentretrievalservicedeclarerequirementedgeintent) | **POST** /v1/products/{productId}/requirement-edge-intents | Records a deferred graph edge for endpoints not yet on main.
+*AgentRetrievalServiceApi* | [**agentRetrievalServiceGetIssueFixContext**](docs/AgentRetrievalServiceApi.md#agentretrievalservicegetissuefixcontext) | **GET** /v1/products/{productId}/issues/{issueId}/fix-context | Returns everything needed to fix one error, in a single call: the issue, its latest occurrence with symbolicated stack frames, the repository files those frames implicate, where the error is happening by environment, and — for each requirement those files implement — whether a test already covers it.
+*AgentRetrievalServiceApi* | [**agentRetrievalServiceGetRepoWatermark**](docs/AgentRetrievalServiceApi.md#agentretrievalservicegetrepowatermark) | **GET** /v1/products/{productId}/repo-watermark | Returns the drift watermark of one repository.
 *AgentRetrievalServiceApi* | [**agentRetrievalServiceGetRequirementGraph**](docs/AgentRetrievalServiceApi.md#agentretrievalservicegetrequirementgraph) | **GET** /v1/products/{productId}/requirement-graph | Returns the product\&#39;s full requirement graph.
 *AgentRetrievalServiceApi* | [**agentRetrievalServiceGetRequirementTestContext**](docs/AgentRetrievalServiceApi.md#agentretrievalservicegetrequirementtestcontext) | **GET** /v1/products/{productId}/requirements/{requirementId}/test-context | Builds the full test-authoring context pack for one requirement.
 *AgentRetrievalServiceApi* | [**agentRetrievalServiceGraphCoverageGaps**](docs/AgentRetrievalServiceApi.md#agentretrievalservicegraphcoveragegaps) | **GET** /v1/products/{productId}/requirements/graph-coverage-gaps | Filters a requirement set down to those without test coverage.
@@ -80,8 +83,11 @@ Class | Method | HTTP request | Description
 *BranchServiceApi* | [**branchServiceDeleteBranch**](docs/BranchServiceApi.md#branchservicedeletebranch) | **DELETE** /v1/branches/{id} | Deletes a branch and discards its copy-on-write changes.
 *BranchServiceApi* | [**branchServiceGetBranch**](docs/BranchServiceApi.md#branchservicegetbranch) | **GET** /v1/branches/{id} | Fetches one branch by id.
 *BranchServiceApi* | [**branchServiceGetMergePreview**](docs/BranchServiceApi.md#branchservicegetmergepreview) | **GET** /v1/branches/{id}/merge-preview | Previews the effect of merging a branch into main.
+*BranchServiceApi* | [**branchServiceListBranchCodeLinks**](docs/BranchServiceApi.md#branchservicelistbranchcodelinks) | **GET** /v1/branches/{branchId}/code-links | Lists a branch\&#39;s durable code links (git branches, pull requests).
 *BranchServiceApi* | [**branchServiceListBranches**](docs/BranchServiceApi.md#branchservicelistbranches) | **GET** /v1/products/{productId}/branches | Lists a product\&#39;s branches.
 *BranchServiceApi* | [**branchServiceMergeBranch**](docs/BranchServiceApi.md#branchservicemergebranch) | **POST** /v1/branches/{id}/merge | Merges a branch\&#39;s changes into main and closes the branch.
+*BranchServiceApi* | [**branchServiceUpdateBranch**](docs/BranchServiceApi.md#branchserviceupdatebranch) | **PATCH** /v1/branches/{id} | Updates a branch\&#39;s description and/or created_by_agent.
+*BranchServiceApi* | [**branchServiceUpsertBranchCodeLinks**](docs/BranchServiceApi.md#branchserviceupsertbranchcodelinks) | **POST** /v1/branches/{branchId}/code-links | Upserts a batch of code links onto a branch.
 *ComponentServiceApi* | [**componentServiceCreateComponent**](docs/ComponentServiceApi.md#componentservicecreatecomponent) | **POST** /v1/products/{productId}/components | Creates a component in a product.
 *ComponentServiceApi* | [**componentServiceListComponents**](docs/ComponentServiceApi.md#componentservicelistcomponents) | **GET** /v1/products/{productId}/components | Lists a product\&#39;s components.
 *ComponentServiceApi* | [**componentServiceUpdateComponent**](docs/ComponentServiceApi.md#componentserviceupdatecomponent) | **PUT** /v1/components/{id} | Updates a component.
@@ -90,8 +96,20 @@ Class | Method | HTTP request | Description
 *EnvironmentServiceApi* | [**environmentServiceGetEnvironment**](docs/EnvironmentServiceApi.md#environmentservicegetenvironment) | **GET** /v1/environments/{id} | Fetches one environment by id.
 *EnvironmentServiceApi* | [**environmentServiceListEnvironments**](docs/EnvironmentServiceApi.md#environmentservicelistenvironments) | **GET** /v1/products/{productId}/environments | Lists a product\&#39;s environments.
 *IntentServiceApi* | [**intentServiceDistillIntent**](docs/IntentServiceApi.md#intentservicedistillintent) | **POST** /v1/products/{productId}/intent:distill | Distills a coding-session transcript into requirement changes.
+*IntentSessionServiceApi* | [**intentSessionServiceGetIntentSession**](docs/IntentSessionServiceApi.md#intentsessionservicegetintentsession) | **GET** /v1/products/{productId}/intent-sessions/{sessionId} | Fetches one session by id.
+*IntentSessionServiceApi* | [**intentSessionServiceListIntentSessions**](docs/IntentSessionServiceApi.md#intentsessionservicelistintentsessions) | **GET** /v1/products/{productId}/intent-sessions | Lists a product\&#39;s sessions, most recently active first.
+*IntentSessionServiceApi* | [**intentSessionServiceRecordSessionSettlement**](docs/IntentSessionServiceApi.md#intentsessionservicerecordsessionsettlement) | **POST** /v1/products/{productId}/intent-sessions/{sessionId}:settle | Records or amends a session\&#39;s settlement decision.
+*IntentSessionServiceApi* | [**intentSessionServiceUpsertIntentSession**](docs/IntentSessionServiceApi.md#intentsessionserviceupsertintentsession) | **POST** /v1/products/{productId}/intent-sessions | Creates or patches a session, keyed by the client-generated session id.
+*IssueServiceApi* | [**issueServiceBulkUpdateIssueStatus**](docs/IssueServiceApi.md#issueservicebulkupdateissuestatus) | **POST** /v1/products/{productId}/issues:bulkSetStatus | Sets the same status on many issues at once. Every id must belong to the given product.
 *IssueServiceApi* | [**issueServiceConfirmSourceMapUpload**](docs/IssueServiceApi.md#issueserviceconfirmsourcemapupload) | **POST** /v1/sourcemaps/{id}:confirm | Finalizes a source-map upload (phase 2 of 2).
 *IssueServiceApi* | [**issueServiceCreateSourceMapUpload**](docs/IssueServiceApi.md#issueservicecreatesourcemapupload) | **POST** /v1/products/{productId}/sourcemaps | Starts a source-map upload (phase 1 of 2).
+*IssueServiceApi* | [**issueServiceGetIssue**](docs/IssueServiceApi.md#issueservicegetissue) | **GET** /v1/issues/{id} | Gets one issue together with its most recent occurrence.
+*IssueServiceApi* | [**issueServiceGetIssueEvent**](docs/IssueServiceApi.md#issueservicegetissueevent) | **GET** /v1/issues/{id}/events/{eventId} | Gets one occurrence of an issue with symbolicated stack frames.
+*IssueServiceApi* | [**issueServiceGetIssueEventStats**](docs/IssueServiceApi.md#issueservicegetissueeventstats) | **GET** /v1/issues/{id}/stats | Returns occurrence statistics for one issue: counts bucketed over time plus a per-environment split.
+*IssueServiceApi* | [**issueServiceListIssueEvents**](docs/IssueServiceApi.md#issueservicelistissueevents) | **GET** /v1/issues/{id}/events | Lists an issue\&#39;s individual occurrences, most recent first.
+*IssueServiceApi* | [**issueServiceListIssues**](docs/IssueServiceApi.md#issueservicelistissues) | **GET** /v1/products/{productId}/issues | Lists a product\&#39;s issues, most recently active first.
+*IssueServiceApi* | [**issueServiceListReleaseIssues**](docs/IssueServiceApi.md#issueservicelistreleaseissues) | **GET** /v1/releases/{releaseId}/issues | Returns the issues attributable to a release: those first seen in it, plus a count of every issue seen during it. The post-deploy regression check.
+*IssueServiceApi* | [**issueServiceUpdateIssueStatus**](docs/IssueServiceApi.md#issueserviceupdateissuestatus) | **POST** /v1/issues/{id}:setStatus | Sets one issue\&#39;s status to unresolved, resolved, or ignored.
 *ProductServiceApi* | [**productServiceCreateProduct**](docs/ProductServiceApi.md#productservicecreateproduct) | **POST** /v1/workspaces/{workspaceId}/products | Creates a product in a workspace.
 *ProductServiceApi* | [**productServiceGetProduct**](docs/ProductServiceApi.md#productservicegetproduct) | **GET** /v1/products/{id} | Fetches one product by id.
 *ProductServiceApi* | [**productServiceListProducts**](docs/ProductServiceApi.md#productservicelistproducts) | **GET** /v1/workspaces/{workspaceId}/products | Lists a workspace\&#39;s products.
@@ -99,11 +117,14 @@ Class | Method | HTTP request | Description
 *QualityGateServiceApi* | [**qualityGateServiceAcceptRisk**](docs/QualityGateServiceApi.md#qualitygateserviceacceptrisk) | **POST** /v1/products/{productId}/quality-gate:accept-risk | Signs off the residual risk on a soft-signal verdict.
 *QualityGateServiceApi* | [**qualityGateServiceApproveRisk**](docs/QualityGateServiceApi.md#qualitygateserviceapproverisk) | **POST** /v1/products/{productId}/quality-gate:approve-risk | Second-approver sign-off for a pending risk acceptance.
 *QualityGateServiceApi* | [**qualityGateServiceComputeVerdict**](docs/QualityGateServiceApi.md#qualitygateservicecomputeverdict) | **POST** /v1/products/{productId}/quality-gate:compute | Computes and persists a quality-gate verdict.
+*QualityGateServiceApi* | [**qualityGateServiceGetSessionProgress**](docs/QualityGateServiceApi.md#qualitygateservicegetsessionprogress) | **POST** /v1/products/{productId}/quality-gate:session-progress | Returns one intent session\&#39;s per-requirement progress slice.
 *QualityGateServiceApi* | [**qualityGateServiceGetTraceability**](docs/QualityGateServiceApi.md#qualitygateservicegettraceability) | **GET** /v1/products/{productId}/quality-gate/traceability | Returns the traceability matrix behind a verdict.
 *QualityGateServiceApi* | [**qualityGateServiceGetVerdict**](docs/QualityGateServiceApi.md#qualitygateservicegetverdict) | **GET** /v1/products/{productId}/quality-gate | Fetches the latest verdict for a scope.
+*QualityGateServiceApi* | [**qualityGateServiceRecordSessionRiskAcceptances**](docs/QualityGateServiceApi.md#qualitygateservicerecordsessionriskacceptances) | **POST** /v1/products/{productId}/quality-gate:session-acceptances | Records one intent session\&#39;s risk acceptances and test deferrals.
 *ReleaseServiceApi* | [**releaseServiceCreateRelease**](docs/ReleaseServiceApi.md#releaseservicecreaterelease) | **POST** /v1/products/{productId}/releases | Creates a release from an external source (CI/SDK).
 *ReleaseServiceApi* | [**releaseServiceGetRelease**](docs/ReleaseServiceApi.md#releaseservicegetrelease) | **GET** /v1/releases/{id} | Fetches one release by id.
 *ReleaseServiceApi* | [**releaseServiceListReleases**](docs/ReleaseServiceApi.md#releaseservicelistreleases) | **GET** /v1/products/{productId}/releases | Lists a product\&#39;s releases.
+*RequirementServiceApi* | [**requirementServiceAttributeRequirementComponents**](docs/RequirementServiceApi.md#requirementserviceattributerequirementcomponents) | **POST** /v1/products/{productId}/requirement-components:derive | Derives requirement-component attribution from each requirement\&#39;s own repo_file anchors.
 *RequirementServiceApi* | [**requirementServiceCreateRequirement**](docs/RequirementServiceApi.md#requirementservicecreaterequirement) | **POST** /v1/products/{productId}/requirements | Creates a requirement.
 *RequirementServiceApi* | [**requirementServiceDeleteRequirement**](docs/RequirementServiceApi.md#requirementservicedeleterequirement) | **DELETE** /v1/requirements/{id} | Deletes a requirement.
 *RequirementServiceApi* | [**requirementServiceGetRequirement**](docs/RequirementServiceApi.md#requirementservicegetrequirement) | **GET** /v1/requirements/{id} | Fetches one requirement by id.
@@ -120,6 +141,7 @@ Class | Method | HTTP request | Description
 *TestRunServiceApi* | [**testRunServiceListRunResults**](docs/TestRunServiceApi.md#testrunservicelistrunresults) | **GET** /v1/products/{productId}/runs/{runSeq}/results | Lists a run\&#39;s reported results.
 *TestRunServiceApi* | [**testRunServiceListTestRuns**](docs/TestRunServiceApi.md#testrunservicelisttestruns) | **GET** /v1/products/{productId}/runs | Lists a product\&#39;s test runs.
 *TestRunServiceApi* | [**testRunServiceReportResults**](docs/TestRunServiceApi.md#testrunservicereportresults) | **POST** /v1/products/{productId}/runs/{runSeq}/results:report | Reports a batch of test results into a run.
+*TestRunServiceApi* | [**testRunServiceUploadRunAttachments**](docs/TestRunServiceApi.md#testrunserviceuploadrunattachments) | **POST** /v1/products/{product_id}/attachments:upload | Uploads run attachments and returns their content hashes.
 *TestServiceApi* | [**testServiceCreateTest**](docs/TestServiceApi.md#testservicecreatetest) | **POST** /v1/products/{productId}/tests | Creates a test suite or case.
 *TestServiceApi* | [**testServiceDeleteTest**](docs/TestServiceApi.md#testservicedeletetest) | **DELETE** /v1/tests/{id} | Deletes a test.
 *TestServiceApi* | [**testServiceDeriveTestLinks**](docs/TestServiceApi.md#testservicederivetestlinks) | **POST** /v1/products/{productId}/test-links:derive | Derives test-requirement links from shared file anchors.
@@ -140,6 +162,8 @@ Class | Method | HTTP request | Description
  - [AbortTestRunResponse](docs/AbortTestRunResponse.md)
  - [AcceptRiskBody](docs/AcceptRiskBody.md)
  - [AcceptRiskResponse](docs/AcceptRiskResponse.md)
+ - [AdvanceRepoWatermarkBody](docs/AdvanceRepoWatermarkBody.md)
+ - [AdvanceRepoWatermarkResponse](docs/AdvanceRepoWatermarkResponse.md)
  - [AgentConfig](docs/AgentConfig.md)
  - [AgentMemoryContext](docs/AgentMemoryContext.md)
  - [AgentRun](docs/AgentRun.md)
@@ -151,14 +175,22 @@ Class | Method | HTTP request | Description
  - [ApproveRiskResponse](docs/ApproveRiskResponse.md)
  - [AttributeChangedFilesBody](docs/AttributeChangedFilesBody.md)
  - [AttributeChangedFilesResponse](docs/AttributeChangedFilesResponse.md)
+ - [AttributeRequirementComponentsResponse](docs/AttributeRequirementComponentsResponse.md)
  - [AttributedChangedFile](docs/AttributedChangedFile.md)
+ - [AttributedRequirementComponent](docs/AttributedRequirementComponent.md)
  - [Branch](docs/Branch.md)
  - [BranchChangeStats](docs/BranchChangeStats.md)
+ - [BranchIntentState](docs/BranchIntentState.md)
+ - [BranchLatestRun](docs/BranchLatestRun.md)
+ - [BranchLoopStats](docs/BranchLoopStats.md)
  - [BranchRequirementLinkProposal](docs/BranchRequirementLinkProposal.md)
+ - [BulkUpdateIssueStatusBody](docs/BulkUpdateIssueStatusBody.md)
+ - [BulkUpdateIssueStatusResponse](docs/BulkUpdateIssueStatusResponse.md)
  - [CancelAgentRunBody](docs/CancelAgentRunBody.md)
  - [CancelAgentRunResponse](docs/CancelAgentRunResponse.md)
  - [Change](docs/Change.md)
  - [ChangedFile](docs/ChangedFile.md)
+ - [CodeLink](docs/CodeLink.md)
  - [CodebaseContext](docs/CodebaseContext.md)
  - [CodebaseFile](docs/CodebaseFile.md)
  - [CompleteTestRunResponse](docs/CompleteTestRunResponse.md)
@@ -172,6 +204,7 @@ Class | Method | HTTP request | Description
  - [ContextTest](docs/ContextTest.md)
  - [Coverage](docs/Coverage.md)
  - [CoverageGap](docs/CoverageGap.md)
+ - [CoveringTest](docs/CoveringTest.md)
  - [CreateAgentConfigBody](docs/CreateAgentConfigBody.md)
  - [CreateAgentConfigResponse](docs/CreateAgentConfigResponse.md)
  - [CreateBranchBody](docs/CreateBranchBody.md)
@@ -202,24 +235,34 @@ Class | Method | HTTP request | Description
  - [DistillIntentBody](docs/DistillIntentBody.md)
  - [DistillIntentResponse](docs/DistillIntentResponse.md)
  - [Environment](docs/Environment.md)
+ - [EventBucket](docs/EventBucket.md)
  - [FailingTest](docs/FailingTest.md)
  - [FeatureContext](docs/FeatureContext.md)
  - [FileAnchorCandidate](docs/FileAnchorCandidate.md)
  - [FixHint](docs/FixHint.md)
+ - [Frame](docs/Frame.md)
  - [GetAgentConfigResponse](docs/GetAgentConfigResponse.md)
  - [GetAgentRunResponse](docs/GetAgentRunResponse.md)
  - [GetBranchResponse](docs/GetBranchResponse.md)
  - [GetCurrentUserResponse](docs/GetCurrentUserResponse.md)
  - [GetEnvironmentResponse](docs/GetEnvironmentResponse.md)
+ - [GetIntentSessionResponse](docs/GetIntentSessionResponse.md)
+ - [GetIssueEventResponse](docs/GetIssueEventResponse.md)
+ - [GetIssueEventStatsResponse](docs/GetIssueEventStatsResponse.md)
+ - [GetIssueFixContextResponse](docs/GetIssueFixContextResponse.md)
+ - [GetIssueResponse](docs/GetIssueResponse.md)
  - [GetMergePreviewResponse](docs/GetMergePreviewResponse.md)
  - [GetProductResponse](docs/GetProductResponse.md)
  - [GetReleaseResponse](docs/GetReleaseResponse.md)
+ - [GetRepoWatermarkResponse](docs/GetRepoWatermarkResponse.md)
  - [GetRequirementGraphResponse](docs/GetRequirementGraphResponse.md)
  - [GetRequirementResponse](docs/GetRequirementResponse.md)
  - [GetRequirementTestContextResponse](docs/GetRequirementTestContextResponse.md)
  - [GetRunAttachmentResponse](docs/GetRunAttachmentResponse.md)
  - [GetRunResultResponse](docs/GetRunResultResponse.md)
  - [GetRunSummaryResponse](docs/GetRunSummaryResponse.md)
+ - [GetSessionProgressBody](docs/GetSessionProgressBody.md)
+ - [GetSessionProgressResponse](docs/GetSessionProgressResponse.md)
  - [GetTestResponse](docs/GetTestResponse.md)
  - [GetTestRunResponse](docs/GetTestRunResponse.md)
  - [GetTraceabilityResponse](docs/GetTraceabilityResponse.md)
@@ -227,24 +270,39 @@ Class | Method | HTTP request | Description
  - [GraphCoverageGapsResponse](docs/GraphCoverageGapsResponse.md)
  - [GraphEdge](docs/GraphEdge.md)
  - [GraphNode](docs/GraphNode.md)
+ - [ImpactCoverage](docs/ImpactCoverage.md)
+ - [ImpactedRequirement](docs/ImpactedRequirement.md)
  - [IngestError](docs/IngestError.md)
  - [IngestStats](docs/IngestStats.md)
  - [IngestSuiteSegment](docs/IngestSuiteSegment.md)
  - [IngestTest](docs/IngestTest.md)
  - [IngestTestsBody](docs/IngestTestsBody.md)
  - [IngestTestsResponse](docs/IngestTestsResponse.md)
+ - [IntentSession](docs/IntentSession.md)
+ - [IntentSessionNothingToDistill](docs/IntentSessionNothingToDistill.md)
+ - [IntentSessionSettlement](docs/IntentSessionSettlement.md)
+ - [IntentSessionSettlementItem](docs/IntentSessionSettlementItem.md)
+ - [Issue](docs/Issue.md)
+ - [IssueEnvironmentCount](docs/IssueEnvironmentCount.md)
+ - [IssueEvent](docs/IssueEvent.md)
+ - [IssueFixContext](docs/IssueFixContext.md)
  - [LinkRequirementBody](docs/LinkRequirementBody.md)
  - [ListAgentConfigsResponse](docs/ListAgentConfigsResponse.md)
  - [ListAgentRunEventsResponse](docs/ListAgentRunEventsResponse.md)
  - [ListAgentRunsResponse](docs/ListAgentRunsResponse.md)
  - [ListAgentTypesResponse](docs/ListAgentTypesResponse.md)
+ - [ListBranchCodeLinksResponse](docs/ListBranchCodeLinksResponse.md)
  - [ListBranchLinkProposalsResponse](docs/ListBranchLinkProposalsResponse.md)
  - [ListBranchesResponse](docs/ListBranchesResponse.md)
  - [ListComponentsResponse](docs/ListComponentsResponse.md)
  - [ListCoverageGapsResponse](docs/ListCoverageGapsResponse.md)
  - [ListEnvironmentsResponse](docs/ListEnvironmentsResponse.md)
+ - [ListIntentSessionsResponse](docs/ListIntentSessionsResponse.md)
+ - [ListIssueEventsResponse](docs/ListIssueEventsResponse.md)
+ - [ListIssuesResponse](docs/ListIssuesResponse.md)
  - [ListLinksResponse](docs/ListLinksResponse.md)
  - [ListProductsResponse](docs/ListProductsResponse.md)
+ - [ListReleaseIssuesResponse](docs/ListReleaseIssuesResponse.md)
  - [ListReleasesResponse](docs/ListReleasesResponse.md)
  - [ListRequirementAnchorsResponse](docs/ListRequirementAnchorsResponse.md)
  - [ListRequirementsResponse](docs/ListRequirementsResponse.md)
@@ -258,6 +316,7 @@ Class | Method | HTTP request | Description
  - [MatrixRequirement](docs/MatrixRequirement.md)
  - [MergeBranchBody](docs/MergeBranchBody.md)
  - [MergeBranchResponse](docs/MergeBranchResponse.md)
+ - [MergeIntentSessionState](docs/MergeIntentSessionState.md)
  - [MergeModification](docs/MergeModification.md)
  - [MergeStats](docs/MergeStats.md)
  - [NullValue](docs/NullValue.md)
@@ -274,7 +333,13 @@ Class | Method | HTTP request | Description
  - [ProductSetupAgentStatus](docs/ProductSetupAgentStatus.md)
  - [ProductSetupState](docs/ProductSetupState.md)
  - [ProductWithSummary](docs/ProductWithSummary.md)
+ - [RadiusDrop](docs/RadiusDrop.md)
+ - [RecordSessionRiskAcceptancesBody](docs/RecordSessionRiskAcceptancesBody.md)
+ - [RecordSessionRiskAcceptancesResponse](docs/RecordSessionRiskAcceptancesResponse.md)
+ - [RecordSessionSettlementBody](docs/RecordSessionSettlementBody.md)
+ - [RecordSessionSettlementResponse](docs/RecordSessionSettlementResponse.md)
  - [Release](docs/Release.md)
+ - [RepoWatermark](docs/RepoWatermark.md)
  - [ReportError](docs/ReportError.md)
  - [ReportResultsBody](docs/ReportResultsBody.md)
  - [ReportResultsResponse](docs/ReportResultsResponse.md)
@@ -288,18 +353,24 @@ Class | Method | HTTP request | Description
  - [RequirementSourcesUpdate](docs/RequirementSourcesUpdate.md)
  - [RequirementTestContext](docs/RequirementTestContext.md)
  - [RequirementTestFields](docs/RequirementTestFields.md)
+ - [RequirementTier](docs/RequirementTier.md)
  - [ResolveFeatureContextResponse](docs/ResolveFeatureContextResponse.md)
  - [ResultCreate](docs/ResultCreate.md)
  - [ResultExecution](docs/ResultExecution.md)
  - [ResultStep](docs/ResultStep.md)
  - [ResultStepData](docs/ResultStepData.md)
  - [ResultStepExecution](docs/ResultStepExecution.md)
+ - [RetrievedRequirementIds](docs/RetrievedRequirementIds.md)
  - [ReviewBranchLinkProposalsBody](docs/ReviewBranchLinkProposalsBody.md)
  - [ReviewBranchLinkProposalsResponse](docs/ReviewBranchLinkProposalsResponse.md)
  - [RunCaseSummary](docs/RunCaseSummary.md)
  - [RunParamCombo](docs/RunParamCombo.md)
  - [RunStats](docs/RunStats.md)
  - [RunSuiteSummary](docs/RunSuiteSummary.md)
+ - [SessionProgressRequirement](docs/SessionProgressRequirement.md)
+ - [SessionProgressSummary](docs/SessionProgressSummary.md)
+ - [SessionProgressTest](docs/SessionProgressTest.md)
+ - [SessionRiskAcceptance](docs/SessionRiskAcceptance.md)
  - [SourceMap](docs/SourceMap.md)
  - [StaleCoverageSignal](docs/StaleCoverageSignal.md)
  - [StartAgentRunBody](docs/StartAgentRunBody.md)
@@ -309,6 +380,7 @@ Class | Method | HTTP request | Description
  - [StreamResultOfAgentRunEvent](docs/StreamResultOfAgentRunEvent.md)
  - [SubjectResult](docs/SubjectResult.md)
  - [SuiteSegment](docs/SuiteSegment.md)
+ - [SuspectRequirement](docs/SuspectRequirement.md)
  - [Test](docs/Test.md)
  - [TestExecution](docs/TestExecution.md)
  - [TestMergeModification](docs/TestMergeModification.md)
@@ -321,16 +393,27 @@ Class | Method | HTTP request | Description
  - [TestStep](docs/TestStep.md)
  - [TouchedNode](docs/TouchedNode.md)
  - [TraceabilityMatrix](docs/TraceabilityMatrix.md)
+ - [UpdateBranchBody](docs/UpdateBranchBody.md)
+ - [UpdateBranchResponse](docs/UpdateBranchResponse.md)
  - [UpdateComponentBody](docs/UpdateComponentBody.md)
  - [UpdateComponentResponse](docs/UpdateComponentResponse.md)
+ - [UpdateIssueStatusBody](docs/UpdateIssueStatusBody.md)
+ - [UpdateIssueStatusResponse](docs/UpdateIssueStatusResponse.md)
  - [UpdateRequirementBody](docs/UpdateRequirementBody.md)
  - [UpdateRequirementResponse](docs/UpdateRequirementResponse.md)
  - [UpdateTestBody](docs/UpdateTestBody.md)
  - [UpdateTestResponse](docs/UpdateTestResponse.md)
  - [UpdateUserOnboardingRequest](docs/UpdateUserOnboardingRequest.md)
  - [UpdateUserOnboardingResponse](docs/UpdateUserOnboardingResponse.md)
+ - [UpsertBranchCodeLinksBody](docs/UpsertBranchCodeLinksBody.md)
+ - [UpsertBranchCodeLinksResponse](docs/UpsertBranchCodeLinksResponse.md)
+ - [UpsertIntentSessionBody](docs/UpsertIntentSessionBody.md)
+ - [UpsertIntentSessionResponse](docs/UpsertIntentSessionResponse.md)
  - [User](docs/User.md)
  - [UserOnboardingState](docs/UserOnboardingState.md)
+ - [V1UploadRunAttachmentResult](docs/V1UploadRunAttachmentResult.md)
+ - [V1UploadRunAttachmentsError](docs/V1UploadRunAttachmentsError.md)
+ - [V1UploadRunAttachmentsResponse](docs/V1UploadRunAttachmentsResponse.md)
  - [Verdict](docs/Verdict.md)
  - [VerdictScope](docs/VerdictScope.md)
  - [VerdictStatus](docs/VerdictStatus.md)

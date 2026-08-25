@@ -18,5 +18,9 @@ export interface MatrixCell {
     'testCase'?: string;
     'status'?: string;
     'display'?: string;
+    /**
+     * test reference; pinned by TIDEN-135 so the grid stays diffable across runs — do not repurpose it.  join key: lets a client attach gate-accurate status to
+     */
+    'testId'?: string;
 }
 

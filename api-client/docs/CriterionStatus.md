@@ -1,5 +1,6 @@
 # CriterionStatus
 
+- CRITERION_STATUS_NOT_APPLICABLE: e.g. prod issues (Stream B) on branch scope
 
 ## Enum
 

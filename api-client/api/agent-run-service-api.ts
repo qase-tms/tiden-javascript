@@ -218,7 +218,7 @@ export const AgentRunServiceApiAxiosParamCreator = function (configuration?: Con
             };
         },
         /**
-         * Enqueues a new run (status \"pending\") and notifies the agent worker to pick it up; the call returns without waiting for execution. Fails when the config is disabled. inputs_override_json overrides the config\'s inputs_json for this run only, without persisting it. Follow progress via GetAgentRun or ListAgentRunEvents.
+         * Enqueues a new run (status \"pending\") for execution; the call returns without waiting for it to finish. Fails when the config is disabled. inputs_override_json overrides the config\'s inputs_json for this run only, without persisting it. Follow progress via GetAgentRun or ListAgentRunEvents.
          * @summary Starts a run of an agent configuration.
          * @param {string} agentConfigId 
          * @param {StartAgentRunBody} startAgentRunBody 
@@ -368,7 +368,7 @@ export const AgentRunServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Enqueues a new run (status \"pending\") and notifies the agent worker to pick it up; the call returns without waiting for execution. Fails when the config is disabled. inputs_override_json overrides the config\'s inputs_json for this run only, without persisting it. Follow progress via GetAgentRun or ListAgentRunEvents.
+         * Enqueues a new run (status \"pending\") for execution; the call returns without waiting for it to finish. Fails when the config is disabled. inputs_override_json overrides the config\'s inputs_json for this run only, without persisting it. Follow progress via GetAgentRun or ListAgentRunEvents.
          * @summary Starts a run of an agent configuration.
          * @param {string} agentConfigId 
          * @param {StartAgentRunBody} startAgentRunBody 
@@ -445,7 +445,7 @@ export const AgentRunServiceApiFactory = function (configuration?: Configuration
             return localVarFp.agentRunServiceListAgentRuns(requestParameters.agentConfigId, requestParameters.pageSize, requestParameters.pageToken, options).then((request) => request(axios, basePath));
         },
         /**
-         * Enqueues a new run (status \"pending\") and notifies the agent worker to pick it up; the call returns without waiting for execution. Fails when the config is disabled. inputs_override_json overrides the config\'s inputs_json for this run only, without persisting it. Follow progress via GetAgentRun or ListAgentRunEvents.
+         * Enqueues a new run (status \"pending\") for execution; the call returns without waiting for it to finish. Fails when the config is disabled. inputs_override_json overrides the config\'s inputs_json for this run only, without persisting it. Follow progress via GetAgentRun or ListAgentRunEvents.
          * @summary Starts a run of an agent configuration.
          * @param {AgentRunServiceApiAgentRunServiceStartAgentRunRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
@@ -575,7 +575,7 @@ export class AgentRunServiceApi extends BaseAPI {
     }
 
     /**
-     * Enqueues a new run (status \"pending\") and notifies the agent worker to pick it up; the call returns without waiting for execution. Fails when the config is disabled. inputs_override_json overrides the config\'s inputs_json for this run only, without persisting it. Follow progress via GetAgentRun or ListAgentRunEvents.
+     * Enqueues a new run (status \"pending\") for execution; the call returns without waiting for it to finish. Fails when the config is disabled. inputs_override_json overrides the config\'s inputs_json for this run only, without persisting it. Follow progress via GetAgentRun or ListAgentRunEvents.
      * @summary Starts a run of an agent configuration.
      * @param {AgentRunServiceApiAgentRunServiceStartAgentRunRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.

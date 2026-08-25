@@ -23,5 +23,10 @@ export interface CreateTestRunBody {
     'buildSha'?: string;
     'startedAt'?: string;
     'clientMeta'?: { [key: string]: string; };
+    'intentSessionId'?: string;
+    /**
+     * The session\'s Tiden intent branch: live-documentation sync lands there instead of resolving the free-text git `branch` name (which never creates a Tiden branch). Set by an in-session `tiden run exec`; empty otherwise.
+     */
+    'intentBranch'?: string;
 }
 

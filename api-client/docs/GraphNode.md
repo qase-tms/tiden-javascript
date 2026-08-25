@@ -11,7 +11,7 @@ Name | Type | Description | Notes
 **status** | **string** |  | [optional] [default to undefined]
 **coverageStatus** | **string** |  | [optional] [default to undefined]
 **parentId** | **string** |  | [optional] [default to undefined]
-**kind** | **string** | kind distinguishes node types in the graph (shift-left v3). \&quot;requirement\&quot; (default) or \&quot;component\&quot; — a component node reached via an impacts_component edge. Component nodes carry their name in &#x60;title&#x60;; seq_num/status/parent_id are empty. | [optional] [default to undefined]
+**kind** | **string** | kind distinguishes node types in the graph. \&quot;requirement\&quot; (default) or \&quot;component\&quot; — a component node reached via an impacts_component edge. Component nodes carry their name in &#x60;title&#x60;; seq_num/status/parent_id are empty. | [optional] [default to undefined]
 
 ## Example
 

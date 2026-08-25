@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 **touchedNodes** | [**Array&lt;TouchedNode&gt;**](TouchedNode.md) |  | [optional] [default to undefined]
 **coverage** | [**Coverage**](Coverage.md) |  | [optional] [default to undefined]
 **via** | **Array&lt;string&gt;** |  | [optional] [default to undefined]
+**tier** | [**RequirementTier**](RequirementTier.md) |  | [optional] [default to undefined]
 
 ## Example
 
@@ -21,6 +22,7 @@ const instance: FeatureContext = {
     touchedNodes,
     coverage,
     via,
+    tier,
 };
 ```
 

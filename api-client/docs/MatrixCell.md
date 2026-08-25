@@ -8,6 +8,7 @@ Name | Type | Description | Notes
 **testCase** | **string** |  | [optional] [default to undefined]
 **status** | **string** |  | [optional] [default to undefined]
 **display** | **string** |  | [optional] [default to undefined]
+**testId** | **string** | test reference; pinned by TIDEN-135 so the grid stays diffable across runs — do not repurpose it.  join key: lets a client attach gate-accurate status to | [optional] [default to undefined]
 
 ## Example
 
@@ -18,6 +19,7 @@ const instance: MatrixCell = {
     testCase,
     status,
     display,
+    testId,
 };
 ```
 

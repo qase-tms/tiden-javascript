@@ -47,6 +47,10 @@ import type { ReportResultsBody } from '../model';
 import type { ReportResultsResponse } from '../model';
 // @ts-ignore
 import type { Status } from '../model';
+// @ts-ignore
+import type { V1UploadRunAttachmentsError } from '../model';
+// @ts-ignore
+import type { V1UploadRunAttachmentsResponse } from '../model';
 /**
  * TestRunServiceApi - axios parameter creator
  */
@@ -579,6 +583,55 @@ export const TestRunServiceApiAxiosParamCreator = function (configuration?: Conf
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * Multipart upload used by the reporters before ReportResults: each returned hash goes into a result\'s `attachments`. Not a gRPC method (multipart is not expressible in protobuf), so it is served by a gateway HandlePath route that authenticates the bearer token itself; see app/backend/internal/server/run_attachment_upload.go. Limits per request: 20 files, 32 MiB per file, 128 MiB total, 5 minute read deadline. Repeat the `file[]` part once per file (`file` is also accepted).
+         * @summary Uploads run attachments and returns their content hashes.
+         * @param {string} productId Product the attachments belong to.
+         * @param {Array<File>} file One part per file, repeated.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        testRunServiceUploadRunAttachments: async (productId: string, file: Array<File>, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'productId' is not null or undefined
+            assertParamExists('testRunServiceUploadRunAttachments', 'productId', productId)
+            // verify required parameter 'file' is not null or undefined
+            assertParamExists('testRunServiceUploadRunAttachments', 'file', file)
+            const localVarPath = `/v1/products/{product_id}/attachments:upload`
+                .replace(`{${"product_id"}}`, encodeURIComponent(String(productId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+            const localVarFormParams = new ((configuration && configuration.formDataCtor) || FormData)();
+
+            // authentication BearerAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            if (file) {
+                file.forEach((element) => {
+                    localVarFormParams.append('file[]', element as any);
+                })
+            }
+
+            localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = localVarFormParams;
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
@@ -757,6 +810,20 @@ export const TestRunServiceApiFp = function(configuration?: Configuration) {
             const localVarOperationServerBasePath = operationServerMap['TestRunServiceApi.testRunServiceReportResults']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
+        /**
+         * Multipart upload used by the reporters before ReportResults: each returned hash goes into a result\'s `attachments`. Not a gRPC method (multipart is not expressible in protobuf), so it is served by a gateway HandlePath route that authenticates the bearer token itself; see app/backend/internal/server/run_attachment_upload.go. Limits per request: 20 files, 32 MiB per file, 128 MiB total, 5 minute read deadline. Repeat the `file[]` part once per file (`file` is also accepted).
+         * @summary Uploads run attachments and returns their content hashes.
+         * @param {string} productId Product the attachments belong to.
+         * @param {Array<File>} file One part per file, repeated.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async testRunServiceUploadRunAttachments(productId: string, file: Array<File>, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<V1UploadRunAttachmentsResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.testRunServiceUploadRunAttachments(productId, file, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['TestRunServiceApi.testRunServiceUploadRunAttachments']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
     }
 };
 
@@ -875,6 +942,16 @@ export const TestRunServiceApiFactory = function (configuration?: Configuration,
          */
         testRunServiceReportResults(requestParameters: TestRunServiceApiTestRunServiceReportResultsRequest, options?: RawAxiosRequestConfig): AxiosPromise<ReportResultsResponse> {
             return localVarFp.testRunServiceReportResults(requestParameters.productId, requestParameters.runSeq, requestParameters.reportResultsBody, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Multipart upload used by the reporters before ReportResults: each returned hash goes into a result\'s `attachments`. Not a gRPC method (multipart is not expressible in protobuf), so it is served by a gateway HandlePath route that authenticates the bearer token itself; see app/backend/internal/server/run_attachment_upload.go. Limits per request: 20 files, 32 MiB per file, 128 MiB total, 5 minute read deadline. Repeat the `file[]` part once per file (`file` is also accepted).
+         * @summary Uploads run attachments and returns their content hashes.
+         * @param {TestRunServiceApiTestRunServiceUploadRunAttachmentsRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        testRunServiceUploadRunAttachments(requestParameters: TestRunServiceApiTestRunServiceUploadRunAttachmentsRequest, options?: RawAxiosRequestConfig): AxiosPromise<V1UploadRunAttachmentsResponse> {
+            return localVarFp.testRunServiceUploadRunAttachments(requestParameters.productId, requestParameters.file, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -1036,6 +1113,21 @@ export interface TestRunServiceApiTestRunServiceReportResultsRequest {
 }
 
 /**
+ * Request parameters for testRunServiceUploadRunAttachments operation in TestRunServiceApi.
+ */
+export interface TestRunServiceApiTestRunServiceUploadRunAttachmentsRequest {
+    /**
+     * Product the attachments belong to.
+     */
+    readonly productId: string
+
+    /**
+     * One part per file, repeated.
+     */
+    readonly file: Array<File>
+}
+
+/**
  * TestRunServiceApi - object-oriented interface
  */
 export class TestRunServiceApi extends BaseAPI {
@@ -1158,6 +1250,17 @@ export class TestRunServiceApi extends BaseAPI {
      */
     public testRunServiceReportResults(requestParameters: TestRunServiceApiTestRunServiceReportResultsRequest, options?: RawAxiosRequestConfig) {
         return TestRunServiceApiFp(this.configuration).testRunServiceReportResults(requestParameters.productId, requestParameters.runSeq, requestParameters.reportResultsBody, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Multipart upload used by the reporters before ReportResults: each returned hash goes into a result\'s `attachments`. Not a gRPC method (multipart is not expressible in protobuf), so it is served by a gateway HandlePath route that authenticates the bearer token itself; see app/backend/internal/server/run_attachment_upload.go. Limits per request: 20 files, 32 MiB per file, 128 MiB total, 5 minute read deadline. Repeat the `file[]` part once per file (`file` is also accepted).
+     * @summary Uploads run attachments and returns their content hashes.
+     * @param {TestRunServiceApiTestRunServiceUploadRunAttachmentsRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public testRunServiceUploadRunAttachments(requestParameters: TestRunServiceApiTestRunServiceUploadRunAttachmentsRequest, options?: RawAxiosRequestConfig) {
+        return TestRunServiceApiFp(this.configuration).testRunServiceUploadRunAttachments(requestParameters.productId, requestParameters.file, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

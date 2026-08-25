@@ -13,6 +13,9 @@
  */
 
 
+// May contain unused imports in some cases
+// @ts-ignore
+import type { RequirementTier } from './requirement-tier';
 
 /**
  * TouchedNode is one node of a feature\'s relevance slice (a seed, an ancestor on the seed->root path, or a co_anchored neighbor). resources are its branch-effective repo_file anchor paths.
@@ -24,8 +27,11 @@ export interface TouchedNode {
     'description'?: string;
     'resources'?: Array<string>;
     /**
-     * repository is the canonical repo id of this node\'s component (shift-left v3), or \"\" when unscoped. Lets the CLI verdict compare changed files vs resources per-repo (avoids cross-repo path collisions). resources are repo-relative.
+     * repository is the canonical repo id of this node\'s component, or \"\" when unscoped. Lets the CLI verdict compare changed files vs resources per-repo (avoids cross-repo path collisions). resources are repo-relative.
      */
     'repository'?: string;
+    'tier'?: RequirementTier;
 }
+
+
 

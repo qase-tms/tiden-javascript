@@ -22,6 +22,7 @@ export * from './api/branch-service-api';
 export * from './api/component-service-api';
 export * from './api/environment-service-api';
 export * from './api/intent-service-api';
+export * from './api/intent-session-service-api';
 export * from './api/issue-service-api';
 export * from './api/product-service-api';
 export * from './api/quality-gate-service-api';

@@ -15,7 +15,7 @@
 
 
 /**
- * Component is a deployment/architectural unit of a product. The repository/component_paths/repository_aliases scope maps changed files to the component (shift-left v3).
+ * Component is a deployment/architectural unit of a product. The repository/component_paths/repository_aliases scope maps changed files to the component.
  */
 export interface Component {
     'id'?: string;
@@ -28,7 +28,7 @@ export interface Component {
     'sourceId'?: string;
     'branchStatus'?: string;
     /**
-     * Shift-left v3: repository-aware components.  canonical repo id (e.g. \"github.com/qase-tms/tiden-cli\"); unset = unscoped/main repo
+     * Repository-aware component scope.  canonical repo id (e.g. \"github.com/acme/backend\"); unset = unscoped/main repo
      */
     'repository'?: string;
     'componentPaths'?: Array<string>;

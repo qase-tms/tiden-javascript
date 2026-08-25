@@ -16,8 +16,12 @@
 
 export interface MergeBranchBody {
     /**
-     * Resolution map keys are prefixed: \"req:<uuid>\", \"test:<uuid>\", or \"comp:<uuid>\". Server accepts un-prefixed keys as `req:` for v1 backwards compat (deprecated; logged with warning, removal scheduled for v2).
+     * Resolution map keys are prefixed: \"req:<uuid>\", \"test:<uuid>\", or \"comp:<uuid>\". Server accepts un-prefixed keys as `req:` for v1 backwards compat (deprecated; use prefixed keys).
      */
     'resolutions'?: { [key: string]: string; };
+    /**
+     * allow_undistilled overrides the INTENT_UNDISTILLED merge guard: a branch carrying an intent session that is not closed, has no recorded settlement, and has requirement changes normally refuses to merge. This is a recorded human decision — true merges anyway and stamps the override (session id, actor) onto the merge\'s activity event. Branches with no intent session record are never blocked, so this is a no-op for them.
+     */
+    'allowUndistilled'?: boolean;
 }
 

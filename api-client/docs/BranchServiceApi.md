@@ -8,8 +8,11 @@ All URIs are relative to *https://api.tiden.ai*
 |[**branchServiceDeleteBranch**](#branchservicedeletebranch) | **DELETE** /v1/branches/{id} | Deletes a branch and discards its copy-on-write changes.|
 |[**branchServiceGetBranch**](#branchservicegetbranch) | **GET** /v1/branches/{id} | Fetches one branch by id.|
 |[**branchServiceGetMergePreview**](#branchservicegetmergepreview) | **GET** /v1/branches/{id}/merge-preview | Previews the effect of merging a branch into main.|
+|[**branchServiceListBranchCodeLinks**](#branchservicelistbranchcodelinks) | **GET** /v1/branches/{branchId}/code-links | Lists a branch\&#39;s durable code links (git branches, pull requests).|
 |[**branchServiceListBranches**](#branchservicelistbranches) | **GET** /v1/products/{productId}/branches | Lists a product\&#39;s branches.|
 |[**branchServiceMergeBranch**](#branchservicemergebranch) | **POST** /v1/branches/{id}/merge | Merges a branch\&#39;s changes into main and closes the branch.|
+|[**branchServiceUpdateBranch**](#branchserviceupdatebranch) | **PATCH** /v1/branches/{id} | Updates a branch\&#39;s description and/or created_by_agent.|
+|[**branchServiceUpsertBranchCodeLinks**](#branchserviceupsertbranchcodelinks) | **POST** /v1/branches/{branchId}/code-links | Upserts a batch of code links onto a branch.|
 
 # **branchServiceCreateBranch**
 > CreateBranchResponse branchServiceCreateBranch(createBranchBody)
@@ -223,10 +226,62 @@ const { status, data } = await apiInstance.branchServiceGetMergePreview(
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **branchServiceListBranchCodeLinks**
+> ListBranchCodeLinksResponse branchServiceListBranchCodeLinks()
+
+Returns every link recorded for the branch, pull requests before git branches, then most recently updated first.
+
+### Example
+
+```typescript
+import {
+    BranchServiceApi,
+    Configuration
+} from '@tiden/api-client';
+
+const configuration = new Configuration();
+const apiInstance = new BranchServiceApi(configuration);
+
+let branchId: string; // (default to undefined)
+
+const { status, data } = await apiInstance.branchServiceListBranchCodeLinks(
+    branchId
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **branchId** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+**ListBranchCodeLinksResponse**
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | A successful response. |  -  |
+|**0** | An unexpected error response. |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **branchServiceListBranches**
 > ListBranchesResponse branchServiceListBranches()
 
-Returns every branch including main. Set include_stats to add per-branch change counts vs main (additions/modifications/deletions per entity kind, plus conflicts).
+Returns every branch including main. Set include_stats to add per-branch change counts vs main (additions/modifications/deletions per entity kind, plus conflicts). Set include_status to add loop/latest-run/code-link/ intent-capture signals (Branch.loop/.latest_run/.code_links/.intent) — independent of include_stats, each is its own fixed-query-count batch read, so a caller that needs only the branch list is not charged for it.
 
 ### Example
 
@@ -241,10 +296,12 @@ const apiInstance = new BranchServiceApi(configuration);
 
 let productId: string; // (default to undefined)
 let includeStats: boolean; //When true, each returned Branch carries BranchChangeStats (per-branch change counts vs main). (optional) (default to undefined)
+let includeStatus: boolean; //When true, each returned Branch carries loop/latest-run/code-link/intent status signals (Branch.loop, .latest_run, .code_links, .intent). Kept separate from include_stats: the sidebar branch dropdown calls List without stats and must not pay for this extra work either. (optional) (default to undefined)
 
 const { status, data } = await apiInstance.branchServiceListBranches(
     productId,
-    includeStats
+    includeStats,
+    includeStatus
 );
 ```
 
@@ -254,6 +311,7 @@ const { status, data } = await apiInstance.branchServiceListBranches(
 |------------- | ------------- | ------------- | -------------|
 | **productId** | [**string**] |  | defaults to undefined|
 | **includeStats** | [**boolean**] | When true, each returned Branch carries BranchChangeStats (per-branch change counts vs main). | (optional) defaults to undefined|
+| **includeStatus** | [**boolean**] | When true, each returned Branch carries loop/latest-run/code-link/intent status signals (Branch.loop, .latest_run, .code_links, .intent). Kept separate from include_stats: the sidebar branch dropdown calls List without stats and must not pay for this extra work either. | (optional) defaults to undefined|
 
 
 ### Return type
@@ -315,6 +373,118 @@ const { status, data } = await apiInstance.branchServiceMergeBranch(
 ### Return type
 
 **MergeBranchResponse**
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | A successful response. |  -  |
+|**0** | An unexpected error response. |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **branchServiceUpdateBranch**
+> UpdateBranchResponse branchServiceUpdateBranch(updateBranchBody)
+
+Both request fields are optional: an absent field leaves the branch\'s current value unchanged, a present field (including an empty string) sets it. created_by_agent is validated server-side against a fixed allowlist — an unrecognized value is stored as empty string.
+
+### Example
+
+```typescript
+import {
+    BranchServiceApi,
+    Configuration,
+    UpdateBranchBody
+} from '@tiden/api-client';
+
+const configuration = new Configuration();
+const apiInstance = new BranchServiceApi(configuration);
+
+let id: string; // (default to undefined)
+let updateBranchBody: UpdateBranchBody; //
+
+const { status, data } = await apiInstance.branchServiceUpdateBranch(
+    id,
+    updateBranchBody
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **updateBranchBody** | **UpdateBranchBody**|  | |
+| **id** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+**UpdateBranchResponse**
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | A successful response. |  -  |
+|**0** | An unexpected error response. |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **branchServiceUpsertBranchCodeLinks**
+> UpsertBranchCodeLinksResponse branchServiceUpsertBranchCodeLinks(upsertBranchCodeLinksBody)
+
+Each entry is keyed by (kind, repository, ref): a repeat of an existing key updates url/title/state/base_sha/head_sha instead of duplicating. kind must be \"git_branch\" or \"pull_request\"; state must be \"\", \"open\", \"merged\", or \"closed\". Fails closed on the first invalid entry — nothing is written if any entry is invalid.
+
+### Example
+
+```typescript
+import {
+    BranchServiceApi,
+    Configuration,
+    UpsertBranchCodeLinksBody
+} from '@tiden/api-client';
+
+const configuration = new Configuration();
+const apiInstance = new BranchServiceApi(configuration);
+
+let branchId: string; // (default to undefined)
+let upsertBranchCodeLinksBody: UpsertBranchCodeLinksBody; //
+
+const { status, data } = await apiInstance.branchServiceUpsertBranchCodeLinks(
+    branchId,
+    upsertBranchCodeLinksBody
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **upsertBranchCodeLinksBody** | **UpsertBranchCodeLinksBody**|  | |
+| **branchId** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+**UpsertBranchCodeLinksResponse**
 
 ### Authorization
 
