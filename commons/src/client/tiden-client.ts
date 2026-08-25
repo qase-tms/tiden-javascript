@@ -16,8 +16,8 @@ interface ReportErrorDetail { index?: number; resultId?: string; code?: string; 
  * Facade over the Tiden REST API.
  *
  * The JSON endpoints (create/report/complete) go through the generated
- * `@tiden/api-client`, so their request/response types track the OpenAPI spec
- * in qase-tms/tiden-specs. Attachment upload stays hand-written: it is a
+ * `@tiden/api-client`, so their request/response types track the Tiden
+ * OpenAPI contract. Attachment upload stays hand-written: it is a
  * multipart route with no generated operation (see AttachmentService).
  * Both share the one axios instance created here.
  */

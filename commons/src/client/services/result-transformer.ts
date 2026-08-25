@@ -57,9 +57,9 @@ export class ResultTransformer {
       ? (result.case_id.length > 0 ? result.case_id : null)
       : result.case_id !== null ? [result.case_id] : null;
 
-    // Field names/types come from the generated `ResultCreate` (api.v1
-    // ResultCreate via the OpenAPI spec), so they track repos/specs: JSON is
-    // lowerCamelCase and int64s are strings. Nullable internal values are
+    // Field names/types come from the generated `ResultCreate`, so they track
+    // the Tiden OpenAPI contract: JSON is lowerCamelCase and int64s are
+    // strings. Nullable internal values are
     // omitted rather than sent as `null` — protojson maps both to the field's
     // zero value, and omitting keeps the generated optional types honest.
     const model: ResultCreate = {
