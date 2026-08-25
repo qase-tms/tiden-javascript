@@ -13,11 +13,11 @@
 # exchanges this workflow's GitHub Actions OIDC token for a short-lived
 # publish token and attaches provenance to each published package.
 #
-# Manual prerequisite (one-time, done by the npm `@tiden` scope owner): add
-# this repo (qase-tms/tiden-javascript) as a Trusted Publisher for
-# @tiden/reporter-commons, @tiden/playwright-reporter, @tiden/vitest-reporter,
-# and @tiden/api-client under each package's npm "Trusted Publishers"
-# settings, before the first tag push that includes it.
+# Each package must have this repo configured as its Trusted Publisher on npm
+# before its first OIDC release. npm can only configure that on a package that
+# already exists, so a package published here for the very first time needs one
+# token-based publish to create it; every release after that goes through this
+# workflow.
 name: Release
 
 on:

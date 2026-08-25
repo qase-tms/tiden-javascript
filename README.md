@@ -93,11 +93,10 @@ See [`api-client/README.md`](api-client/README.md) for the full list of API clas
 [`api-client/docs/`](api-client/docs) for per-endpoint usage examples.
 
 > [!IMPORTANT]
-> **Generated — never edit by hand.** This package is produced by
-> [`qase-tms/tiden-specs`](https://github.com/qase-tms/tiden-specs) from the Tiden
-> OpenAPI spec and copied in as-is; regeneration PRs against this repo come from that
-> pipeline. Its version is set by `npmVersion` in tiden-specs' `sdk/ts.yml` and must
-> stay in lockstep with this repo's shared `vX.Y.Z` release tags — the release
+> **Generated — never edit by hand.** This package is generated from the Tiden
+> OpenAPI spec and copied in as-is; it arrives here through regeneration PRs
+> titled _Regenerate API client from the Tiden OpenAPI spec_. Its version stays
+> in lockstep with this repo's shared `vX.Y.Z` release tags — the release
 > workflow's version-gate step enforces the match before publishing.
 
 ## Releasing
@@ -106,9 +105,7 @@ Push a `vX.Y.Z` git tag to release: `.github/workflows/release.yml` builds, test
 publishes `@tiden/reporter-commons`, `@tiden/playwright-reporter`, `@tiden/vitest-reporter`,
 and `@tiden/api-client` to npm at the versions already set in each package's `package.json`,
 using npm's OIDC trusted publishing (no `NPM_TOKEN` secret; provenance attached
-automatically). One-time manual prerequisite: the npm `@tiden` scope owner must add this
-repo as a Trusted Publisher for all four packages in npm's package settings before the
-first tag push that includes each one.
+automatically).
 
 ## Lineage
 
