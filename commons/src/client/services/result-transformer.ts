@@ -4,7 +4,7 @@ import {
   ResultExecution,
   ResultStep,
   SuiteSegment,
-} from '@tiden/api-client';
+} from '../reporter-api-models';
 import {
   Attachment,
   Relation,
@@ -57,8 +57,8 @@ export class ResultTransformer {
       ? (result.case_id.length > 0 ? result.case_id : null)
       : result.case_id !== null ? [result.case_id] : null;
 
-    // Field names/types come from the generated `ResultCreate`, so they track
-    // the Tiden OpenAPI contract: JSON is lowerCamelCase and int64s are
+    // Field names/types follow the generated `ResultCreate` contract and are
+    // checked against it at test time: JSON is lowerCamelCase and int64s are
     // strings. Nullable internal values are
     // omitted rather than sent as `null` — protojson maps both to the field's
     // zero value, and omitting keeps the generated optional types honest.

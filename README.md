@@ -7,10 +7,10 @@ and the Playwright and Vitest reporters, reporting into Tiden's Test Runs API.
 
 | Package | Description | README |
 |---------|-------------|--------|
-| [`commons`](commons) — `@tiden/reporter-commons` | Shared reporter core (config, env, API client, formatting). Not installed directly — a dependency of framework reporters. | [commons/README.md](commons/README.md) |
+| [`commons`](commons) — `@tiden/reporter-commons` | Shared reporter core (config, env, narrow API transport, formatting). Not installed directly — a dependency of framework reporters. | [commons/README.md](commons/README.md) |
 | [`playwright`](playwright) — `@tiden/playwright-reporter` | Playwright reporter. Install this in your test project. | [playwright/README.md](playwright/README.md) |
 | [`vitest`](vitest) — `@tiden/vitest-reporter` | Vitest reporter. Install this in your test project. | [vitest/README.md](vitest/README.md) |
-| [`api-client`](api-client) — `@tiden/api-client` | Generated OpenAPI client for the Tiden public API. Install this to call the API directly. | [api-client/README.md](api-client/README.md) |
+| [`api-client`](api-client) | Private generated OpenAPI snapshot used to check the reporter contract at build time. It is not published to npm. | — |
 
 ## Quickstart
 
@@ -63,49 +63,24 @@ See [`vitest/README.md`](vitest/README.md) for its metadata API (`withTiden` / `
 network-profiler setup file, and configuration reference. Both reporters read the same
 `tiden.config.json` and `TIDEN_*` environment variables.
 
-## `@tiden/api-client`
+## API contract strategy
 
-Generated OpenAPI client for the Tiden public API (REST, for external consumers: the
-`tiden` CLI, reporters, and third-party integrations). It's a standalone axios-based
-client for API consumers — separate from, and not a replacement for, the hand-written
-reporter facade in `commons/src/client/`.
+The reporters use only three JSON operations: create a run, report a result batch, and
+complete a run. Their purpose-built runtime transport and DTOs live in `commons/src/client/`
+instead of pulling the full generated API client into every reporter installation.
 
-Auth is a bearer API token (`Authorization: Bearer tfy_...`), created in the app UI or
-via the CLI device-code flow.
-
-```sh
-npm install @tiden/api-client
-```
-
-```typescript
-import { Configuration, ProductServiceApi } from '@tiden/api-client';
-
-const configuration = new Configuration({
-  accessToken: 'tfy_...', // API token
-  // basePath defaults to https://api.tiden.ai; override for self-hosted/local
-});
-
-const products = new ProductServiceApi(configuration);
-const { data } = await products.productServiceListProducts(workspaceId);
-```
-
-See [`api-client/README.md`](api-client/README.md) for the full list of API classes and
-[`api-client/docs/`](api-client/docs) for per-endpoint usage examples.
-
-> [!IMPORTANT]
-> **Generated — never edit by hand.** This package is generated from the Tiden
-> OpenAPI spec and copied in as-is; it arrives here through regeneration PRs
-> titled _Regenerate API client from the Tiden OpenAPI spec_. Its version stays
-> in lockstep with this repo's shared `vX.Y.Z` release tags — the release
-> workflow's version-gate step enforces the match before publishing.
+The `api-client/` workspace is retained as an unpublished generated snapshot. A compile-time
+contract test compares the reporter DTOs with its OpenAPI-generated models, while wire tests
+verify paths, bearer auth, payload casing, int64 encoding, error handling, and retries. This
+keeps drift protection without making `@tiden/api-client` a public runtime dependency.
 
 ## Releasing
 
 Push a `vX.Y.Z` git tag to release: `.github/workflows/release.yml` builds, tests, and
-publishes `@tiden/reporter-commons`, `@tiden/playwright-reporter`, `@tiden/vitest-reporter`,
-and `@tiden/api-client` to npm at the versions already set in each package's `package.json`,
-using npm's OIDC trusted publishing (no `NPM_TOKEN` secret; provenance attached
-automatically).
+publishes `@tiden/reporter-commons`, `@tiden/playwright-reporter`, and
+`@tiden/vitest-reporter` to npm at the versions already set in each package's `package.json`,
+using npm's OIDC trusted publishing (no `NPM_TOKEN` secret; provenance attached automatically).
+The private `api-client/` snapshot is never published.
 
 ## Lineage
 

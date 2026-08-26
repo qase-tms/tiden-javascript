@@ -1,11 +1,9 @@
 # Release
 #
-# Tag-triggered npm publish for the tiden-javascript workspaces: builds,
-# tests, then publishes in dependency order — `api-client` (the generated
-# OpenAPI client) first because `commons` now depends on it at runtime, then
-# `commons`, then the framework reporters that depend on commons
-# (`playwright`, `vitest`). @tiden/api-client can no longer be held back from
-# a release: commons is unusable without it on the registry.
+# Tag-triggered npm publish for the installable tiden-javascript workspaces:
+# builds and tests the three reporter packages, then publishes `commons`
+# before the framework reporters that depend on it. The generated api-client
+# workspace is private and is never published.
 # Push a `vX.Y.Z` tag matching the versions already set in each package's
 # package.json to publish.
 #
@@ -45,19 +43,17 @@ jobs:
       - name: Verify tag matches package versions
         run: |
           TAG="${GITHUB_REF_NAME#v}"
-          for pkg in commons playwright vitest api-client; do
+          for pkg in commons playwright vitest; do
             V=$(node -p "require('./$pkg/package.json').version")
             if [ "$V" != "$TAG" ]; then
               echo "::error::$pkg is at version $V but the tag is v$TAG — bump package versions before tagging"
               exit 1
             fi
           done
-      - run: npm run build -ws --if-present
-      - run: npm run test -ws --if-present
-      # Publish order follows the dependency graph: api-client is a runtime
-      # dependency of commons (the JSON endpoints go through the generated
-      # client), and commons is a runtime dependency of both reporters.
-      - run: npm publish -w api-client --provenance --access public
+      - run: npm run build -w commons -w playwright -w vitest
+      - run: npm run test -w commons -w playwright -w vitest
+      # Publish order follows the dependency graph: commons is a runtime
+      # dependency of both framework reporters.
       - run: npm publish -w commons --provenance --access public
       - run: npm publish -w playwright --provenance --access public
       - run: npm publish -w vitest --provenance --access public

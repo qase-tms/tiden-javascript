@@ -43,12 +43,11 @@ function makeResult(overrides: Partial<any> = {}): TestResultType {
   } as unknown as TestResultType;
 }
 
-describe('TidenApiClient wire contract (generated @tiden/api-client over the shared axios instance)', () => {
+describe('TidenApiClient wire contract (narrow reporter transport over the shared axios instance)', () => {
   /**
-   * These lock the request the generated client actually puts on the wire:
-   * the same path/auth the hand-written layer used, and the generated
-   * `ResultCreate` field names/types (lowerCamelCase, int64 `duration` as a
-   * string). Verified against the live API before the switch.
+   * These lock the reporter transport request on the wire: path/auth plus the
+   * OpenAPI `ResultCreate` field names/types (lowerCamelCase, int64 `duration`
+   * as a string).
    */
   it('reports to the same path with the instance Bearer auth, and only that one auth header', async () => {
     let captured: { url?: string; auth?: unknown; method?: string; contentType?: unknown } = {};
@@ -66,8 +65,7 @@ describe('TidenApiClient wire contract (generated @tiden/api-client over the sha
     srv.close();
     expect(captured.method).toBe('POST');
     expect(captured.url).toBe('/v1/products/p1/runs/7/results:report');
-    // Auth comes from the axios instance only — the generated Configuration is
-    // built without an accessToken, so the token lives in exactly one place.
+    // Auth comes from the axios instance, so the token lives in one place.
     expect(captured.auth).toBe('Bearer tfy_t');
     expect(String(captured.contentType)).toContain('application/json');
   });
