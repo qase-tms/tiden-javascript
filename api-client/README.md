@@ -1,5 +1,10 @@
 ## @tiden/api-client@0.1.0
 
+> [!IMPORTANT]
+> This generated workspace is a private, repository-local OpenAPI contract snapshot.
+> It is not published to npm and is not a supported public SDK. JavaScript reporters
+> use the narrow runtime transport in `commons/src/client/` instead.
+
 This generator creates TypeScript/JavaScript client that utilizes [axios](https://github.com/axios/axios). The generated Node module can be used in the following environments:
 
 Environment
@@ -25,21 +30,11 @@ npm install
 npm run build
 ```
 
-### Publishing
-
-First build the package then run `npm publish`
-
 ### Consuming
 
+The generated client can be consumed locally for development and contract checks only:
+
 navigate to the folder of your consuming project and run one of the following commands.
-
-_published:_
-
-```
-npm install @tiden/api-client@0.1.0 --save
-```
-
-_unPublished (not recommended):_
 
 ```
 npm install PATH_TO_GENERATED_PACKAGE --save
@@ -352,4 +347,3 @@ Authentication schemes defined for the API:
 - **Type**: API key
 - **API key parameter name**: Authorization
 - **Location**: HTTP header
-

@@ -1,4 +1,5 @@
-import { CreateTestRunBody, TestRunServiceApi } from '@tiden/api-client';
+import { ReporterApi } from '../reporter-api';
+import { CreateTestRunBody } from '../reporter-api-models';
 import { LoggerInterface } from '../../utils/logger';
 import { TidenError } from '../../utils/tiden-error';
 import { TidenOptionsType } from '../../models/config/TidenOptionsType';
@@ -7,7 +8,7 @@ import { processError } from './api-error-handler';
 export class RunService {
   constructor(
     private readonly logger: LoggerInterface,
-    private readonly api: TestRunServiceApi,
+    private readonly api: ReporterApi,
   ) {}
 
   /**
@@ -20,8 +21,8 @@ export class RunService {
       return config.run.id; // sharded CI: pre-created run
     }
     try {
-      // Body shape comes from the generated CreateTestRunBody (lowerCamelCase
-      // JSON, hence `clientMeta`), so it tracks the OpenAPI spec.
+      // Body shape follows the OpenAPI contract (lowerCamelCase JSON, hence
+      // `clientMeta`) and is checked against its generated model in tests.
       const body: CreateTestRunBody = {
         title: config.run.title ?? '',
         description: config.run.description ?? '',
@@ -33,10 +34,7 @@ export class RunService {
         clientMeta: config.clientMeta ?? {},
       };
       this.logger.logDebug(`Creating test run: ${JSON.stringify(body)}`);
-      const { data } = await this.api.testRunServiceCreateTestRun({
-        productId: config.product,
-        createTestRunBody: body,
-      });
+      const { data } = await this.api.createTestRun(config.product, body);
       const seqNum = data.run?.seqNum;
       if (!seqNum) {
         throw new TidenError('Failed to create test run');
@@ -60,11 +58,7 @@ export class RunService {
       return;
     }
     try {
-      await this.api.testRunServiceCompleteTestRun({
-        productId: config.product,
-        runSeq: runId,
-        body: {},
-      });
+      await this.api.completeTestRun(config.product, runId);
       this.logger.log(`Test run #${runId} completed`);
     } catch (error) {
       throw processError(error, 'Error on completing run');

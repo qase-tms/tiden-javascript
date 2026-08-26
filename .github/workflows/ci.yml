@@ -8,17 +8,12 @@ jobs:
     strategy:
       matrix:
         node: [18, 20, 22]
-        # api-client (generated OpenAPI client, @tiden/api-client) is
-        # deliberately NOT in this matrix: it has no lint/test scripts. Its
-        # CI gate is the `npm run build -ws --if-present` step below, which
-        # already compiles it (via its own tsconfig.json/tsconfig.esm.json)
-        # in every matrix job. Do not "fix" this by adding it here.
         package: [commons, playwright, vitest]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: '${{ matrix.node }}' }
       - run: npm ci
-      - run: npm run build -ws --if-present
+      - run: npm run build -w commons -w playwright -w vitest
       - run: npm run lint -w ${{ matrix.package }}
       - run: npm run test -w ${{ matrix.package }}

@@ -30,7 +30,7 @@ export class ReportSerializer implements ReportSerializerInterface {
       param_groups: paramGroups,
       // The local `report` file format keeps snake_case field names (its own
       // contract, locked by tests) — deliberately independent of the API wire
-      // format, which now follows the generated @tiden/api-client models.
+      // format, which follows the OpenAPI reporter contract models.
       testops_ids: caseIds,
       relations: result.relations,
       muted: result.muted,

@@ -182,9 +182,9 @@ export class AttachmentService {
    *
    *  Hand-written on purpose: `POST /v1/products/{product}/attachments:upload`
    *  is a multipart route that is NOT in the OpenAPI spec, so
-   *  `@tiden/api-client` has no generated operation for it (the path appears
+   *  The generated OpenAPI snapshot has no operation for it (the path appears
    *  there only inside a doc comment on testRunServiceGetRunAttachment). It
-   *  still goes over the same axios instance as the generated calls, so
+   *  still goes over the same axios instance as the reporter JSON calls, so
    *  baseURL/auth/timeout stay shared; only the request building is local.
    *  If the route is ever added to the spec, replace this with the generated
    *  operation. */

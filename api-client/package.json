@@ -1,5 +1,6 @@
 {
   "name": "@tiden/api-client",
+  "private": true,
   "version": "0.1.0",
   "description": "OpenAPI client for @tiden/api-client",
   "author": "Tiden Team <support@tiden.ai>",

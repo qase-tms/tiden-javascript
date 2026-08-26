@@ -1,10 +1,11 @@
 import { AxiosInstance, isAxiosError } from 'axios';
-import { ResultCreate, TestRunServiceApi } from '@tiden/api-client';
-import { createTestRunApi, createTidenClient } from './tiden-http';
+import { createTidenClient } from './tiden-http';
 import { IClient } from './interface';
 import { RunService } from './services/run-service';
 import { AttachmentService } from './services/attachment-service';
 import { ResultTransformer } from './services/result-transformer';
+import { ReporterApi } from './reporter-api';
+import { ResultCreate } from './reporter-api-models';
 import { processError } from './services/api-error-handler';
 import { LoggerInterface } from '../utils/logger';
 import { TidenOptionsType } from '../models/config/TidenOptionsType';
@@ -15,15 +16,15 @@ interface ReportErrorDetail { index?: number; resultId?: string; code?: string; 
 /**
  * Facade over the Tiden REST API.
  *
- * The JSON endpoints (create/report/complete) go through the generated
- * `@tiden/api-client`, so their request/response types track the Tiden
- * OpenAPI contract. Attachment upload stays hand-written: it is a
- * multipart route with no generated operation (see AttachmentService).
- * Both share the one axios instance created here.
+ * The JSON endpoints (create/report/complete) go through the narrow reporter
+ * API. Its types are checked against the generated OpenAPI snapshot at test
+ * time without making that full client a runtime dependency. Attachment
+ * upload stays hand-written because it is multipart. Both share one axios
+ * instance.
  */
 export class TidenApiClient implements IClient {
   private readonly http: AxiosInstance;
-  private readonly api: TestRunServiceApi;
+  private readonly api: ReporterApi;
   private readonly runService: RunService;
   private readonly attachmentService: AttachmentService;
   private readonly resultTransformer: ResultTransformer;
@@ -35,7 +36,7 @@ export class TidenApiClient implements IClient {
     rootSuite: string | undefined,
   ) {
     this.http = createTidenClient(config.api.baseUrl ?? '', config.api.token);
-    this.api = createTestRunApi(this.http, config.api.baseUrl ?? '');
+    this.api = new ReporterApi(this.http);
     this.runService = new RunService(logger, this.api);
     this.attachmentService = new AttachmentService(logger, this.http);
     this.resultTransformer = new ResultTransformer(logger, rootSuite);
@@ -85,11 +86,11 @@ export class TidenApiClient implements IClient {
     let delay = 1000;
     for (let attempt = 0; ; attempt++) {
       try {
-        const { data } = await this.api.testRunServiceReportResults({
-          productId: this.config.product,
-          runSeq: runId,
-          reportResultsBody: { results: models },
-        });
+        const { data } = await this.api.reportResults(
+          this.config.product,
+          runId,
+          { results: models },
+        );
         // `accepted`/`duplicates` are int64s (strings on the wire). Duplicates
         // are the server's idempotency check recognising a result `id` it has
         // already stored — a re-reported batch is dropped there, not here.

@@ -1,11 +1,12 @@
-import { createTestRunApi, createTidenClient } from '../../../src/client/tiden-http';
+import { ReporterApi } from '../../../src/client/reporter-api';
+import { createTidenClient } from '../../../src/client/tiden-http';
 import { RunService } from '../../../src/client/services/run-service';
 import { LoggerInterface } from '../../../src/utils/logger';
 import { testServer, baseUrl } from '../../helpers/test-server';
 
 const logger: LoggerInterface = { log: jest.fn(), logError: jest.fn(), logDebug: jest.fn() } as unknown as LoggerInterface;
 
-describe('RunService against Tiden wire (via the generated @tiden/api-client)', () => {
+describe('RunService against the Tiden wire', () => {
   it('creates a run: POST /v1/products/{product}/runs with Bearer auth, flat configurations, and reads run.seqNum', async () => {
     let captured: { url?: string; auth?: string; body?: Record<string, unknown> } = {};
     const srv = await testServer((req, body, res) => {
@@ -14,7 +15,7 @@ describe('RunService against Tiden wire (via the generated @tiden/api-client)', 
       res.end(JSON.stringify({ run: { seqNum: 42, status: 'new' } }));
     });
     const http = createTidenClient(baseUrl(srv), 'tfy_token');
-    const service = new RunService(logger, createTestRunApi(http, baseUrl(srv)));
+    const service = new RunService(logger, new ReporterApi(http));
     const runId = await service.createRun({
       product: 'a0000000-0000-4000-8000-000000000001',
       api: { token: 'tfy_token' },
@@ -34,7 +35,7 @@ describe('RunService against Tiden wire (via the generated @tiden/api-client)', 
 
   it('returns config.run.id without any HTTP call when preset (sharded CI)', async () => {
     const http = createTidenClient('http://127.0.0.1:9', 'tfy_token'); // unroutable — must not be called
-    const service = new RunService(logger, createTestRunApi(http, 'http://127.0.0.1:9'));
+    const service = new RunService(logger, new ReporterApi(http));
     const runId = await service.createRun({ product: 'p', api: { token: 't' }, run: { id: 7, complete: true } } as never, undefined);
     expect(runId).toBe(7);
   });
@@ -47,7 +48,7 @@ describe('RunService against Tiden wire (via the generated @tiden/api-client)', 
       res.end(JSON.stringify({ run: { seqNum: 42, status: 'passed' } }));
     });
     const http = createTidenClient(baseUrl(srv), 'tfy_token');
-    const service = new RunService(logger, createTestRunApi(http, baseUrl(srv)));
+    const service = new RunService(logger, new ReporterApi(http));
     // explicit true: POST
     await service.completeRun(42, { product: 'p1', api: { token: 't' }, run: { complete: true } } as never);
     // explicit false: no-op

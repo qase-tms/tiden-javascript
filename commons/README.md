@@ -1,7 +1,7 @@
 # @tiden/reporter-commons
 
 Shared reporter core for Tiden's JavaScript test framework reporters: config loading
-(`tiden.config.json`), environment-variable resolution (`TIDEN_*`), the Tiden API client, result
+(`tiden.config.json`), environment-variable resolution (`TIDEN_*`), the narrow Tiden API transport, result
 formatting, status mapping/filtering, and the HTTP network profiler.
 
 See the [root README](https://github.com/qase-tms/tiden-javascript/blob/main/README.md#lineage) for this package's fork lineage.
@@ -11,7 +11,7 @@ See the [root README](https://github.com/qase-tms/tiden-javascript/blob/main/REA
 This package is **not meant to be installed or configured directly** in a test project — it's a
 dependency of framework-specific reporters (currently [`@tiden/playwright-reporter`](https://github.com/qase-tms/tiden-javascript/blob/main/playwright/README.md)).
 Install and configure the reporter for your framework instead; it composes this package's config
-loader, env resolver, and API client internally.
+loader, env resolver, and API transport internally.
 
 ## Configuration & environment variables
 
@@ -26,7 +26,7 @@ with the `tiden` CLI's own environment variables.
 If you're adding a reporter for another framework, this package provides the pieces you'll wire
 up: `ConfigLoader` (file), `envToConfig`/`envValidationSchema` (env), `TidenReporter` (orchestrator
 with fallback handling), `RunReporter` / `ReportReporter` (the two reporting modes), and
-`TidenApiClient` (the Tiden Test Runs API client). Read the source under `src/` — there is no
+`TidenApiClient` (the reporter-facing Tiden Test Runs transport). Read the source under `src/` — there is no
 separate contributor guide yet.
 
 ## License
