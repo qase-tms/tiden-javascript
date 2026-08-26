@@ -18,7 +18,7 @@
 import type { ChangedFile } from './changed-file';
 
 /**
- * AttributeChangedFiles (shift-left v4) maps a requirement\'s repo-qualified changed files to components via the MAIN component scope, declares one idempotent impacts_component edge-intent per touched component, and sets/clears requirement.component_id. Enforces the one-repo-per-node invariant: the changed files must belong to a single repository.
+ * AttributeChangedFiles maps a requirement\'s repo-qualified changed files to components via the MAIN component scope, declares one idempotent impacts_component edge-intent per touched component, and sets/clears requirement.component_id. Enforces the one-repo-per-node invariant: the changed files must belong to a single repository.
  */
 export interface AttributeChangedFilesBody {
     /**

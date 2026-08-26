@@ -14,6 +14,9 @@
 
 
 
+/**
+ * - VERDICT_STATUS_RISK_ACCEPTED: v2 (soft-gate override) — reserved
+ */
 
 export const VerdictStatus = {
     VerdictStatusUnspecified: 'VERDICT_STATUS_UNSPECIFIED',

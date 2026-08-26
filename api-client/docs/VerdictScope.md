@@ -1,5 +1,6 @@
 # VerdictScope
 
+- VERDICT_SCOPE_RELEASE: canonical, against main-live entities of a release build  - VERDICT_SCOPE_BRANCH: pre-merge preview, against the merge-preview projection  - VERDICT_SCOPE_MAIN: current main, not tied to a release (latest exec per test)
 
 ## Enum
 

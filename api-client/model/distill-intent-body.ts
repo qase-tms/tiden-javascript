@@ -19,7 +19,7 @@
  */
 export interface DistillIntentBody {
     /**
-     * Rendered conversation (normalized, slim — user/assistant text only). The backend never sees an agent-specific transcript format.
+     * Rendered conversation (normalized, slim — user/assistant text only). Agent-specific transcript formats are not accepted.
      */
     'transcript'?: string;
     /**

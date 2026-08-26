@@ -11,7 +11,8 @@ Name | Type | Description | Notes
 **title** | **string** |  | [optional] [default to undefined]
 **description** | **string** |  | [optional] [default to undefined]
 **resources** | **Array&lt;string&gt;** |  | [optional] [default to undefined]
-**repository** | **string** | repository is the canonical repo id of this node\&#39;s component (shift-left v3), or \&quot;\&quot; when unscoped. Lets the CLI verdict compare changed files vs resources per-repo (avoids cross-repo path collisions). resources are repo-relative. | [optional] [default to undefined]
+**repository** | **string** | repository is the canonical repo id of this node\&#39;s component, or \&quot;\&quot; when unscoped. Lets the CLI verdict compare changed files vs resources per-repo (avoids cross-repo path collisions). resources are repo-relative. | [optional] [default to undefined]
+**tier** | [**RequirementTier**](RequirementTier.md) |  | [optional] [default to undefined]
 
 ## Example
 
@@ -25,6 +26,7 @@ const instance: TouchedNode = {
     description,
     resources,
     repository,
+    tier,
 };
 ```
 

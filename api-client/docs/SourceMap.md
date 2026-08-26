@@ -12,7 +12,7 @@ Name | Type | Description | Notes
 **fileName** | **string** |  | [optional] [default to undefined]
 **releaseName** | **string** |  | [optional] [default to undefined]
 **byteSize** | **string** |  | [optional] [default to undefined]
-**createdAt** | **string** | NOTE: metadata only — never an S3 download URL (maps are private source). | [optional] [default to undefined]
+**createdAt** | **string** | NOTE: metadata only — never a download URL (source maps stay private). | [optional] [default to undefined]
 
 ## Example
 

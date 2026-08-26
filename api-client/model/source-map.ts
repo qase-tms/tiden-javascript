@@ -25,7 +25,7 @@ export interface SourceMap {
     'releaseName'?: string;
     'byteSize'?: string;
     /**
-     * NOTE: metadata only — never an S3 download URL (maps are private source).
+     * NOTE: metadata only — never a download URL (source maps stay private).
      */
     'createdAt'?: string;
 }

@@ -4,11 +4,64 @@ All URIs are relative to *https://api.tiden.ai*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
+|[**requirementServiceAttributeRequirementComponents**](#requirementserviceattributerequirementcomponents) | **POST** /v1/products/{productId}/requirement-components:derive | Derives requirement-component attribution from each requirement\&#39;s own repo_file anchors.|
 |[**requirementServiceCreateRequirement**](#requirementservicecreaterequirement) | **POST** /v1/products/{productId}/requirements | Creates a requirement.|
 |[**requirementServiceDeleteRequirement**](#requirementservicedeleterequirement) | **DELETE** /v1/requirements/{id} | Deletes a requirement.|
 |[**requirementServiceGetRequirement**](#requirementservicegetrequirement) | **GET** /v1/requirements/{id} | Fetches one requirement by id.|
 |[**requirementServiceListRequirements**](#requirementservicelistrequirements) | **GET** /v1/products/{productId}/requirements | Lists a product\&#39;s requirements.|
 |[**requirementServiceUpdateRequirement**](#requirementserviceupdaterequirement) | **PUT** /v1/requirements/{id} | Updates a requirement.|
+
+# **requirementServiceAttributeRequirementComponents**
+> AttributeRequirementComponentsResponse requirementServiceAttributeRequirementComponents()
+
+Mirrors the test-side attributeTestComponents: a requirement whose anchors resolve to exactly one component gets that component_id set; anchors spanning more than one component, or owned by none (including a repository-ambiguous anchor path), leave the requirement untouched. Only NULL component_id rows are written — an explicit or previously-derived attribution is never overwritten. Idempotent.
+
+### Example
+
+```typescript
+import {
+    RequirementServiceApi,
+    Configuration
+} from '@tiden/api-client';
+
+const configuration = new Configuration();
+const apiInstance = new RequirementServiceApi(configuration);
+
+let productId: string; // (default to undefined)
+
+const { status, data } = await apiInstance.requirementServiceAttributeRequirementComponents(
+    productId
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **productId** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+**AttributeRequirementComponentsResponse**
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | A successful response. |  -  |
+|**0** | An unexpected error response. |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **requirementServiceCreateRequirement**
 > CreateRequirementResponse requirementServiceCreateRequirement(createRequirementBody)

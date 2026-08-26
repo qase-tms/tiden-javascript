@@ -1,6 +1,6 @@
 # Component
 
-Component is a deployment/architectural unit of a product. The repository/component_paths/repository_aliases scope maps changed files to the component (shift-left v3).
+Component is a deployment/architectural unit of a product. The repository/component_paths/repository_aliases scope maps changed files to the component.
 
 ## Properties
 
@@ -15,7 +15,7 @@ Name | Type | Description | Notes
 **branchId** | **string** |  | [optional] [default to undefined]
 **sourceId** | **string** |  | [optional] [default to undefined]
 **branchStatus** | **string** |  | [optional] [default to undefined]
-**repository** | **string** | Shift-left v3: repository-aware components.  canonical repo id (e.g. \&quot;github.com/qase-tms/tiden-cli\&quot;); unset &#x3D; unscoped/main repo | [optional] [default to undefined]
+**repository** | **string** | Repository-aware component scope.  canonical repo id (e.g. \&quot;github.com/acme/backend\&quot;); unset &#x3D; unscoped/main repo | [optional] [default to undefined]
 **componentPaths** | **Array&lt;string&gt;** |  | [optional] [default to undefined]
 **repositoryAliases** | **Array&lt;string&gt;** |  | [optional] [default to undefined]
 

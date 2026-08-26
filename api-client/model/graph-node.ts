@@ -22,7 +22,7 @@ export interface GraphNode {
     'coverageStatus'?: string;
     'parentId'?: string;
     /**
-     * kind distinguishes node types in the graph (shift-left v3). \"requirement\" (default) or \"component\" — a component node reached via an impacts_component edge. Component nodes carry their name in `title`; seq_num/status/parent_id are empty.
+     * kind distinguishes node types in the graph. \"requirement\" (default) or \"component\" — a component node reached via an impacts_component edge. Component nodes carry their name in `title`; seq_num/status/parent_id are empty.
      */
     'kind'?: string;
 }

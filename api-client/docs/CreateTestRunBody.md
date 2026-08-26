@@ -13,6 +13,8 @@ Name | Type | Description | Notes
 **buildSha** | **string** |  | [optional] [default to undefined]
 **startedAt** | **string** |  | [optional] [default to undefined]
 **clientMeta** | **{ [key: string]: string; }** |  | [optional] [default to undefined]
+**intentSessionId** | **string** |  | [optional] [default to undefined]
+**intentBranch** | **string** | The session\&#39;s Tiden intent branch: live-documentation sync lands there instead of resolving the free-text git &#x60;branch&#x60; name (which never creates a Tiden branch). Set by an in-session &#x60;tiden run exec&#x60;; empty otherwise. | [optional] [default to undefined]
 
 ## Example
 
@@ -28,6 +30,8 @@ const instance: CreateTestRunBody = {
     buildSha,
     startedAt,
     clientMeta,
+    intentSessionId,
+    intentBranch,
 };
 ```
 

@@ -15,6 +15,7 @@ All URIs are relative to *https://api.tiden.ai*
 |[**testRunServiceListRunResults**](#testrunservicelistrunresults) | **GET** /v1/products/{productId}/runs/{runSeq}/results | Lists a run\&#39;s reported results.|
 |[**testRunServiceListTestRuns**](#testrunservicelisttestruns) | **GET** /v1/products/{productId}/runs | Lists a product\&#39;s test runs.|
 |[**testRunServiceReportResults**](#testrunservicereportresults) | **POST** /v1/products/{productId}/runs/{runSeq}/results:report | Reports a batch of test results into a run.|
+|[**testRunServiceUploadRunAttachments**](#testrunserviceuploadrunattachments) | **POST** /v1/products/{product_id}/attachments:upload | Uploads run attachments and returns their content hashes.|
 
 # **testRunServiceAbortTestRun**
 > AbortTestRunResponse testRunServiceAbortTestRun(body)
@@ -665,6 +666,68 @@ const { status, data } = await apiInstance.testRunServiceReportResults(
 |-------------|-------------|------------------|
 |**200** | A successful response. |  -  |
 |**0** | An unexpected error response. |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **testRunServiceUploadRunAttachments**
+> V1UploadRunAttachmentsResponse testRunServiceUploadRunAttachments()
+
+Multipart upload used by the reporters before ReportResults: each returned hash goes into a result\'s `attachments`. Not a gRPC method (multipart is not expressible in protobuf), so it is served by a gateway HandlePath route that authenticates the bearer token itself; see app/backend/internal/server/run_attachment_upload.go. Limits per request: 20 files, 32 MiB per file, 128 MiB total, 5 minute read deadline. Repeat the `file[]` part once per file (`file` is also accepted).
+
+### Example
+
+```typescript
+import {
+    TestRunServiceApi,
+    Configuration
+} from '@tiden/api-client';
+
+const configuration = new Configuration();
+const apiInstance = new TestRunServiceApi(configuration);
+
+let productId: string; //Product the attachments belong to. (default to undefined)
+let file: Array<File>; //One part per file, repeated. (default to undefined)
+
+const { status, data } = await apiInstance.testRunServiceUploadRunAttachments(
+    productId,
+    file
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **productId** | [**string**] | Product the attachments belong to. | defaults to undefined|
+| **file** | **Array&lt;File&gt;** | One part per file, repeated. | defaults to undefined|
+
+
+### Return type
+
+**V1UploadRunAttachmentsResponse**
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: multipart/form-data
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | Every file was stored; hashes are returned in request order. |  -  |
+|**400** | Not multipart, malformed body, no file part, or an invalid product_id. |  -  |
+|**401** | Missing or invalid bearer token. |  -  |
+|**403** | The token may not write to this product. |  -  |
+|**404** | Product not found. |  -  |
+|**413** | A single file exceeded 32 MiB, or the request exceeded 128 MiB. |  -  |
+|**429** | Per-identity upload rate limit, or too many concurrent uploads. Retry shortly. |  -  |
+|**500** | The attachment could not be stored. |  -  |
+|**503** | File storage is unavailable or unconfigured. |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

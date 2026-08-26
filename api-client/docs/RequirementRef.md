@@ -10,6 +10,8 @@ Name | Type | Description | Notes
 **seqNum** | **number** |  | [optional] [default to undefined]
 **title** | **string** |  | [optional] [default to undefined]
 **description** | **string** |  | [optional] [default to undefined]
+**tier** | [**RequirementTier**](RequirementTier.md) |  | [optional] [default to undefined]
+**resources** | **Array&lt;string&gt;** | resources are the root\&#39;s branch-effective repo_file anchor paths, same meaning as TouchedNode.resources (a root can carry the session\&#39;s evidence). | [optional] [default to undefined]
 
 ## Example
 
@@ -21,6 +23,8 @@ const instance: RequirementRef = {
     seqNum,
     title,
     description,
+    tier,
+    resources,
 };
 ```
 

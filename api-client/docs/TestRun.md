@@ -30,6 +30,8 @@ Name | Type | Description | Notes
 **createdBy** | **string** |  | [optional] [default to undefined]
 **createdAt** | **string** |  | [optional] [default to undefined]
 **updatedAt** | **string** |  | [optional] [default to undefined]
+**intentSessionId** | **string** |  | [optional] [default to undefined]
+**intentBranch** | **string** |  | [optional] [default to undefined]
 
 ## Example
 
@@ -61,6 +63,8 @@ const instance: TestRun = {
     createdBy,
     createdAt,
     updatedAt,
+    intentSessionId,
+    intentBranch,
 };
 ```
 

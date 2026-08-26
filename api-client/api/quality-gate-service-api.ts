@@ -34,9 +34,17 @@ import type { ComputeVerdictBody } from '../model';
 // @ts-ignore
 import type { ComputeVerdictResponse } from '../model';
 // @ts-ignore
+import type { GetSessionProgressBody } from '../model';
+// @ts-ignore
+import type { GetSessionProgressResponse } from '../model';
+// @ts-ignore
 import type { GetTraceabilityResponse } from '../model';
 // @ts-ignore
 import type { GetVerdictResponse } from '../model';
+// @ts-ignore
+import type { RecordSessionRiskAcceptancesBody } from '../model';
+// @ts-ignore
+import type { RecordSessionRiskAcceptancesResponse } from '../model';
 // @ts-ignore
 import type { Status } from '../model';
 /**
@@ -129,7 +137,7 @@ export const QualityGateServiceApiAxiosParamCreator = function (configuration?: 
             };
         },
         /**
-         * Computes (or recomputes) the go/no-go verdict for a scope — RELEASE (release_id required), BRANCH (branch name required), or MAIN — and persists an immutable snapshot. Side-effecting, but idempotent on the current data state (CAS on publish): recomputing unchanged data yields the same verdict. subject_type/subject_id narrow the returned breakdown to one component/feature/product subject.
+         * Computes (or recomputes) the go/no-go verdict for a scope — RELEASE (release_id required), BRANCH (branch name required), or MAIN — and persists an immutable snapshot. Side-effecting, but idempotent on the current data state: recomputing unchanged data yields the same verdict. subject_type/subject_id narrow the returned breakdown to one component/feature/product subject.
          * @summary Computes and persists a quality-gate verdict.
          * @param {string} productId 
          * @param {ComputeVerdictBody} computeVerdictBody 
@@ -164,6 +172,48 @@ export const QualityGateServiceApiAxiosParamCreator = function (configuration?: 
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
             localVarRequestOptions.data = serializeDataIfNeeded(computeVerdictBody, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * For the supplied requirement ids (the session\'s slice of interest) on the intent branch\'s merge-preview view, returns each requirement\'s coverage ladder step (no_test → not_run → failing → verified), its linked tests with per-test status and session attribution, a summary, an advisory `ready` flag, and deterministic next actions. Read-only; unknown requirement ids are silently omitted.
+         * @summary Returns one intent session\'s per-requirement progress slice.
+         * @param {string} productId 
+         * @param {GetSessionProgressBody} getSessionProgressBody 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        qualityGateServiceGetSessionProgress: async (productId: string, getSessionProgressBody: GetSessionProgressBody, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'productId' is not null or undefined
+            assertParamExists('qualityGateServiceGetSessionProgress', 'productId', productId)
+            // verify required parameter 'getSessionProgressBody' is not null or undefined
+            assertParamExists('qualityGateServiceGetSessionProgress', 'getSessionProgressBody', getSessionProgressBody)
+            const localVarPath = `/v1/products/{productId}/quality-gate:session-progress`
+                .replace(`{${"productId"}}`, encodeURIComponent(String(productId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication BearerAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(getSessionProgressBody, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -294,6 +344,48 @@ export const QualityGateServiceApiAxiosParamCreator = function (configuration?: 
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * Persists the close-policy ledger of a single intent session as agent_artifact provenance rows on that session\'s draft requirement. A re-run REPLACES this session\'s records for the same requirement set — keyed by (phase, session, requirement set), deliberately NOT by criterion, so a corrected criterion supersedes the earlier judgement instead of leaving two contradicting ones. Every other row on the draft is carried over.  ORDERING: this endpoint rewrites the draft\'s whole source array. A caller that also writes sources to the same draft (the CLI\'s close extends the session_reconcile row in its own PUT) MUST call this FIRST and then RE-FETCH the requirement before building that write — a request assembled from a snapshot taken before this call silently erases the rows this call wrote.  Validation is STRUCTURAL only: a known criterion, non-empty single-line evidence, a known follow-up kind, requirement refs that resolve on the intent branch, and a draft that lives there. The server never judges whether a reason is a good one — that judgment belongs to the agent\'s instructions and to the human reading merge-preview.
+         * @summary Records one intent session\'s risk acceptances and test deferrals.
+         * @param {string} productId 
+         * @param {RecordSessionRiskAcceptancesBody} recordSessionRiskAcceptancesBody 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        qualityGateServiceRecordSessionRiskAcceptances: async (productId: string, recordSessionRiskAcceptancesBody: RecordSessionRiskAcceptancesBody, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'productId' is not null or undefined
+            assertParamExists('qualityGateServiceRecordSessionRiskAcceptances', 'productId', productId)
+            // verify required parameter 'recordSessionRiskAcceptancesBody' is not null or undefined
+            assertParamExists('qualityGateServiceRecordSessionRiskAcceptances', 'recordSessionRiskAcceptancesBody', recordSessionRiskAcceptancesBody)
+            const localVarPath = `/v1/products/{productId}/quality-gate:session-acceptances`
+                .replace(`{${"productId"}}`, encodeURIComponent(String(productId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication BearerAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(recordSessionRiskAcceptancesBody, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
@@ -332,7 +424,7 @@ export const QualityGateServiceApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Computes (or recomputes) the go/no-go verdict for a scope — RELEASE (release_id required), BRANCH (branch name required), or MAIN — and persists an immutable snapshot. Side-effecting, but idempotent on the current data state (CAS on publish): recomputing unchanged data yields the same verdict. subject_type/subject_id narrow the returned breakdown to one component/feature/product subject.
+         * Computes (or recomputes) the go/no-go verdict for a scope — RELEASE (release_id required), BRANCH (branch name required), or MAIN — and persists an immutable snapshot. Side-effecting, but idempotent on the current data state: recomputing unchanged data yields the same verdict. subject_type/subject_id narrow the returned breakdown to one component/feature/product subject.
          * @summary Computes and persists a quality-gate verdict.
          * @param {string} productId 
          * @param {ComputeVerdictBody} computeVerdictBody 
@@ -343,6 +435,20 @@ export const QualityGateServiceApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.qualityGateServiceComputeVerdict(productId, computeVerdictBody, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['QualityGateServiceApi.qualityGateServiceComputeVerdict']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * For the supplied requirement ids (the session\'s slice of interest) on the intent branch\'s merge-preview view, returns each requirement\'s coverage ladder step (no_test → not_run → failing → verified), its linked tests with per-test status and session attribution, a summary, an advisory `ready` flag, and deterministic next actions. Read-only; unknown requirement ids are silently omitted.
+         * @summary Returns one intent session\'s per-requirement progress slice.
+         * @param {string} productId 
+         * @param {GetSessionProgressBody} getSessionProgressBody 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async qualityGateServiceGetSessionProgress(productId: string, getSessionProgressBody: GetSessionProgressBody, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetSessionProgressResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.qualityGateServiceGetSessionProgress(productId, getSessionProgressBody, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['QualityGateServiceApi.qualityGateServiceGetSessionProgress']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -381,6 +487,20 @@ export const QualityGateServiceApiFp = function(configuration?: Configuration) {
             const localVarOperationServerBasePath = operationServerMap['QualityGateServiceApi.qualityGateServiceGetVerdict']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
+        /**
+         * Persists the close-policy ledger of a single intent session as agent_artifact provenance rows on that session\'s draft requirement. A re-run REPLACES this session\'s records for the same requirement set — keyed by (phase, session, requirement set), deliberately NOT by criterion, so a corrected criterion supersedes the earlier judgement instead of leaving two contradicting ones. Every other row on the draft is carried over.  ORDERING: this endpoint rewrites the draft\'s whole source array. A caller that also writes sources to the same draft (the CLI\'s close extends the session_reconcile row in its own PUT) MUST call this FIRST and then RE-FETCH the requirement before building that write — a request assembled from a snapshot taken before this call silently erases the rows this call wrote.  Validation is STRUCTURAL only: a known criterion, non-empty single-line evidence, a known follow-up kind, requirement refs that resolve on the intent branch, and a draft that lives there. The server never judges whether a reason is a good one — that judgment belongs to the agent\'s instructions and to the human reading merge-preview.
+         * @summary Records one intent session\'s risk acceptances and test deferrals.
+         * @param {string} productId 
+         * @param {RecordSessionRiskAcceptancesBody} recordSessionRiskAcceptancesBody 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async qualityGateServiceRecordSessionRiskAcceptances(productId: string, recordSessionRiskAcceptancesBody: RecordSessionRiskAcceptancesBody, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<RecordSessionRiskAcceptancesResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.qualityGateServiceRecordSessionRiskAcceptances(productId, recordSessionRiskAcceptancesBody, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['QualityGateServiceApi.qualityGateServiceRecordSessionRiskAcceptances']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
     }
 };
 
@@ -411,7 +531,7 @@ export const QualityGateServiceApiFactory = function (configuration?: Configurat
             return localVarFp.qualityGateServiceApproveRisk(requestParameters.productId, requestParameters.approveRiskBody, options).then((request) => request(axios, basePath));
         },
         /**
-         * Computes (or recomputes) the go/no-go verdict for a scope — RELEASE (release_id required), BRANCH (branch name required), or MAIN — and persists an immutable snapshot. Side-effecting, but idempotent on the current data state (CAS on publish): recomputing unchanged data yields the same verdict. subject_type/subject_id narrow the returned breakdown to one component/feature/product subject.
+         * Computes (or recomputes) the go/no-go verdict for a scope — RELEASE (release_id required), BRANCH (branch name required), or MAIN — and persists an immutable snapshot. Side-effecting, but idempotent on the current data state: recomputing unchanged data yields the same verdict. subject_type/subject_id narrow the returned breakdown to one component/feature/product subject.
          * @summary Computes and persists a quality-gate verdict.
          * @param {QualityGateServiceApiQualityGateServiceComputeVerdictRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
@@ -419,6 +539,16 @@ export const QualityGateServiceApiFactory = function (configuration?: Configurat
          */
         qualityGateServiceComputeVerdict(requestParameters: QualityGateServiceApiQualityGateServiceComputeVerdictRequest, options?: RawAxiosRequestConfig): AxiosPromise<ComputeVerdictResponse> {
             return localVarFp.qualityGateServiceComputeVerdict(requestParameters.productId, requestParameters.computeVerdictBody, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * For the supplied requirement ids (the session\'s slice of interest) on the intent branch\'s merge-preview view, returns each requirement\'s coverage ladder step (no_test → not_run → failing → verified), its linked tests with per-test status and session attribution, a summary, an advisory `ready` flag, and deterministic next actions. Read-only; unknown requirement ids are silently omitted.
+         * @summary Returns one intent session\'s per-requirement progress slice.
+         * @param {QualityGateServiceApiQualityGateServiceGetSessionProgressRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        qualityGateServiceGetSessionProgress(requestParameters: QualityGateServiceApiQualityGateServiceGetSessionProgressRequest, options?: RawAxiosRequestConfig): AxiosPromise<GetSessionProgressResponse> {
+            return localVarFp.qualityGateServiceGetSessionProgress(requestParameters.productId, requestParameters.getSessionProgressBody, options).then((request) => request(axios, basePath));
         },
         /**
          * Returns the requirement-by-test-case slice (grouped by component) the verdict was computed over, for the matrix page and audit. subject_type/subject_id filter the matrix to one component or feature.
@@ -439,6 +569,16 @@ export const QualityGateServiceApiFactory = function (configuration?: Configurat
          */
         qualityGateServiceGetVerdict(requestParameters: QualityGateServiceApiQualityGateServiceGetVerdictRequest, options?: RawAxiosRequestConfig): AxiosPromise<GetVerdictResponse> {
             return localVarFp.qualityGateServiceGetVerdict(requestParameters.productId, requestParameters.scope, requestParameters.releaseId, requestParameters.branch, requestParameters.subjectType, requestParameters.subjectId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Persists the close-policy ledger of a single intent session as agent_artifact provenance rows on that session\'s draft requirement. A re-run REPLACES this session\'s records for the same requirement set — keyed by (phase, session, requirement set), deliberately NOT by criterion, so a corrected criterion supersedes the earlier judgement instead of leaving two contradicting ones. Every other row on the draft is carried over.  ORDERING: this endpoint rewrites the draft\'s whole source array. A caller that also writes sources to the same draft (the CLI\'s close extends the session_reconcile row in its own PUT) MUST call this FIRST and then RE-FETCH the requirement before building that write — a request assembled from a snapshot taken before this call silently erases the rows this call wrote.  Validation is STRUCTURAL only: a known criterion, non-empty single-line evidence, a known follow-up kind, requirement refs that resolve on the intent branch, and a draft that lives there. The server never judges whether a reason is a good one — that judgment belongs to the agent\'s instructions and to the human reading merge-preview.
+         * @summary Records one intent session\'s risk acceptances and test deferrals.
+         * @param {QualityGateServiceApiQualityGateServiceRecordSessionRiskAcceptancesRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        qualityGateServiceRecordSessionRiskAcceptances(requestParameters: QualityGateServiceApiQualityGateServiceRecordSessionRiskAcceptancesRequest, options?: RawAxiosRequestConfig): AxiosPromise<RecordSessionRiskAcceptancesResponse> {
+            return localVarFp.qualityGateServiceRecordSessionRiskAcceptances(requestParameters.productId, requestParameters.recordSessionRiskAcceptancesBody, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -468,6 +608,15 @@ export interface QualityGateServiceApiQualityGateServiceComputeVerdictRequest {
     readonly productId: string
 
     readonly computeVerdictBody: ComputeVerdictBody
+}
+
+/**
+ * Request parameters for qualityGateServiceGetSessionProgress operation in QualityGateServiceApi.
+ */
+export interface QualityGateServiceApiQualityGateServiceGetSessionProgressRequest {
+    readonly productId: string
+
+    readonly getSessionProgressBody: GetSessionProgressBody
 }
 
 /**
@@ -523,6 +672,15 @@ export interface QualityGateServiceApiQualityGateServiceGetVerdictRequest {
 }
 
 /**
+ * Request parameters for qualityGateServiceRecordSessionRiskAcceptances operation in QualityGateServiceApi.
+ */
+export interface QualityGateServiceApiQualityGateServiceRecordSessionRiskAcceptancesRequest {
+    readonly productId: string
+
+    readonly recordSessionRiskAcceptancesBody: RecordSessionRiskAcceptancesBody
+}
+
+/**
  * QualityGateServiceApi - object-oriented interface
  */
 export class QualityGateServiceApi extends BaseAPI {
@@ -549,7 +707,7 @@ export class QualityGateServiceApi extends BaseAPI {
     }
 
     /**
-     * Computes (or recomputes) the go/no-go verdict for a scope — RELEASE (release_id required), BRANCH (branch name required), or MAIN — and persists an immutable snapshot. Side-effecting, but idempotent on the current data state (CAS on publish): recomputing unchanged data yields the same verdict. subject_type/subject_id narrow the returned breakdown to one component/feature/product subject.
+     * Computes (or recomputes) the go/no-go verdict for a scope — RELEASE (release_id required), BRANCH (branch name required), or MAIN — and persists an immutable snapshot. Side-effecting, but idempotent on the current data state: recomputing unchanged data yields the same verdict. subject_type/subject_id narrow the returned breakdown to one component/feature/product subject.
      * @summary Computes and persists a quality-gate verdict.
      * @param {QualityGateServiceApiQualityGateServiceComputeVerdictRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
@@ -557,6 +715,17 @@ export class QualityGateServiceApi extends BaseAPI {
      */
     public qualityGateServiceComputeVerdict(requestParameters: QualityGateServiceApiQualityGateServiceComputeVerdictRequest, options?: RawAxiosRequestConfig) {
         return QualityGateServiceApiFp(this.configuration).qualityGateServiceComputeVerdict(requestParameters.productId, requestParameters.computeVerdictBody, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * For the supplied requirement ids (the session\'s slice of interest) on the intent branch\'s merge-preview view, returns each requirement\'s coverage ladder step (no_test → not_run → failing → verified), its linked tests with per-test status and session attribution, a summary, an advisory `ready` flag, and deterministic next actions. Read-only; unknown requirement ids are silently omitted.
+     * @summary Returns one intent session\'s per-requirement progress slice.
+     * @param {QualityGateServiceApiQualityGateServiceGetSessionProgressRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public qualityGateServiceGetSessionProgress(requestParameters: QualityGateServiceApiQualityGateServiceGetSessionProgressRequest, options?: RawAxiosRequestConfig) {
+        return QualityGateServiceApiFp(this.configuration).qualityGateServiceGetSessionProgress(requestParameters.productId, requestParameters.getSessionProgressBody, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -579,6 +748,17 @@ export class QualityGateServiceApi extends BaseAPI {
      */
     public qualityGateServiceGetVerdict(requestParameters: QualityGateServiceApiQualityGateServiceGetVerdictRequest, options?: RawAxiosRequestConfig) {
         return QualityGateServiceApiFp(this.configuration).qualityGateServiceGetVerdict(requestParameters.productId, requestParameters.scope, requestParameters.releaseId, requestParameters.branch, requestParameters.subjectType, requestParameters.subjectId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Persists the close-policy ledger of a single intent session as agent_artifact provenance rows on that session\'s draft requirement. A re-run REPLACES this session\'s records for the same requirement set — keyed by (phase, session, requirement set), deliberately NOT by criterion, so a corrected criterion supersedes the earlier judgement instead of leaving two contradicting ones. Every other row on the draft is carried over.  ORDERING: this endpoint rewrites the draft\'s whole source array. A caller that also writes sources to the same draft (the CLI\'s close extends the session_reconcile row in its own PUT) MUST call this FIRST and then RE-FETCH the requirement before building that write — a request assembled from a snapshot taken before this call silently erases the rows this call wrote.  Validation is STRUCTURAL only: a known criterion, non-empty single-line evidence, a known follow-up kind, requirement refs that resolve on the intent branch, and a draft that lives there. The server never judges whether a reason is a good one — that judgment belongs to the agent\'s instructions and to the human reading merge-preview.
+     * @summary Records one intent session\'s risk acceptances and test deferrals.
+     * @param {QualityGateServiceApiQualityGateServiceRecordSessionRiskAcceptancesRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public qualityGateServiceRecordSessionRiskAcceptances(requestParameters: QualityGateServiceApiQualityGateServiceRecordSessionRiskAcceptancesRequest, options?: RawAxiosRequestConfig) {
+        return QualityGateServiceApiFp(this.configuration).qualityGateServiceRecordSessionRiskAcceptances(requestParameters.productId, requestParameters.recordSessionRiskAcceptancesBody, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

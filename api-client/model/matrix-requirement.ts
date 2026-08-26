@@ -25,5 +25,9 @@ export interface MatrixRequirement {
     'title'?: string;
     'parentId'?: string;
     'branchStatus'?: string;
+    /**
+     * Canonical (main) id of this row: source_id for a branch COW copy, empty otherwise. Branch scope keys rows by their branch-local id while parent_id and Verdict.subjects carry main ids, so a client needs this to rebuild the feature tree the way the server resolver does.
+     */
+    'canonicalId'?: string;
 }
 

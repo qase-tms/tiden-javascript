@@ -13,6 +13,12 @@
  */
 
 
+// May contain unused imports in some cases
+// @ts-ignore
+import type { ImpactCoverage } from './impact-coverage';
+// May contain unused imports in some cases
+// @ts-ignore
+import type { ImpactedRequirement } from './impacted-requirement';
 
 export interface RequirementImpactResponse {
     /**
@@ -27,5 +33,10 @@ export interface RequirementImpactResponse {
      * uncovered_requirement_ids is the subset of affected that have zero live test links.
      */
     'uncoveredRequirementIds'?: Array<string>;
+    /**
+     * impacted carries one entry per affected requirement with the provenance of how it was reached. Ordered: direct anchor hits (hops = 0) first, then by ascending hops. Same set as affected_requirement_ids — a typed view of it.
+     */
+    'impacted'?: Array<ImpactedRequirement>;
+    'coverage'?: ImpactCoverage;
 }
 

@@ -238,7 +238,7 @@ const { status, data } = await apiInstance.agentRunServiceListAgentRuns(
 # **agentRunServiceStartAgentRun**
 > StartAgentRunResponse agentRunServiceStartAgentRun(startAgentRunBody)
 
-Enqueues a new run (status \"pending\") and notifies the agent worker to pick it up; the call returns without waiting for execution. Fails when the config is disabled. inputs_override_json overrides the config\'s inputs_json for this run only, without persisting it. Follow progress via GetAgentRun or ListAgentRunEvents.
+Enqueues a new run (status \"pending\") for execution; the call returns without waiting for it to finish. Fails when the config is disabled. inputs_override_json overrides the config\'s inputs_json for this run only, without persisting it. Follow progress via GetAgentRun or ListAgentRunEvents.
 
 ### Example
 

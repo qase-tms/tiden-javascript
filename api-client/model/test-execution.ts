@@ -24,7 +24,7 @@ export interface TestExecution {
     'endTime'?: string;
     'thread'?: string;
     /**
-     * Test-run seq this execution came from (live-doc sync stamps it; 0 = unknown/legacy — run seqs start at 1). Read-only: server-populated, never accepted from clients.
+     * Test-run seq this execution came from (live-doc sync stamps it; 0 = unknown — run seqs start at 1). Read-only: server-populated, never accepted from clients.
      */
     'runSeq'?: number;
 }

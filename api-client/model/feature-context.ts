@@ -21,6 +21,9 @@ import type { Coverage } from './coverage';
 import type { RequirementRef } from './requirement-ref';
 // May contain unused imports in some cases
 // @ts-ignore
+import type { RequirementTier } from './requirement-tier';
+// May contain unused imports in some cases
+// @ts-ignore
 import type { TouchedNode } from './touched-node';
 
 /**
@@ -31,5 +34,8 @@ export interface FeatureContext {
     'touchedNodes'?: Array<TouchedNode>;
     'coverage'?: Coverage;
     'via'?: Array<string>;
+    'tier'?: RequirementTier;
 }
+
+
 

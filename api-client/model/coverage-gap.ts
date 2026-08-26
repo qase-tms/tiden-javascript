@@ -30,5 +30,10 @@ export interface CoverageGap {
     'lastTestUpdatedAt'?: string;
     'coverageStatusReason'?: string;
     'rankingSignals'?: Array<string>;
+    /**
+     * Prior intent sessions\' JUDGEMENTS on this requirement\'s missing verification: risk acceptances that priced it, and test deferrals that handed the missing test to a next session. Both are read from the close artifacts recorded on session drafts, matched by main twin. They are next- session input (\"someone already looked at this\"), not coverage — neither moves coverage_status.  Read them with these four properties in mind, because none of them are obvious from the names:   - They count ARTIFACT ROWS, not sessions. One session that accepts under     two criteria naming this requirement contributes 2, and two sessions     that each accept it once also contribute 2.   - Nothing marks a judgement resolved. A deferral of a requirement that     has since been covered still counts, and a risk acceptance survives the     condition it was signed against.   - A judgement from an intent branch that was ABANDONED and never merged     counts exactly like one that landed: the artifacts live on the session     draft, and an unmerged draft is still a requirement. \"Someone already     priced this\" can therefore refer to a decision that never shipped.   - 0 means nobody judged it — not that nobody could.  Deliberately NOT folded into proposed_test_count (field 4): that one is derived from branch test-link proposals and is not writable from a close.
+     */
+    'riskAcceptedCount'?: number;
+    'deferredTestCount'?: number;
 }
 

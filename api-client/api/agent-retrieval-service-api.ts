@@ -22,6 +22,10 @@ import { DUMMY_BASE_URL, assertParamExists, setApiKeyToObject, setBasicAuthToObj
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS, type RequestArgs, BaseAPI, RequiredError, operationServerMap } from '../base';
 // @ts-ignore
+import type { AdvanceRepoWatermarkBody } from '../model';
+// @ts-ignore
+import type { AdvanceRepoWatermarkResponse } from '../model';
+// @ts-ignore
 import type { AttributeChangedFilesBody } from '../model';
 // @ts-ignore
 import type { AttributeChangedFilesResponse } from '../model';
@@ -29,6 +33,10 @@ import type { AttributeChangedFilesResponse } from '../model';
 import type { DeclareRequirementEdgeIntentBody } from '../model';
 // @ts-ignore
 import type { DeclareRequirementEdgeIntentResponse } from '../model';
+// @ts-ignore
+import type { GetIssueFixContextResponse } from '../model';
+// @ts-ignore
+import type { GetRepoWatermarkResponse } from '../model';
 // @ts-ignore
 import type { GetRequirementGraphResponse } from '../model';
 // @ts-ignore
@@ -60,6 +68,48 @@ import type { WriteRequirementEdgeResponse } from '../model';
  */
 export const AgentRetrievalServiceApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
+        /**
+         * reason baseline inserts the first watermark and never overwrites; empty_sync is a compare-and-set on expected_current_sha (a delta run that found nothing requirement-worthy); bootstrap writes unconditionally (an explicit full re-generation). The sync_merge advance happens server-side when a sync branch merges, and ingest happens inside the codebase agent — both are rejected here. advanced=false means a lost ordering race, never an error: the watermark can under-advance and self-heal, but never move backwards.
+         * @summary Advances the drift watermark of one repository.
+         * @param {string} productId 
+         * @param {AdvanceRepoWatermarkBody} advanceRepoWatermarkBody 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        agentRetrievalServiceAdvanceRepoWatermark: async (productId: string, advanceRepoWatermarkBody: AdvanceRepoWatermarkBody, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'productId' is not null or undefined
+            assertParamExists('agentRetrievalServiceAdvanceRepoWatermark', 'productId', productId)
+            // verify required parameter 'advanceRepoWatermarkBody' is not null or undefined
+            assertParamExists('agentRetrievalServiceAdvanceRepoWatermark', 'advanceRepoWatermarkBody', advanceRepoWatermarkBody)
+            const localVarPath = `/v1/products/{productId}/repo-watermark:advance`
+                .replace(`{${"productId"}}`, encodeURIComponent(String(productId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication BearerAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(advanceRepoWatermarkBody, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
         /**
          * Maps repo-qualified changed files to components via the main-branch component scopes, declares one idempotent impacts_component edge intent per touched component, and sets requirement.component_id when the files resolve to exactly one component (clears it when they span several). All files must belong to a single repository; unmatched files are returned.
          * @summary Attributes a requirement\'s changed files to owning components.
@@ -142,6 +192,99 @@ export const AgentRetrievalServiceApiAxiosParamCreator = function (configuration
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
             localVarRequestOptions.data = serializeDataIfNeeded(declareRequirementEdgeIntentBody, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Prefer this over stitching together GetIssue, GetIssueEventStats and requirement lookups: it is one round-trip, and it reports which file path matched which requirement so a wrong match is visible rather than silent.
+         * @summary Returns everything needed to fix one error, in a single call: the issue, its latest occurrence with symbolicated stack frames, the repository files those frames implicate, where the error is happening by environment, and — for each requirement those files implement — whether a test already covers it.
+         * @param {string} productId 
+         * @param {string} issueId 
+         * @param {string} [branch] branch scopes the requirement lookup to a branch\&#39;s effective view. \&quot;\&quot; &#x3D; main.
+         * @param {number} [maxFrames] max_frames bounds how many stack frames come back. &lt;&#x3D; 0 uses the server default (10); the cap is 50.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        agentRetrievalServiceGetIssueFixContext: async (productId: string, issueId: string, branch?: string, maxFrames?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'productId' is not null or undefined
+            assertParamExists('agentRetrievalServiceGetIssueFixContext', 'productId', productId)
+            // verify required parameter 'issueId' is not null or undefined
+            assertParamExists('agentRetrievalServiceGetIssueFixContext', 'issueId', issueId)
+            const localVarPath = `/v1/products/{productId}/issues/{issueId}/fix-context`
+                .replace(`{${"productId"}}`, encodeURIComponent(String(productId)))
+                .replace(`{${"issueId"}}`, encodeURIComponent(String(issueId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication BearerAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            if (branch !== undefined) {
+                localVarQueryParameter['branch'] = branch;
+            }
+
+            if (maxFrames !== undefined) {
+                localVarQueryParameter['maxFrames'] = maxFrames;
+            }
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * The watermark is the git commit the requirements tree on main reflects the repository up to (\"github.com/org/repo\" canonical id). `tiden intent start` compares it against the repo\'s actual main HEAD to detect drift — commits that reached the code outside the intent loop. An unset watermark means the repository was never reconciled; the client baselines it.
+         * @summary Returns the drift watermark of one repository.
+         * @param {string} productId 
+         * @param {string} [repository] Canonical repo id (\&quot;github.com/org/repo\&quot; — the components.repository format), never a local path and never a clone URL.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        agentRetrievalServiceGetRepoWatermark: async (productId: string, repository?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'productId' is not null or undefined
+            assertParamExists('agentRetrievalServiceGetRepoWatermark', 'productId', productId)
+            const localVarPath = `/v1/products/{productId}/repo-watermark`
+                .replace(`{${"productId"}}`, encodeURIComponent(String(productId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication BearerAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            if (repository !== undefined) {
+                localVarQueryParameter['repository'] = repository;
+            }
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -441,10 +584,12 @@ export const AgentRetrievalServiceApiAxiosParamCreator = function (configuration
          * @param {Array<string>} [repoPaths] repo_paths is the set of changed file paths (e.g. from a merged PR). The backend resolves these to seeded requirement IDs via requirement_sources.
          * @param {number} [depth] depth controls how many hops the graph traversal expands beyond the seeds. Defaults to 3 on the server if &lt;&#x3D; 0.
          * @param {Array<string>} [edgeTypes] edge_types filters which edge types to traverse. Empty &#x3D; all canonical types.
+         * @param {string} [repository] repository scopes repo_paths to one repository: the canonical repo id (e.g. \&quot;github.com/acme/backend\&quot;) OR a local checkout alias resolved via component repository_aliases — same semantics as ChangedFile.repository.  Anchors carry only a repo-relative path, so identical paths in different repositories (\&quot;.github/workflows/ci.yml\&quot;, \&quot;Makefile\&quot;, \&quot;CLAUDE.md\&quot;) collide. When set, a seed is kept only if its requirement\&#39;s component resolves to this repository; requirements with no component still seed (fail-open) and are counted in ImpactCoverage.unverified_repository_seeds.  Empty &#x3D; no repository filtering (pre-existing behaviour).
+         * @param {number} [minConfidence] min_confidence bounds which edges the traversal may step onto: a NULL confidence always passes (parent edges carry none, so the requirement tree is never pruned), and a derived edge (co_anchored/covers, confidence &#x3D; 1/fan-out) below the floor is not admitted. Default 0 &#x3D; no floor, the pre-existing unbounded behaviour — every caller that omits this field sees byte-identical results to before it existed. A caller that wants to bound a hub-file\&#39;s fan-out (e.g. the intent-loop close gate) sets it explicitly; impact-analysis callers that want the deliberately broad radius leave it at 0.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        agentRetrievalServiceRequirementImpact: async (productId: string, repoPaths?: Array<string>, depth?: number, edgeTypes?: Array<string>, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        agentRetrievalServiceRequirementImpact: async (productId: string, repoPaths?: Array<string>, depth?: number, edgeTypes?: Array<string>, repository?: string, minConfidence?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'productId' is not null or undefined
             assertParamExists('agentRetrievalServiceRequirementImpact', 'productId', productId)
             const localVarPath = `/v1/products/{productId}/requirements/impact`
@@ -473,6 +618,14 @@ export const AgentRetrievalServiceApiAxiosParamCreator = function (configuration
 
             if (edgeTypes) {
                 localVarQueryParameter['edgeTypes'] = edgeTypes;
+            }
+
+            if (repository !== undefined) {
+                localVarQueryParameter['repository'] = repository;
+            }
+
+            if (minConfidence !== undefined) {
+                localVarQueryParameter['minConfidence'] = minConfidence;
             }
 
             localVarHeaderParameter['Accept'] = 'application/json';
@@ -646,6 +799,20 @@ export const AgentRetrievalServiceApiFp = function(configuration?: Configuration
     const localVarAxiosParamCreator = AgentRetrievalServiceApiAxiosParamCreator(configuration)
     return {
         /**
+         * reason baseline inserts the first watermark and never overwrites; empty_sync is a compare-and-set on expected_current_sha (a delta run that found nothing requirement-worthy); bootstrap writes unconditionally (an explicit full re-generation). The sync_merge advance happens server-side when a sync branch merges, and ingest happens inside the codebase agent — both are rejected here. advanced=false means a lost ordering race, never an error: the watermark can under-advance and self-heal, but never move backwards.
+         * @summary Advances the drift watermark of one repository.
+         * @param {string} productId 
+         * @param {AdvanceRepoWatermarkBody} advanceRepoWatermarkBody 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async agentRetrievalServiceAdvanceRepoWatermark(productId: string, advanceRepoWatermarkBody: AdvanceRepoWatermarkBody, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AdvanceRepoWatermarkResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.agentRetrievalServiceAdvanceRepoWatermark(productId, advanceRepoWatermarkBody, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['AgentRetrievalServiceApi.agentRetrievalServiceAdvanceRepoWatermark']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * Maps repo-qualified changed files to components via the main-branch component scopes, declares one idempotent impacts_component edge intent per touched component, and sets requirement.component_id when the files resolve to exactly one component (clears it when they span several). All files must belong to a single repository; unmatched files are returned.
          * @summary Attributes a requirement\'s changed files to owning components.
          * @param {string} productId 
@@ -672,6 +839,36 @@ export const AgentRetrievalServiceApiFp = function(configuration?: Configuration
             const localVarAxiosArgs = await localVarAxiosParamCreator.agentRetrievalServiceDeclareRequirementEdgeIntent(productId, declareRequirementEdgeIntentBody, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['AgentRetrievalServiceApi.agentRetrievalServiceDeclareRequirementEdgeIntent']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Prefer this over stitching together GetIssue, GetIssueEventStats and requirement lookups: it is one round-trip, and it reports which file path matched which requirement so a wrong match is visible rather than silent.
+         * @summary Returns everything needed to fix one error, in a single call: the issue, its latest occurrence with symbolicated stack frames, the repository files those frames implicate, where the error is happening by environment, and — for each requirement those files implement — whether a test already covers it.
+         * @param {string} productId 
+         * @param {string} issueId 
+         * @param {string} [branch] branch scopes the requirement lookup to a branch\&#39;s effective view. \&quot;\&quot; &#x3D; main.
+         * @param {number} [maxFrames] max_frames bounds how many stack frames come back. &lt;&#x3D; 0 uses the server default (10); the cap is 50.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async agentRetrievalServiceGetIssueFixContext(productId: string, issueId: string, branch?: string, maxFrames?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetIssueFixContextResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.agentRetrievalServiceGetIssueFixContext(productId, issueId, branch, maxFrames, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['AgentRetrievalServiceApi.agentRetrievalServiceGetIssueFixContext']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * The watermark is the git commit the requirements tree on main reflects the repository up to (\"github.com/org/repo\" canonical id). `tiden intent start` compares it against the repo\'s actual main HEAD to detect drift — commits that reached the code outside the intent loop. An unset watermark means the repository was never reconciled; the client baselines it.
+         * @summary Returns the drift watermark of one repository.
+         * @param {string} productId 
+         * @param {string} [repository] Canonical repo id (\&quot;github.com/org/repo\&quot; — the components.repository format), never a local path and never a clone URL.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async agentRetrievalServiceGetRepoWatermark(productId: string, repository?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetRepoWatermarkResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.agentRetrievalServiceGetRepoWatermark(productId, repository, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['AgentRetrievalServiceApi.agentRetrievalServiceGetRepoWatermark']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -772,11 +969,13 @@ export const AgentRetrievalServiceApiFp = function(configuration?: Configuration
          * @param {Array<string>} [repoPaths] repo_paths is the set of changed file paths (e.g. from a merged PR). The backend resolves these to seeded requirement IDs via requirement_sources.
          * @param {number} [depth] depth controls how many hops the graph traversal expands beyond the seeds. Defaults to 3 on the server if &lt;&#x3D; 0.
          * @param {Array<string>} [edgeTypes] edge_types filters which edge types to traverse. Empty &#x3D; all canonical types.
+         * @param {string} [repository] repository scopes repo_paths to one repository: the canonical repo id (e.g. \&quot;github.com/acme/backend\&quot;) OR a local checkout alias resolved via component repository_aliases — same semantics as ChangedFile.repository.  Anchors carry only a repo-relative path, so identical paths in different repositories (\&quot;.github/workflows/ci.yml\&quot;, \&quot;Makefile\&quot;, \&quot;CLAUDE.md\&quot;) collide. When set, a seed is kept only if its requirement\&#39;s component resolves to this repository; requirements with no component still seed (fail-open) and are counted in ImpactCoverage.unverified_repository_seeds.  Empty &#x3D; no repository filtering (pre-existing behaviour).
+         * @param {number} [minConfidence] min_confidence bounds which edges the traversal may step onto: a NULL confidence always passes (parent edges carry none, so the requirement tree is never pruned), and a derived edge (co_anchored/covers, confidence &#x3D; 1/fan-out) below the floor is not admitted. Default 0 &#x3D; no floor, the pre-existing unbounded behaviour — every caller that omits this field sees byte-identical results to before it existed. A caller that wants to bound a hub-file\&#39;s fan-out (e.g. the intent-loop close gate) sets it explicitly; impact-analysis callers that want the deliberately broad radius leave it at 0.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async agentRetrievalServiceRequirementImpact(productId: string, repoPaths?: Array<string>, depth?: number, edgeTypes?: Array<string>, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<RequirementImpactResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.agentRetrievalServiceRequirementImpact(productId, repoPaths, depth, edgeTypes, options);
+        async agentRetrievalServiceRequirementImpact(productId: string, repoPaths?: Array<string>, depth?: number, edgeTypes?: Array<string>, repository?: string, minConfidence?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<RequirementImpactResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.agentRetrievalServiceRequirementImpact(productId, repoPaths, depth, edgeTypes, repository, minConfidence, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['AgentRetrievalServiceApi.agentRetrievalServiceRequirementImpact']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -838,6 +1037,16 @@ export const AgentRetrievalServiceApiFactory = function (configuration?: Configu
     const localVarFp = AgentRetrievalServiceApiFp(configuration)
     return {
         /**
+         * reason baseline inserts the first watermark and never overwrites; empty_sync is a compare-and-set on expected_current_sha (a delta run that found nothing requirement-worthy); bootstrap writes unconditionally (an explicit full re-generation). The sync_merge advance happens server-side when a sync branch merges, and ingest happens inside the codebase agent — both are rejected here. advanced=false means a lost ordering race, never an error: the watermark can under-advance and self-heal, but never move backwards.
+         * @summary Advances the drift watermark of one repository.
+         * @param {AgentRetrievalServiceApiAgentRetrievalServiceAdvanceRepoWatermarkRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        agentRetrievalServiceAdvanceRepoWatermark(requestParameters: AgentRetrievalServiceApiAgentRetrievalServiceAdvanceRepoWatermarkRequest, options?: RawAxiosRequestConfig): AxiosPromise<AdvanceRepoWatermarkResponse> {
+            return localVarFp.agentRetrievalServiceAdvanceRepoWatermark(requestParameters.productId, requestParameters.advanceRepoWatermarkBody, options).then((request) => request(axios, basePath));
+        },
+        /**
          * Maps repo-qualified changed files to components via the main-branch component scopes, declares one idempotent impacts_component edge intent per touched component, and sets requirement.component_id when the files resolve to exactly one component (clears it when they span several). All files must belong to a single repository; unmatched files are returned.
          * @summary Attributes a requirement\'s changed files to owning components.
          * @param {AgentRetrievalServiceApiAgentRetrievalServiceAttributeChangedFilesRequest} requestParameters Request parameters.
@@ -856,6 +1065,26 @@ export const AgentRetrievalServiceApiFactory = function (configuration?: Configu
          */
         agentRetrievalServiceDeclareRequirementEdgeIntent(requestParameters: AgentRetrievalServiceApiAgentRetrievalServiceDeclareRequirementEdgeIntentRequest, options?: RawAxiosRequestConfig): AxiosPromise<DeclareRequirementEdgeIntentResponse> {
             return localVarFp.agentRetrievalServiceDeclareRequirementEdgeIntent(requestParameters.productId, requestParameters.declareRequirementEdgeIntentBody, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Prefer this over stitching together GetIssue, GetIssueEventStats and requirement lookups: it is one round-trip, and it reports which file path matched which requirement so a wrong match is visible rather than silent.
+         * @summary Returns everything needed to fix one error, in a single call: the issue, its latest occurrence with symbolicated stack frames, the repository files those frames implicate, where the error is happening by environment, and — for each requirement those files implement — whether a test already covers it.
+         * @param {AgentRetrievalServiceApiAgentRetrievalServiceGetIssueFixContextRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        agentRetrievalServiceGetIssueFixContext(requestParameters: AgentRetrievalServiceApiAgentRetrievalServiceGetIssueFixContextRequest, options?: RawAxiosRequestConfig): AxiosPromise<GetIssueFixContextResponse> {
+            return localVarFp.agentRetrievalServiceGetIssueFixContext(requestParameters.productId, requestParameters.issueId, requestParameters.branch, requestParameters.maxFrames, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * The watermark is the git commit the requirements tree on main reflects the repository up to (\"github.com/org/repo\" canonical id). `tiden intent start` compares it against the repo\'s actual main HEAD to detect drift — commits that reached the code outside the intent loop. An unset watermark means the repository was never reconciled; the client baselines it.
+         * @summary Returns the drift watermark of one repository.
+         * @param {AgentRetrievalServiceApiAgentRetrievalServiceGetRepoWatermarkRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        agentRetrievalServiceGetRepoWatermark(requestParameters: AgentRetrievalServiceApiAgentRetrievalServiceGetRepoWatermarkRequest, options?: RawAxiosRequestConfig): AxiosPromise<GetRepoWatermarkResponse> {
+            return localVarFp.agentRetrievalServiceGetRepoWatermark(requestParameters.productId, requestParameters.repository, options).then((request) => request(axios, basePath));
         },
         /**
          * Returns every graph node (requirements plus component nodes reached via impacts_component edges, discriminated by kind) and every edge with its type, source kind, and confidence — for whole-product visualization or offline analysis.
@@ -925,7 +1154,7 @@ export const AgentRetrievalServiceApiFactory = function (configuration?: Configu
          * @throws {RequiredError}
          */
         agentRetrievalServiceRequirementImpact(requestParameters: AgentRetrievalServiceApiAgentRetrievalServiceRequirementImpactRequest, options?: RawAxiosRequestConfig): AxiosPromise<RequirementImpactResponse> {
-            return localVarFp.agentRetrievalServiceRequirementImpact(requestParameters.productId, requestParameters.repoPaths, requestParameters.depth, requestParameters.edgeTypes, options).then((request) => request(axios, basePath));
+            return localVarFp.agentRetrievalServiceRequirementImpact(requestParameters.productId, requestParameters.repoPaths, requestParameters.depth, requestParameters.edgeTypes, requestParameters.repository, requestParameters.minConfidence, options).then((request) => request(axios, basePath));
         },
         /**
          * Traverses the requirement graph from requirement_id up to depth hops (default 1) over the given edge_types (empty = all canonical types) and returns the reachable requirement ids.
@@ -961,6 +1190,15 @@ export const AgentRetrievalServiceApiFactory = function (configuration?: Configu
 };
 
 /**
+ * Request parameters for agentRetrievalServiceAdvanceRepoWatermark operation in AgentRetrievalServiceApi.
+ */
+export interface AgentRetrievalServiceApiAgentRetrievalServiceAdvanceRepoWatermarkRequest {
+    readonly productId: string
+
+    readonly advanceRepoWatermarkBody: AdvanceRepoWatermarkBody
+}
+
+/**
  * Request parameters for agentRetrievalServiceAttributeChangedFiles operation in AgentRetrievalServiceApi.
  */
 export interface AgentRetrievalServiceApiAgentRetrievalServiceAttributeChangedFilesRequest {
@@ -978,6 +1216,37 @@ export interface AgentRetrievalServiceApiAgentRetrievalServiceDeclareRequirement
     readonly productId: string
 
     readonly declareRequirementEdgeIntentBody: DeclareRequirementEdgeIntentBody
+}
+
+/**
+ * Request parameters for agentRetrievalServiceGetIssueFixContext operation in AgentRetrievalServiceApi.
+ */
+export interface AgentRetrievalServiceApiAgentRetrievalServiceGetIssueFixContextRequest {
+    readonly productId: string
+
+    readonly issueId: string
+
+    /**
+     * branch scopes the requirement lookup to a branch\&#39;s effective view. \&quot;\&quot; &#x3D; main.
+     */
+    readonly branch?: string
+
+    /**
+     * max_frames bounds how many stack frames come back. &lt;&#x3D; 0 uses the server default (10); the cap is 50.
+     */
+    readonly maxFrames?: number
+}
+
+/**
+ * Request parameters for agentRetrievalServiceGetRepoWatermark operation in AgentRetrievalServiceApi.
+ */
+export interface AgentRetrievalServiceApiAgentRetrievalServiceGetRepoWatermarkRequest {
+    readonly productId: string
+
+    /**
+     * Canonical repo id (\&quot;github.com/org/repo\&quot; — the components.repository format), never a local path and never a clone URL.
+     */
+    readonly repository?: string
 }
 
 /**
@@ -1080,6 +1349,16 @@ export interface AgentRetrievalServiceApiAgentRetrievalServiceRequirementImpactR
      * edge_types filters which edge types to traverse. Empty &#x3D; all canonical types.
      */
     readonly edgeTypes?: Array<string>
+
+    /**
+     * repository scopes repo_paths to one repository: the canonical repo id (e.g. \&quot;github.com/acme/backend\&quot;) OR a local checkout alias resolved via component repository_aliases — same semantics as ChangedFile.repository.  Anchors carry only a repo-relative path, so identical paths in different repositories (\&quot;.github/workflows/ci.yml\&quot;, \&quot;Makefile\&quot;, \&quot;CLAUDE.md\&quot;) collide. When set, a seed is kept only if its requirement\&#39;s component resolves to this repository; requirements with no component still seed (fail-open) and are counted in ImpactCoverage.unverified_repository_seeds.  Empty &#x3D; no repository filtering (pre-existing behaviour).
+     */
+    readonly repository?: string
+
+    /**
+     * min_confidence bounds which edges the traversal may step onto: a NULL confidence always passes (parent edges carry none, so the requirement tree is never pruned), and a derived edge (co_anchored/covers, confidence &#x3D; 1/fan-out) below the floor is not admitted. Default 0 &#x3D; no floor, the pre-existing unbounded behaviour — every caller that omits this field sees byte-identical results to before it existed. A caller that wants to bound a hub-file\&#39;s fan-out (e.g. the intent-loop close gate) sets it explicitly; impact-analysis callers that want the deliberately broad radius leave it at 0.
+     */
+    readonly minConfidence?: number
 }
 
 /**
@@ -1142,6 +1421,17 @@ export interface AgentRetrievalServiceApiAgentRetrievalServiceWriteRequirementEd
  */
 export class AgentRetrievalServiceApi extends BaseAPI {
     /**
+     * reason baseline inserts the first watermark and never overwrites; empty_sync is a compare-and-set on expected_current_sha (a delta run that found nothing requirement-worthy); bootstrap writes unconditionally (an explicit full re-generation). The sync_merge advance happens server-side when a sync branch merges, and ingest happens inside the codebase agent — both are rejected here. advanced=false means a lost ordering race, never an error: the watermark can under-advance and self-heal, but never move backwards.
+     * @summary Advances the drift watermark of one repository.
+     * @param {AgentRetrievalServiceApiAgentRetrievalServiceAdvanceRepoWatermarkRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public agentRetrievalServiceAdvanceRepoWatermark(requestParameters: AgentRetrievalServiceApiAgentRetrievalServiceAdvanceRepoWatermarkRequest, options?: RawAxiosRequestConfig) {
+        return AgentRetrievalServiceApiFp(this.configuration).agentRetrievalServiceAdvanceRepoWatermark(requestParameters.productId, requestParameters.advanceRepoWatermarkBody, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
      * Maps repo-qualified changed files to components via the main-branch component scopes, declares one idempotent impacts_component edge intent per touched component, and sets requirement.component_id when the files resolve to exactly one component (clears it when they span several). All files must belong to a single repository; unmatched files are returned.
      * @summary Attributes a requirement\'s changed files to owning components.
      * @param {AgentRetrievalServiceApiAgentRetrievalServiceAttributeChangedFilesRequest} requestParameters Request parameters.
@@ -1161,6 +1451,28 @@ export class AgentRetrievalServiceApi extends BaseAPI {
      */
     public agentRetrievalServiceDeclareRequirementEdgeIntent(requestParameters: AgentRetrievalServiceApiAgentRetrievalServiceDeclareRequirementEdgeIntentRequest, options?: RawAxiosRequestConfig) {
         return AgentRetrievalServiceApiFp(this.configuration).agentRetrievalServiceDeclareRequirementEdgeIntent(requestParameters.productId, requestParameters.declareRequirementEdgeIntentBody, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Prefer this over stitching together GetIssue, GetIssueEventStats and requirement lookups: it is one round-trip, and it reports which file path matched which requirement so a wrong match is visible rather than silent.
+     * @summary Returns everything needed to fix one error, in a single call: the issue, its latest occurrence with symbolicated stack frames, the repository files those frames implicate, where the error is happening by environment, and — for each requirement those files implement — whether a test already covers it.
+     * @param {AgentRetrievalServiceApiAgentRetrievalServiceGetIssueFixContextRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public agentRetrievalServiceGetIssueFixContext(requestParameters: AgentRetrievalServiceApiAgentRetrievalServiceGetIssueFixContextRequest, options?: RawAxiosRequestConfig) {
+        return AgentRetrievalServiceApiFp(this.configuration).agentRetrievalServiceGetIssueFixContext(requestParameters.productId, requestParameters.issueId, requestParameters.branch, requestParameters.maxFrames, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * The watermark is the git commit the requirements tree on main reflects the repository up to (\"github.com/org/repo\" canonical id). `tiden intent start` compares it against the repo\'s actual main HEAD to detect drift — commits that reached the code outside the intent loop. An unset watermark means the repository was never reconciled; the client baselines it.
+     * @summary Returns the drift watermark of one repository.
+     * @param {AgentRetrievalServiceApiAgentRetrievalServiceGetRepoWatermarkRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public agentRetrievalServiceGetRepoWatermark(requestParameters: AgentRetrievalServiceApiAgentRetrievalServiceGetRepoWatermarkRequest, options?: RawAxiosRequestConfig) {
+        return AgentRetrievalServiceApiFp(this.configuration).agentRetrievalServiceGetRepoWatermark(requestParameters.productId, requestParameters.repository, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -1237,7 +1549,7 @@ export class AgentRetrievalServiceApi extends BaseAPI {
      * @throws {RequiredError}
      */
     public agentRetrievalServiceRequirementImpact(requestParameters: AgentRetrievalServiceApiAgentRetrievalServiceRequirementImpactRequest, options?: RawAxiosRequestConfig) {
-        return AgentRetrievalServiceApiFp(this.configuration).agentRetrievalServiceRequirementImpact(requestParameters.productId, requestParameters.repoPaths, requestParameters.depth, requestParameters.edgeTypes, options).then((request) => request(this.axios, this.basePath));
+        return AgentRetrievalServiceApiFp(this.configuration).agentRetrievalServiceRequirementImpact(requestParameters.productId, requestParameters.repoPaths, requestParameters.depth, requestParameters.edgeTypes, requestParameters.repository, requestParameters.minConfidence, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

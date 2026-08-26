@@ -12,6 +12,7 @@ Name | Type | Description | Notes
 **title** | **string** |  | [optional] [default to undefined]
 **parentId** | **string** |  | [optional] [default to undefined]
 **branchStatus** | **string** |  | [optional] [default to undefined]
+**canonicalId** | **string** | Canonical (main) id of this row: source_id for a branch COW copy, empty otherwise. Branch scope keys rows by their branch-local id while parent_id and Verdict.subjects carry main ids, so a client needs this to rebuild the feature tree the way the server resolver does. | [optional] [default to undefined]
 
 ## Example
 
@@ -26,6 +27,7 @@ const instance: MatrixRequirement = {
     title,
     parentId,
     branchStatus,
+    canonicalId,
 };
 ```
 

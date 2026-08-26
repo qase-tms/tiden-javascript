@@ -22,6 +22,8 @@ import { DUMMY_BASE_URL, assertParamExists, setApiKeyToObject, setBasicAuthToObj
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS, type RequestArgs, BaseAPI, RequiredError, operationServerMap } from '../base';
 // @ts-ignore
+import type { AttributeRequirementComponentsResponse } from '../model';
+// @ts-ignore
 import type { CreateRequirementBody } from '../model';
 // @ts-ignore
 import type { CreateRequirementResponse } from '../model';
@@ -42,6 +44,43 @@ import type { UpdateRequirementResponse } from '../model';
  */
 export const RequirementServiceApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
+        /**
+         * Mirrors the test-side attributeTestComponents: a requirement whose anchors resolve to exactly one component gets that component_id set; anchors spanning more than one component, or owned by none (including a repository-ambiguous anchor path), leave the requirement untouched. Only NULL component_id rows are written — an explicit or previously-derived attribution is never overwritten. Idempotent.
+         * @summary Derives requirement-component attribution from each requirement\'s own repo_file anchors.
+         * @param {string} productId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        requirementServiceAttributeRequirementComponents: async (productId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'productId' is not null or undefined
+            assertParamExists('requirementServiceAttributeRequirementComponents', 'productId', productId)
+            const localVarPath = `/v1/products/{productId}/requirement-components:derive`
+                .replace(`{${"productId"}}`, encodeURIComponent(String(productId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication BearerAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
         /**
          * Creates the requirement under parent_id (empty = root) on branch (empty = main; a missing branch name is auto-created and edits stay copy-on-write until merge). Optional status/priority/type classify it; sources attach provenance (repo files, documentation URLs, manual input). Returns the requirement with its product-wide seq_num.
          * @summary Creates a requirement.
@@ -272,6 +311,19 @@ export const RequirementServiceApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = RequirementServiceApiAxiosParamCreator(configuration)
     return {
         /**
+         * Mirrors the test-side attributeTestComponents: a requirement whose anchors resolve to exactly one component gets that component_id set; anchors spanning more than one component, or owned by none (including a repository-ambiguous anchor path), leave the requirement untouched. Only NULL component_id rows are written — an explicit or previously-derived attribution is never overwritten. Idempotent.
+         * @summary Derives requirement-component attribution from each requirement\'s own repo_file anchors.
+         * @param {string} productId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async requirementServiceAttributeRequirementComponents(productId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AttributeRequirementComponentsResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.requirementServiceAttributeRequirementComponents(productId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['RequirementServiceApi.requirementServiceAttributeRequirementComponents']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * Creates the requirement under parent_id (empty = root) on branch (empty = main; a missing branch name is auto-created and edits stay copy-on-write until merge). Optional status/priority/type classify it; sources attach provenance (repo files, documentation URLs, manual input). Returns the requirement with its product-wide seq_num.
          * @summary Creates a requirement.
          * @param {string} productId 
@@ -353,6 +405,16 @@ export const RequirementServiceApiFactory = function (configuration?: Configurat
     const localVarFp = RequirementServiceApiFp(configuration)
     return {
         /**
+         * Mirrors the test-side attributeTestComponents: a requirement whose anchors resolve to exactly one component gets that component_id set; anchors spanning more than one component, or owned by none (including a repository-ambiguous anchor path), leave the requirement untouched. Only NULL component_id rows are written — an explicit or previously-derived attribution is never overwritten. Idempotent.
+         * @summary Derives requirement-component attribution from each requirement\'s own repo_file anchors.
+         * @param {RequirementServiceApiRequirementServiceAttributeRequirementComponentsRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        requirementServiceAttributeRequirementComponents(requestParameters: RequirementServiceApiRequirementServiceAttributeRequirementComponentsRequest, options?: RawAxiosRequestConfig): AxiosPromise<AttributeRequirementComponentsResponse> {
+            return localVarFp.requirementServiceAttributeRequirementComponents(requestParameters.productId, options).then((request) => request(axios, basePath));
+        },
+        /**
          * Creates the requirement under parent_id (empty = root) on branch (empty = main; a missing branch name is auto-created and edits stay copy-on-write until merge). Optional status/priority/type classify it; sources attach provenance (repo files, documentation URLs, manual input). Returns the requirement with its product-wide seq_num.
          * @summary Creates a requirement.
          * @param {RequirementServiceApiRequirementServiceCreateRequirementRequest} requestParameters Request parameters.
@@ -404,6 +466,13 @@ export const RequirementServiceApiFactory = function (configuration?: Configurat
         },
     };
 };
+
+/**
+ * Request parameters for requirementServiceAttributeRequirementComponents operation in RequirementServiceApi.
+ */
+export interface RequirementServiceApiRequirementServiceAttributeRequirementComponentsRequest {
+    readonly productId: string
+}
 
 /**
  * Request parameters for requirementServiceCreateRequirement operation in RequirementServiceApi.
@@ -461,6 +530,17 @@ export interface RequirementServiceApiRequirementServiceUpdateRequirementRequest
  * RequirementServiceApi - object-oriented interface
  */
 export class RequirementServiceApi extends BaseAPI {
+    /**
+     * Mirrors the test-side attributeTestComponents: a requirement whose anchors resolve to exactly one component gets that component_id set; anchors spanning more than one component, or owned by none (including a repository-ambiguous anchor path), leave the requirement untouched. Only NULL component_id rows are written — an explicit or previously-derived attribution is never overwritten. Idempotent.
+     * @summary Derives requirement-component attribution from each requirement\'s own repo_file anchors.
+     * @param {RequirementServiceApiRequirementServiceAttributeRequirementComponentsRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public requirementServiceAttributeRequirementComponents(requestParameters: RequirementServiceApiRequirementServiceAttributeRequirementComponentsRequest, options?: RawAxiosRequestConfig) {
+        return RequirementServiceApiFp(this.configuration).requirementServiceAttributeRequirementComponents(requestParameters.productId, options).then((request) => request(this.axios, this.basePath));
+    }
+
     /**
      * Creates the requirement under parent_id (empty = root) on branch (empty = main; a missing branch name is auto-created and edits stay copy-on-write until merge). Optional status/priority/type classify it; sources attach provenance (repo files, documentation URLs, manual input). Returns the requirement with its product-wide seq_num.
      * @summary Creates a requirement.

@@ -6,7 +6,7 @@ DistillIntentRequest carries one coding session — the rendered transcript plus
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**transcript** | **string** | Rendered conversation (normalized, slim — user/assistant text only). The backend never sees an agent-specific transcript format. | [optional] [default to undefined]
+**transcript** | **string** | Rendered conversation (normalized, slim — user/assistant text only). Agent-specific transcript formats are not accepted. | [optional] [default to undefined]
 **credentialId** | **string** | Optional LLM credential to use. When empty, the backend picks the first usable llm.* credential in the product\&#39;s workspace. | [optional] [default to undefined]
 **model** | **string** | Optional model override; when empty, falls back to the credential\&#39;s metadata \&quot;model\&quot; field. | [optional] [default to undefined]
 **slug** | **string** | Optional branch slug override; when empty, defaults to \&quot;session\&quot;. | [optional] [default to undefined]

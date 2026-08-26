@@ -48,5 +48,7 @@ export interface TestRun {
     'createdBy'?: string;
     'createdAt'?: string;
     'updatedAt'?: string;
+    'intentSessionId'?: string;
+    'intentBranch'?: string;
 }
 

@@ -16,6 +16,18 @@
 // May contain unused imports in some cases
 // @ts-ignore
 import type { BranchChangeStats } from './branch-change-stats';
+// May contain unused imports in some cases
+// @ts-ignore
+import type { BranchIntentState } from './branch-intent-state';
+// May contain unused imports in some cases
+// @ts-ignore
+import type { BranchLatestRun } from './branch-latest-run';
+// May contain unused imports in some cases
+// @ts-ignore
+import type { BranchLoopStats } from './branch-loop-stats';
+// May contain unused imports in some cases
+// @ts-ignore
+import type { CodeLink } from './code-link';
 
 /**
  * Branch is a copy-on-write working line over a product\'s main data: requirement/test/component edits made on it shadow main until merged. status is \"open\" until the branch is merged (\"merged\").
@@ -34,5 +46,22 @@ export interface Branch {
      */
     'createdByAgentRunId'?: string;
     'stats'?: BranchChangeStats;
+    /**
+     * Coding agent that created this branch (validated server-side against a fixed allowlist at write time); empty for human-created branches or an unrecognized value.
+     */
+    'createdByAgent'?: string;
+    /**
+     * Display name/email of the user in created_by, resolved server-side by ListBranches/GetBranch in one batched lookup. Empty when created_by is unset or the user has since been deleted.
+     */
+    'createdByName'?: string;
+    'createdByEmail'?: string;
+    /**
+     * Immutable merge-completion timestamp (column exists since migration 000076); unset for open branches and for branches merged before that column existed. Distinct from updated_at, which mutates on any later edit — this is the one trustworthy \"when did this land\" fact.
+     */
+    'mergedAt'?: string;
+    'loop'?: BranchLoopStats;
+    'latestRun'?: BranchLatestRun;
+    'codeLinks'?: Array<CodeLink>;
+    'intent'?: BranchIntentState;
 }
 
