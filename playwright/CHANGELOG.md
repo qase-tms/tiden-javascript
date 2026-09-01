@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1
+
+- No code changes. Requires `@tiden/reporter-commons` `^0.1.1`, which fixes a polynomial ReDoS
+  in the step-marker parser this reporter feeds through `tiden.step()` — see the
+  [commons changelog](../commons/CHANGELOG.md).
+
 ## 0.1.0
 
 Initial Tiden fork release of `@tiden/playwright-reporter`.

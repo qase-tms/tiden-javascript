@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.1
+
+- **Fixed a polynomial ReDoS in `extractAndCleanStep`** (CodeQL `js/polynomial-redos`, high).
+  Its single regex spanned both the `TidenExpRes:` and `TidenData:` markers and needed an
+  ambiguous `\s*:?\s*` prefix: for a run of N spaces there are O(N) ways to split them across
+  the two `\s*`, so a step name containing a long run of spaces backtracked polynomially.
+  Replaced with index-based slicing, matching what upstream `qase-javascript-commons` moved to.
+- Two bugs fixed along the way: a single marker with no counterpart was silently ignored (the
+  old regex required both), and `.` dropped multiline marker values.
+
 ## 0.1.0
 
 Initial Tiden fork release of `@tiden/reporter-commons`.
