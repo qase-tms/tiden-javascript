@@ -2,18 +2,23 @@ name: CI
 on:
   push: { branches: [main] }
   pull_request:
+
+# The workflow only reads the repo; no job needs write access to the token.
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node: [18, 20, 22]
-        package: [commons, playwright, vitest]
+        package: [commons, playwright, vitest, jest]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: '${{ matrix.node }}' }
       - run: npm ci
-      - run: npm run build -w commons -w playwright -w vitest
+      - run: npm run build -w commons -w playwright -w vitest -w jest
       - run: npm run lint -w ${{ matrix.package }}
       - run: npm run test -w ${{ matrix.package }}

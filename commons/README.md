@@ -9,7 +9,7 @@ See the [root README](https://github.com/qase-tms/tiden-javascript/blob/main/REA
 ## Who uses this
 
 This package is **not meant to be installed or configured directly** in a test project — it's a
-dependency of framework-specific reporters (currently [`@tiden/playwright-reporter`](https://github.com/qase-tms/tiden-javascript/blob/main/playwright/README.md)).
+dependency of framework-specific reporters ([`@tiden/playwright-reporter`](https://github.com/qase-tms/tiden-javascript/blob/main/playwright/README.md), [`@tiden/vitest-reporter`](https://github.com/qase-tms/tiden-javascript/blob/main/vitest/README.md), and [`@tiden/jest-reporter`](https://github.com/qase-tms/tiden-javascript/blob/main/jest/README.md)).
 Install and configure the reporter for your framework instead; it composes this package's config
 loader, env resolver, and API transport internally.
 
