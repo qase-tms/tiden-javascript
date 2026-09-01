@@ -1,7 +1,7 @@
 # tiden-javascript
 
 Tiden reporters for JavaScript test frameworks. v1 ships the commons layer
-and the Playwright and Vitest reporters, reporting into Tiden's Test Runs API.
+and the Playwright, Vitest and Jest reporters, reporting into Tiden's Test Runs API.
 
 ## Packages
 
@@ -10,6 +10,7 @@ and the Playwright and Vitest reporters, reporting into Tiden's Test Runs API.
 | [`commons`](commons) — `@tiden/reporter-commons` | Shared reporter core (config, env, narrow API transport, formatting). Not installed directly — a dependency of framework reporters. | [commons/README.md](commons/README.md) |
 | [`playwright`](playwright) — `@tiden/playwright-reporter` | Playwright reporter. Install this in your test project. | [playwright/README.md](playwright/README.md) |
 | [`vitest`](vitest) — `@tiden/vitest-reporter` | Vitest reporter. Install this in your test project. | [vitest/README.md](vitest/README.md) |
+| [`jest`](jest) — `@tiden/jest-reporter` | Jest reporter. Install this in your test project. | [jest/README.md](jest/README.md) |
 | [`api-client`](api-client) | Private generated OpenAPI snapshot used to check the reporter contract at build time. It is not published to npm. | — |
 
 ## Quickstart
@@ -60,7 +61,23 @@ export default defineConfig({
 ```
 
 See [`vitest/README.md`](vitest/README.md) for its metadata API (`withTiden` / `addTidenId`),
-network-profiler setup file, and configuration reference. Both reporters read the same
+network-profiler setup file, and configuration reference.
+
+For Jest, install [`@tiden/jest-reporter`](jest) and register it under `reporters` in
+`jest.config.js`:
+
+```sh
+npm install --save-dev @tiden/jest-reporter
+```
+
+```javascript
+module.exports = {
+  reporters: ['default', ['@tiden/jest-reporter', {}]],
+};
+```
+
+See [`jest/README.md`](jest/README.md) for its metadata API (`tiden.*`, which requires
+`--runInBand`) and configuration reference. All three reporters read the same
 `tiden.config.json` and `TIDEN_*` environment variables.
 
 ## API contract strategy
@@ -77,8 +94,9 @@ keeps drift protection without making `@tiden/api-client` a public runtime depen
 ## Releasing
 
 Push a `vX.Y.Z` git tag to release: `.github/workflows/release.yml` builds, tests, and
-publishes `@tiden/reporter-commons`, `@tiden/playwright-reporter`, and
-`@tiden/vitest-reporter` to npm at the versions already set in each package's `package.json`,
+publishes `@tiden/reporter-commons`, `@tiden/playwright-reporter`,
+`@tiden/vitest-reporter`, and `@tiden/jest-reporter` to npm at the versions already set in each
+package's `package.json`,
 using npm's OIDC trusted publishing (no `NPM_TOKEN` secret; provenance attached automatically).
 The private `api-client/` snapshot is never published.
 
@@ -87,6 +105,7 @@ The private `api-client/` snapshot is never published.
 Forked from [qase-tms/qase-javascript](https://github.com/qase-tms/qase-javascript)
 at commit `d77a157020fea088ea323050a36b9bf874ad089d` (Apache-2.0), trimmed to
 `commons` (from `qase-javascript-commons`), `playwright` (from `qase-playwright`),
-and `vitest` (from `qase-vitest`, ported at the same commit). The wire transport
+`vitest` (from `qase-vitest`), and `jest` (from `qase-jest`), all ported at the
+same commit. The wire transport
 targets Tiden instead of Qase TestOps, and multi-project (`testops_multi`)
 reporting is dropped throughout.
