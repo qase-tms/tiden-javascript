@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { describe, it, expect, beforeEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
 
 const reporterMock = {
   startTestRun: jest.fn(),
@@ -87,6 +87,56 @@ describe('run lifecycle', () => {
   it('returns an awaitable promise from onRunComplete', async () => {
     const reporter = mkReporter();
     await expect(reporter.onRunComplete()).resolves.toBeUndefined();
+  });
+});
+
+describe('rootDir', () => {
+  // Regression guarded here because the vitest reporter shipped this wiring
+  // broken once: the option was declared in the env schema and threaded into
+  // the builder, but commons merges env inside OptionsResolver, whose result
+  // a framework reporter never sees — so TIDEN_ROOT_DIR was silently ignored
+  // while looking configured. Builder-level tests cannot catch that; they
+  // pass rootDir in directly.
+  const KEY = 'TIDEN_ROOT_DIR';
+  let saved: string | undefined;
+
+  beforeEach(() => {
+    saved = process.env[KEY];
+    delete process.env[KEY];
+  });
+
+  afterEach(() => {
+    if (saved === undefined) delete process.env[KEY];
+    else process.env[KEY] = saved;
+  });
+
+  const signatureOf = (): string => {
+    const calls = reporterMock.addTestResult.mock.calls;
+    return (calls[calls.length - 1]?.[0] as any).signature;
+  };
+
+  it('reads TIDEN_ROOT_DIR from the environment', () => {
+    process.env[KEY] = '/repo';
+    const reporter = mkReporter();
+    reporter.onTestCaseResult({ path: '/repo/app/src/login.test.ts' } as any, mkAssertion());
+    expect(signatureOf()).toBe('app::src::login.test.ts::auth::logs_in');
+  });
+
+  it('prefers an explicit rootDir option over the environment', () => {
+    process.env[KEY] = '/repo';
+    loadMock.mockReturnValue({ rootDir: '/repo/app' });
+    const reporter = mkReporter();
+    reporter.onTestCaseResult({ path: '/repo/app/src/login.test.ts' } as any, mkAssertion());
+    expect(signatureOf()).toBe('src::login.test.ts::auth::logs_in');
+  });
+
+  it('falls back to process.cwd() when TIDEN_ROOT_DIR is unset', () => {
+    const reporter = mkReporter();
+    reporter.onTestCaseResult(
+      { path: `${process.cwd()}/src/login.test.ts` } as any,
+      mkAssertion(),
+    );
+    expect(signatureOf()).toBe('src::login.test.ts::auth::logs_in');
   });
 });
 

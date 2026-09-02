@@ -131,6 +131,7 @@ override both the config file and any explicit `jest.config.js` reporter options
 | `environment`                       | `TIDEN_ENVIRONMENT`                  | Environment slug attached to the run (auto-created server-side if unknown)       |
 | `captureLogs`                       | `TIDEN_CAPTURE_LOGS`                 | Capture `stdout`/`stderr` into the reported result                               |
 | `rootSuite`                         | `TIDEN_ROOT_SUITE`                   | Wrap all reported suites under a single root suite name                          |
+| `rootDir`                           | `TIDEN_ROOT_DIR`                     | Base the spec-file segments of a case signature are resolved against (default: `process.cwd()`) |
 | `statusMapping`                     | `TIDEN_STATUS_MAPPING`               | Rename result statuses, format `fromStatus=toStatus[,fromStatus=toStatus...]`     |
 | **Tiden reporting**                 |                                       |                                                                                    |
 | `tiden.product`                     | `TIDEN_PRODUCT_ID`                   | Tiden product ID (**required** in `tiden` mode)                                  |
@@ -231,6 +232,30 @@ test('checkout flow', async () => {
 | `failed`    | `failed`     |
 | `pending` (`test.skip`) | `skipped` |
 | `todo` (`test.todo`) | `disabled` |
+
+### `rootDir` and case identity
+
+A case's `signature` is its identity, matched byte-for-byte by the server, and it
+starts with the spec file — split on `/` into one segment per directory. That
+file is measured from `rootDir`, so **every producer reporting into one product
+must agree on the same base**, or the same test arrives under two identities and
+becomes two cases.
+
+The default, `process.cwd()`, is right when tests always run from one place. Set
+it explicitly when they do not — a monorepo running jest from a sub-package while
+another producer reports paths from the repo root, say:
+
+```bash
+TIDEN_ROOT_DIR="$GITHUB_WORKSPACE" npx jest
+```
+
+It applies to the reported suite path as well, so placement matches identity.
+
+Note the segment shape differs between reporters and must not be carried across:
+jest splits the file on `/` (`app::src::a.test.ts::…`), while
+`@tiden/vitest-reporter` keeps it whole (`app/src/a.test.ts::…`). `rootDir`
+changes only the base, never the shape.
+
 
 Skipped and `todo` specs never execute, so they bypass Jest's per-test hooks; the reporter sweeps
 them out of the file-level result instead, and reports each exactly once.
