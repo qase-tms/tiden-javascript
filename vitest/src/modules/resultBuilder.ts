@@ -72,15 +72,11 @@ export class ResultBuilder {
       [ResultBuilder.specPath(testCase), ...ResultBuilder.splitFullName(testCase)].filter(Boolean),
     );
 
-    const suiteToUse = metadata?.suite ?? currentSuite ?? ResultBuilder.extractSuiteFromTestCase(testCase);
-    if (suiteToUse) {
-      testResult.relations = { suite: { data: [] } };
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const suiteData = testResult.relations.suite!.data;
-      const suites = suiteToUse.split(' - ');
-      suites.forEach((suite) => {
-        suiteData.push({ title: suite.trim(), public_id: null });
-      });
+    const suiteSegments = ResultBuilder.suitePath(testCase, metadata?.suite, currentSuite);
+    if (suiteSegments.length > 0) {
+      testResult.relations = {
+        suite: { data: suiteSegments.map((title) => ({ title, public_id: null })) },
+      };
     }
 
     // Vitest's `testCase.diagnostic()` exposes both the absolute `startTime`
@@ -206,6 +202,58 @@ export class ResultBuilder {
     return fullName.split(' > ');
   }
 
+  /**
+   * The reported suite path, outermost segment first: the spec file, then the
+   * describe chain. Mirrors the app-side vitest CI transform, which reports
+   * `[relFile, ...describeTitles]`, so a case does not bounce between two tree
+   * locations depending on which side reported the run.
+   *
+   * Two things this deliberately does NOT do any more:
+   *
+   *   - It no longer prefers `currentSuite` over the derived path. That value
+   *     is one describe's `name` from `onTestSuiteReady`, so preferring it
+   *     truncated every nested test to its innermost describe ("Outer > Inner
+   *     > t" reported as just ["Inner"]) and dropped the file. It survives
+   *     only as a fallback for a case with neither a module id nor a describe.
+   *   - It no longer round-trips the path through a joined string. The old
+   *     code joined the derived chain with ' > ' and the caller split it on
+   *     ' - ', which never matched, so a nested path arrived as ONE suite
+   *     titled "Outer > Inner".
+   *
+   * An explicit `tiden.suite()` annotation still replaces the whole computed
+   * path, and keeps its ' - ' nesting convention — that string is authored by
+   * the user, where the convention is meaningful. `currentSuite` is a literal
+   * describe name and is never split: `describe('Feature - edge cases')` is
+   * one suite, not two.
+   */
+  static suitePath(
+    testCase: TestCase,
+    metadataSuite: string | undefined,
+    currentSuite: string | undefined,
+  ): string[] {
+    const clean = (segments: string[]): string[] =>
+      segments.map((segment) => segment.trim()).filter(Boolean);
+
+    if (metadataSuite) {
+      return clean(metadataSuite.split(' - '));
+    }
+
+    const derived = clean([
+      ResultBuilder.specPath(testCase),
+      ...ResultBuilder.splitFullName(testCase).slice(0, -1),
+    ]);
+    if (derived.length > 0) {
+      return derived;
+    }
+
+    return currentSuite ? clean([currentSuite]) : [];
+  }
+
+  /**
+   * @deprecated Not used by `build()` any more, and not the reported suite
+   * path — it returns the describe chain joined with ' > ' as a single string,
+   * which is what the collapse bug was made of. Use `suitePath()`.
+   */
   static extractSuiteFromTestCase(testCase: TestCase): string | undefined {
     const parts = ResultBuilder.splitFullName(testCase);
     if (parts.length > 1) {

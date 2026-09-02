@@ -341,25 +341,86 @@ describe('ResultBuilder.build', () => {
     });
   });
 
-  it('falls back to currentSuite when metadata.suite missing', () => {
-    const result = ResultBuilder.build({
-      testCase: mkTestCase(),
-      metadata: undefined,
-      currentSuite: 'OuterSuite',
-      profilerSteps: [],
-    });
-    expect(result.relations?.suite?.data?.[0]?.title).toBe('OuterSuite');
-  });
+  const suiteTitles = (result: any): string[] | undefined =>
+    result.relations?.suite?.data?.map((d: any) => d.title);
 
-  it('falls back to extractSuiteFromTestCase when no metadata.suite and no currentSuite', () => {
+  it('reports the spec file then the full describe chain, one segment each', () => {
     const result = ResultBuilder.build({
       testCase: mkTestCase({ fullName: 'Outer > Inner > Test', name: 'Test' }),
       metadata: undefined,
       currentSuite: undefined,
       profilerSteps: [],
     });
-    const titles = result.relations?.suite?.data?.map((d: any) => d.title);
-    expect(titles).toEqual(['Outer > Inner']);
+    // Was ['Outer > Inner'] — the derived chain was joined with ' > ' and the
+    // caller split it on ' - ', so a nested path collapsed into ONE suite.
+    expect(suiteTitles(result)).toEqual(['src/example.test.ts', 'Outer', 'Inner']);
+  });
+
+  it('matches the app CI transform, which reports [relFile, ...describes]', () => {
+    const result = ResultBuilder.build({
+      testCase: mkTestCase({
+        fullName: 'Catalog parity > en vs es > same keys',
+        name: 'same keys',
+        moduleId: `${process.cwd()}/src/i18n/catalog.test.ts`,
+      }),
+      metadata: undefined,
+      currentSuite: undefined,
+      profilerSteps: [],
+    });
+    expect(suiteTitles(result)).toEqual(['src/i18n/catalog.test.ts', 'Catalog parity', 'en vs es']);
+  });
+
+  it('reports the spec file alone for a test with no describe', () => {
+    const result = ResultBuilder.build({
+      testCase: mkTestCase({ fullName: 'top level test', name: 'top level test' }),
+      metadata: undefined,
+      currentSuite: undefined,
+      profilerSteps: [],
+    });
+    // Was [] — a top-level test reported no suite at all.
+    expect(suiteTitles(result)).toEqual(['src/example.test.ts']);
+  });
+
+  it('does not let currentSuite truncate the derived path', () => {
+    const result = ResultBuilder.build({
+      testCase: mkTestCase({ fullName: 'Outer > Inner > Test', name: 'Test' }),
+      metadata: undefined,
+      currentSuite: 'Inner',
+      profilerSteps: [],
+    });
+    // currentSuite is one describe's name from onTestSuiteReady. Preferring it
+    // reported every nested test as just its innermost describe, with no file.
+    expect(suiteTitles(result)).toEqual(['src/example.test.ts', 'Outer', 'Inner']);
+  });
+
+  it('falls back to currentSuite only when there is no file and no describe', () => {
+    const result = ResultBuilder.build({
+      testCase: mkTestCase({ fullName: 'Test', name: 'Test', moduleId: null }),
+      metadata: undefined,
+      currentSuite: 'OuterSuite',
+      profilerSteps: [],
+    });
+    expect(suiteTitles(result)).toEqual(['OuterSuite']);
+  });
+
+  it('never splits currentSuite: a describe named "A - B" is one suite', () => {
+    const result = ResultBuilder.build({
+      testCase: mkTestCase({ fullName: 'Test', name: 'Test', moduleId: null }),
+      metadata: undefined,
+      currentSuite: 'Feature - edge cases',
+      profilerSteps: [],
+    });
+    expect(suiteTitles(result)).toEqual(['Feature - edge cases']);
+  });
+
+  it('reports no suite when there is no file, no describe and no currentSuite', () => {
+    const result = ResultBuilder.build({
+      testCase: mkTestCase({ fullName: 'Test', name: 'Test', moduleId: null }),
+      metadata: undefined,
+      currentSuite: undefined,
+      profilerSteps: [],
+    });
+    expect(result.relations).toBeNull();
   });
 
   it('applies metadata.fields/parameters/groupParameters/tags', () => {
