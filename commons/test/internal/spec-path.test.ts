@@ -1,4 +1,4 @@
-import { normalizeSpecPath } from '../../src/internal/spec-path';
+import { normalizeSpecPath, resolveRootDir } from '../../src/internal/spec-path';
 
 describe('normalizeSpecPath', () => {
   it('makes an absolute path project-relative', () => {
@@ -27,5 +27,39 @@ describe('normalizeSpecPath', () => {
 
   it('does not treat a sibling directory sharing the root prefix as inside it', () => {
     expect(normalizeSpecPath('/repo-other/a.test.ts', '/repo')).toBe('/repo-other/a.test.ts');
+  });
+});
+
+describe('resolveRootDir', () => {
+  const KEY = 'TIDEN_ROOT_DIR';
+  let saved: string | undefined;
+
+  beforeEach(() => {
+    saved = process.env[KEY];
+    delete process.env[KEY];
+  });
+
+  afterEach(() => {
+    if (saved === undefined) delete process.env[KEY];
+    else process.env[KEY] = saved;
+  });
+
+  it('returns undefined when neither an option nor the env var is set', () => {
+    expect(resolveRootDir()).toBeUndefined();
+  });
+
+  it('reads TIDEN_ROOT_DIR', () => {
+    process.env[KEY] = '/repo';
+    expect(resolveRootDir()).toBe('/repo');
+  });
+
+  it('prefers an explicit option over the env var', () => {
+    process.env[KEY] = '/from-env';
+    expect(resolveRootDir('/from-option')).toBe('/from-option');
+  });
+
+  it('treats an empty env var as unset, not as the filesystem root', () => {
+    process.env[KEY] = '';
+    expect(resolveRootDir()).toBeUndefined();
   });
 });

@@ -35,6 +35,17 @@ export type OptionsType = {
   debug?: boolean | undefined;
   environment?: string | undefined;
   rootSuite?: string | undefined;
+  /**
+   * Base directory the spec-file segment of a case signature is resolved
+   * against. Defaults to `process.cwd()`.
+   *
+   * Set it when the runner's working directory is not the root you want that
+   * segment measured from — a monorepo running vitest from a sub-package, for
+   * instance. The signature is matched byte-for-byte server-side, so every
+   * producer reporting into one product must agree on this base or the same
+   * test lands as two cases.
+   */
+  rootDir?: string | undefined;
   statusMapping?: Record<string, string> | undefined;
   logging?: RecursivePartial<LoggingOptionsType> | undefined;
   tiden?:

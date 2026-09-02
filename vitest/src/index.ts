@@ -14,6 +14,7 @@ import { NetworkProfiler } from '@tiden/reporter-commons/profilers';
 import { MetadataAccumulator } from './modules/metadataAccumulator';
 import { ProfilerTracker } from './modules/profilerTracker';
 import { ResultBuilder } from './modules/resultBuilder';
+import { resolveRootDir } from '@tiden/reporter-commons/internal';
 
 export type VitestTidenOptionsType = ConfigType;
 
@@ -21,6 +22,10 @@ export class VitestTidenReporter implements Reporter {
   private reporter: ReporterInterface;
   private profilerTracker: ProfilerTracker;
   private metadataAccumulator: MetadataAccumulator;
+  // Base for the spec-file segment of a signature. Undefined means
+  // process.cwd(); see OptionsType.rootDir for why a producer may need to
+  // pin it explicitly.
+  private rootDir: string | undefined;
 
   constructor(
     options: VitestTidenOptionsType = {},
@@ -44,6 +49,7 @@ export class VitestTidenReporter implements Reporter {
       : null;
     this.profilerTracker = new ProfilerTracker(profiler);
     this.metadataAccumulator = new MetadataAccumulator();
+    this.rootDir = resolveRootDir(composedOptions.rootDir);
   }
 
   onTestRunStart?(): void {
@@ -64,7 +70,13 @@ export class VitestTidenReporter implements Reporter {
     const workerProfilerSteps = this.extractWorkerProfilerSteps(testCase);
     const profilerSteps = [...localProfilerSteps, ...workerProfilerSteps];
 
-    const result = ResultBuilder.build({ testCase, metadata, currentSuite, profilerSteps });
+    const result = ResultBuilder.build({
+      testCase,
+      metadata,
+      currentSuite,
+      profilerSteps,
+      rootDir: this.rootDir,
+    });
     this.metadataAccumulator.clearMetadata(testId);
     await this.reporter.addTestResult(result);
   }

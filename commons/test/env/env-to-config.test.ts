@@ -1,9 +1,24 @@
 import { expect } from '@jest/globals';
 import { envToConfig } from '../../src/env/env-to-config';
 import { EnvType } from '../../src/env/env-type';
-import { EnvConfigurationsEnum } from '../../src/env/env-enum';
+import { EnvConfigurationsEnum, EnvEnum } from '../../src/env/env-enum';
 
 describe('envToConfig', () => {
+  describe('rootDir', () => {
+    // The base a case signature's spec-file segment is measured from. Every
+    // producer reporting into one product must agree on it, or the same test
+    // lands as two cases — see qase-tms/tiden-app#445.
+    it('maps TIDEN_ROOT_DIR onto rootDir', () => {
+      const env: EnvType = { [EnvEnum.rootDir]: '/repo' };
+
+      expect(envToConfig(env).rootDir).toBe('/repo');
+    });
+
+    it('leaves rootDir undefined when TIDEN_ROOT_DIR is unset', () => {
+      expect(envToConfig({}).rootDir).toBeUndefined();
+    });
+  });
+
   describe('configurations', () => {
     it('should parse configurations values from environment variable', () => {
       const env: EnvType = {

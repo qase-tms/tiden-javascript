@@ -176,6 +176,54 @@ describe('ResultBuilder.build', () => {
       expect(result.signature).toBe('/elsewhere/x.test.ts::suite::test');
     });
 
+    it('resolves the spec file against rootDir when it is set', () => {
+      const result = ResultBuilder.build({
+        testCase: mkTestCase({
+          fullName: 'Suite > Test',
+          moduleId: `${process.cwd()}/packages/web/src/a.test.ts`,
+        }),
+        metadata: undefined,
+        currentSuite: undefined,
+        profilerSteps: [],
+        rootDir: `${process.cwd()}/packages/web`,
+      });
+      expect(result.signature).toBe('src/a.test.ts::suite::test');
+    });
+
+    it('rootDir above cwd widens the segment, matching a repo-root producer', () => {
+      // The case this exists for: vitest runs from app/frontend, but CI
+      // resolves the same file against the repo root. Both producers must
+      // agree on the base or one test becomes two cases.
+      const result = ResultBuilder.build({
+        testCase: mkTestCase({
+          fullName: 'Suite > Test',
+          moduleId: '/repo/app/frontend/src/a.test.ts',
+        }),
+        metadata: undefined,
+        currentSuite: undefined,
+        profilerSteps: [],
+        rootDir: '/repo',
+      });
+      expect(result.signature).toBe('app/frontend/src/a.test.ts::suite::test');
+    });
+
+    it('falls back to process.cwd() when rootDir is not set', () => {
+      const without = ResultBuilder.build({
+        testCase: mkTestCase({ fullName: 'Suite > Test' }),
+        metadata: undefined,
+        currentSuite: undefined,
+        profilerSteps: [],
+      });
+      const explicit = ResultBuilder.build({
+        testCase: mkTestCase({ fullName: 'Suite > Test' }),
+        metadata: undefined,
+        currentSuite: undefined,
+        profilerSteps: [],
+        rootDir: process.cwd(),
+      });
+      expect(without.signature).toBe(explicit.signature);
+    });
+
     it('omits the file segment when Vitest reports no module id', () => {
       const result = ResultBuilder.build({
         testCase: mkTestCase({ fullName: 'Suite > Test', moduleId: null }),
@@ -391,6 +439,21 @@ describe('ResultBuilder.build', () => {
     // currentSuite is one describe's name from onTestSuiteReady. Preferring it
     // reported every nested test as just its innermost describe, with no file.
     expect(suiteTitles(result)).toEqual(['src/example.test.ts', 'Outer', 'Inner']);
+  });
+
+  it('applies rootDir to the suite path as well as the signature', () => {
+    const result = ResultBuilder.build({
+      testCase: mkTestCase({
+        fullName: 'Outer > Test',
+        name: 'Test',
+        moduleId: '/repo/app/frontend/src/a.test.ts',
+      }),
+      metadata: undefined,
+      currentSuite: undefined,
+      profilerSteps: [],
+      rootDir: '/repo',
+    });
+    expect(suiteTitles(result)).toEqual(['app/frontend/src/a.test.ts', 'Outer']);
   });
 
   it('falls back to currentSuite only when there is no file and no describe', () => {

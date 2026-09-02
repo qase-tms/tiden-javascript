@@ -19,6 +19,7 @@ export interface EnvType {
   [EnvEnum.environment]?: string;
   [EnvEnum.captureLogs]?: boolean;
   [EnvEnum.rootSuite]?: string;
+  [EnvEnum.rootDir]?: string;
   [EnvEnum.statusMapping]?: string;
 
   [EnvTidenEnum.product]?: string;

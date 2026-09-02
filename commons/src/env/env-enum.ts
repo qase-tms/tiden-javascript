@@ -8,6 +8,7 @@ export enum EnvEnum {
   environment = 'TIDEN_ENVIRONMENT',
   captureLogs = 'TIDEN_CAPTURE_LOGS',
   rootSuite = 'TIDEN_ROOT_SUITE',
+  rootDir = 'TIDEN_ROOT_DIR',
   statusMapping = 'TIDEN_STATUS_MAPPING',
 }
 

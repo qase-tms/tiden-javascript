@@ -17,12 +17,14 @@ export interface BuildArgs {
   metadata: MetadataShape | undefined;
   currentSuite: string | undefined;
   profilerSteps: TestStepType[];
+  /** Base for the spec-file segment; defaults to `process.cwd()`. */
+  rootDir?: string | undefined;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class ResultBuilder {
   static build(args: BuildArgs): TestResultType {
-    const { testCase, metadata, currentSuite, profilerSteps } = args;
+    const { testCase, metadata, currentSuite, profilerSteps, rootDir } = args;
 
     const result = testCase.result();
     const parsed = parseTidenIdFromTitle(testCase.name);
@@ -69,10 +71,10 @@ export class ResultBuilder {
       : (Array.isArray(testResult.case_id) ? testResult.case_id : [testResult.case_id]);
     testResult.signature = generateSignature(
       idsForSignature,
-      [ResultBuilder.specPath(testCase), ...ResultBuilder.splitFullName(testCase)].filter(Boolean),
+      [ResultBuilder.specPath(testCase, rootDir), ...ResultBuilder.splitFullName(testCase)].filter(Boolean),
     );
 
-    const suiteSegments = ResultBuilder.suitePath(testCase, metadata?.suite, currentSuite);
+    const suiteSegments = ResultBuilder.suitePath(testCase, metadata?.suite, currentSuite, rootDir);
     if (suiteSegments.length > 0) {
       testResult.relations = {
         suite: { data: suiteSegments.map((title) => ({ title, public_id: null })) },
@@ -191,9 +193,12 @@ export class ResultBuilder {
    * module id (a virtual module, or a hand-built test case in a unit test).
    * One segment, slashes intact — see commons' `normalizeSpecPath`.
    */
-  static specPath(testCase: TestCase): string {
+  static specPath(testCase: TestCase, rootDir?: string | undefined): string {
     const moduleId = testCase.module?.moduleId;
-    return moduleId ? normalizeSpecPath(moduleId) : '';
+    if (!moduleId) {
+      return '';
+    }
+    return rootDir ? normalizeSpecPath(moduleId, rootDir) : normalizeSpecPath(moduleId);
   }
 
   static splitFullName(testCase: TestCase): string[] {
@@ -230,6 +235,7 @@ export class ResultBuilder {
     testCase: TestCase,
     metadataSuite: string | undefined,
     currentSuite: string | undefined,
+    rootDir?: string | undefined,
   ): string[] {
     const clean = (segments: string[]): string[] =>
       segments.map((segment) => segment.trim()).filter(Boolean);
@@ -239,7 +245,7 @@ export class ResultBuilder {
     }
 
     const derived = clean([
-      ResultBuilder.specPath(testCase),
+      ResultBuilder.specPath(testCase, rootDir),
       ...ResultBuilder.splitFullName(testCase).slice(0, -1),
     ]);
     if (derived.length > 0) {

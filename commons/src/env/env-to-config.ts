@@ -24,6 +24,7 @@ export const envToConfig = (env: EnvType): ConfigType => ({
   environment: env[EnvEnum.environment],
   captureLogs: env[EnvEnum.captureLogs],
   rootSuite: env[EnvEnum.rootSuite],
+  rootDir: env[EnvEnum.rootDir],
   statusMapping: env[EnvEnum.statusMapping] ?
     Object.fromEntries(
       env[EnvEnum.statusMapping].split(',').map(item => {

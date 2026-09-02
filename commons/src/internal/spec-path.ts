@@ -1,3 +1,5 @@
+import { EnvEnum } from '../env/env-enum';
+
 /**
  * Normalizes an absolute spec-file path to a project-relative one, for use as
  * the leading segment of a case signature.
@@ -15,4 +17,19 @@ export function normalizeSpecPath(fullPath: string, cwd: string = process.cwd())
   const normalized = fullPath.replace(/\\/g, '/');
   const root = cwd.replace(/\\/g, '/').replace(/\/+$/, '') + '/';
   return normalized.startsWith(root) ? normalized.slice(root.length) : normalized;
+}
+
+/**
+ * The base a spec-file segment is resolved against, in precedence order:
+ * an explicit `rootDir` option, then `TIDEN_ROOT_DIR`, then undefined
+ * (meaning `normalizeSpecPath` falls back to `process.cwd()`).
+ *
+ * Env is read here rather than through the usual config pipeline because that
+ * pipeline merges env inside `OptionsResolver`, whose result never reaches a
+ * framework reporter — so a framework-side setting would silently ignore its
+ * own environment variable.
+ */
+export function resolveRootDir(explicit?: string | undefined): string | undefined {
+  const fromEnv = process.env[EnvEnum.rootDir];
+  return explicit ?? (fromEnv !== undefined && fromEnv !== '' ? fromEnv : undefined);
 }
