@@ -10,14 +10,39 @@ import type { TidenReporter as TidenReporterType } from '../../src/tiden';
  */
 describe('TidenReporter disabled announcement', () => {
   let logSpy: jest.SpyInstance;
+  let savedEnv: Record<string, string | undefined>;
+
+  // The resolver reads TIDEN_* from the environment and those win over the
+  // options passed in, so a developer (or a CI job) with TIDEN_MODE=tiden set
+  // would flip the reporter back on and fail these cases for a reason that has
+  // nothing to do with the behaviour under test. Clear them per case and put
+  // them back afterwards.
+  const TIDEN_VARS = [
+    'TIDEN_MODE',
+    'TIDEN_FALLBACK',
+    'TIDEN_API_TOKEN',
+    'TIDEN_BASE_URL',
+    'TIDEN_PRODUCT_ID',
+    'TIDEN_ROOT_SUITE',
+    'TIDEN_DEBUG',
+  ];
 
   beforeEach(() => {
     jest.resetModules();
+    savedEnv = {};
+    for (const key of TIDEN_VARS) {
+      savedEnv[key] = process.env[key];
+      delete process.env[key];
+    }
     logSpy = jest.spyOn(console, 'log').mockImplementation(() => undefined);
     jest.spyOn(console, 'error').mockImplementation(() => undefined);
   });
 
   afterEach(() => {
+    for (const key of TIDEN_VARS) {
+      if (savedEnv[key] === undefined) delete process.env[key];
+      else process.env[key] = savedEnv[key];
+    }
     jest.restoreAllMocks();
   });
 
