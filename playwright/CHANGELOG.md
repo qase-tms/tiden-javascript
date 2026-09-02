@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.0
+
+- No code changes. Version bumped with the rest of the workspace; the release workflow requires
+  all four published packages to match the tag. Requires `@tiden/reporter-commons` `^0.2.0`.
+- Note for anyone comparing reporters: this reporter's `signature` has always led with the spec
+  file (via `titlePath()`), and it also carries the project name as a segment.
+  `@tiden/vitest-reporter` matches the file part as of 0.2.0 but has no project segment; jest
+  splits the file on `/`. The three shapes are deliberate and must not be carried across.
+
 ## 0.1.1
 
 - No code changes. Requires `@tiden/reporter-commons` `^0.1.1`, which fixes a polynomial ReDoS

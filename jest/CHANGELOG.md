@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.2.0
+
+- **`rootDir` / `TIDEN_ROOT_DIR`** sets the base the spec-file segments of a `signature` are
+  resolved against (default `process.cwd()`, the previous fixed behaviour). Set it when jest runs
+  from a sub-package but another producer reports the same tests from the repo root — every
+  producer reporting into one product must measure the file from the same root, or one test
+  becomes two cases. It applies to the reported suite path as well.
+- Not a breaking change: identity is unchanged unless `rootDir` or `TIDEN_ROOT_DIR` is set.
+- Only the base is configurable. This reporter still splits the file on `/` into one segment per
+  directory (`app::src::a.test.ts::…`) while `@tiden/vitest-reporter` keeps it whole
+  (`app/src/a.test.ts::…`). The shapes are per-reporter and must not be carried across.
+- `normalizePath` now delegates to commons' `normalizeSpecPath`; its default behaviour, including
+  Windows separator handling, is unchanged.
+- **Says why it disabled itself.** A reporter that resolves to `off` used to go completely quiet,
+  which is indistinguishable from one that is working: the suite runs, the tests pass, and nothing
+  reaches Tiden. Every disabling branch now logs the reason and the way out, naming the settings
+  `tiden` mode requires. (The fix is in `@tiden/reporter-commons`; it surfaces through this
+  reporter.)
+
 ## 0.1.1
 
 - No code changes. Requires `@tiden/reporter-commons` `^0.1.1`, which fixes a polynomial ReDoS

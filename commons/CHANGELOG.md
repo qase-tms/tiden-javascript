@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.2.0
+
+- **`rootDir` / `TIDEN_ROOT_DIR` option**, plus `normalizeSpecPath` and `resolveRootDir` on the
+  `/internal` entry point: the base a case signature's spec-file segment is resolved against,
+  defaulting to `process.cwd()`. Consumed by `@tiden/vitest-reporter` and `@tiden/jest-reporter`.
+  Env is read directly by `resolveRootDir` rather than through `OptionsResolver`, whose composed
+  result never reaches a framework reporter — resolving it any other way leaves `TIDEN_ROOT_DIR`
+  silently ignored while looking configured.
+- **`buildReporters` says why it disabled the reporter.** Both disabling paths — a config
+  `mode`/`fallback` of `off`, and a `tiden` mode that cannot start because one of the four
+  required settings is missing — used to set `disabled = true` with no output. A disabled reporter
+  is indistinguishable from a working one, which cost a user an hour. Each branch now announces
+  itself through `logReporterDisabled`, naming the reason, the remedy, and the credentials
+  `createRunReporter` requires. Deliberately `logger.log`, not `logDebug`.
+
 ## 0.1.1
 
 - **Fixed a polynomial ReDoS in `extractAndCleanStep`** (CodeQL `js/polynomial-redos`, high).

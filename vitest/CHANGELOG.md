@@ -1,5 +1,43 @@
 # Changelog
 
+## 0.2.0
+
+> **Breaking: every case reported by this reporter changes identity.** `signature` and the
+> reported suite path both gain the spec file. Existing cases keyed the old way are not
+> migrated — a run after upgrading creates new cases beside them, and requirement coverage
+> stays on the old rows until they are reconciled. Read the migration note below before
+> upgrading a product that already has vitest history.
+
+- **Case identity now includes the spec file.** `signature` was built from Vitest's `fullName`
+  alone — the describe chain plus the leaf title. `fullName` carries no file, so two same-named
+  tests in different spec files shared one identity, and this reporter disagreed with any other
+  producer that did include the file. The path now leads with the project-relative spec file as
+  **one segment with its slashes intact**, matching `@tiden/playwright-reporter`'s `titlePath()`
+  shape. The in-code comment claiming alignment with the Playwright reporter is now true.
+  See [qase-tms/tiden-app#445](https://github.com/qase-tms/tiden-app/issues/445).
+- **Fixed: the reported suite path was truncated.** `currentSuite` — one describe's `name` from
+  `onTestSuiteReady` — took precedence over the derived path, so a nested test was reported as
+  its innermost describe alone with no file (`Outer > Inner > deep test` arrived as
+  `["Inner"]`), and a test with no describe reported no suite at all. The derived fallback
+  collapsed separately: it joined the chain with `' > '` while the caller split on `' - '`, so a
+  nested path became ONE suite titled `"Outer > Inner"`. The path is now
+  `[spec file, ...describe titles]`, derived as segments with no string round-trip.
+- **`rootDir` / `TIDEN_ROOT_DIR`** sets the base the spec-file segment is resolved against
+  (default `process.cwd()`). Every producer reporting into one product must agree on this base
+  or the same test lands as two cases; set it when the runner's working directory is not the
+  root you want measured from. It applies to the suite path as well as the signature.
+- An explicit `tiden.suite()` annotation still replaces the whole computed path and keeps its
+  `' - '` nesting convention. `currentSuite` survives only as a fallback for a case with neither
+  a module id nor a describe, and is no longer split on `' - '` — a `describe('Feature - edge
+  cases')` is one suite, not two.
+- `ResultBuilder.extractSuiteFromTestCase` is deprecated: it is not the reported suite path, and
+  its `' > '`-joined return is the shape the collapse was made of. Use `suitePath()`.
+
+**Migration.** If a product already carries vitest cases from 0.1.x, upgrading re-keys them.
+Either reconcile the old rows onto the new identities, or pin the base with `TIDEN_ROOT_DIR` so
+this reporter matches whatever else already reports those tests. The segment shape differs from
+`@tiden/jest-reporter`, which splits the file on `/` — do not carry one form across.
+
 ## 0.1.1
 
 - No code changes. Requires `@tiden/reporter-commons` `^0.1.1`, which fixes a polynomial ReDoS
