@@ -8,7 +8,7 @@ import {
   generateSignature,
   parseTidenIdFromTitle,
 } from '@tiden/reporter-commons';
-import { extractAndCleanStep } from '@tiden/reporter-commons/internal';
+import { extractAndCleanStep, normalizeSpecPath } from '@tiden/reporter-commons/internal';
 import { v4 as uuidv4 } from 'uuid';
 import { MetadataShape } from './metadataAccumulator';
 
@@ -52,6 +52,14 @@ export class ResultBuilder {
     // *including* the leaf test title, param-free — params are hashed
     // separately at attempt level.
     //
+    // The structural path is led by the project-relative spec file, as one
+    // segment with its slashes intact. Playwright gets that segment for free
+    // from `titlePath()`; Vitest's `fullName` carries only the describe chain,
+    // so it is prepended explicitly here. Without it two same-named tests in
+    // different files share an identity, and — the reason this was found — the
+    // reporter disagreed with the app's own CI transform, which has always
+    // emitted the file segment. See qase-tms/tiden-app#445.
+    //
     // DELIBERATE DIVERGENCE from upstream vitest-qase-reporter, which assigns
     // the raw Vitest `fullName` here. Do not revert this on an upstream
     // re-sync: it would make the same logical case key differently in the
@@ -61,7 +69,7 @@ export class ResultBuilder {
       : (Array.isArray(testResult.case_id) ? testResult.case_id : [testResult.case_id]);
     testResult.signature = generateSignature(
       idsForSignature,
-      ResultBuilder.splitFullName(testCase).filter(Boolean),
+      [ResultBuilder.specPath(testCase), ...ResultBuilder.splitFullName(testCase)].filter(Boolean),
     );
 
     const suiteToUse = metadata?.suite ?? currentSuite ?? ResultBuilder.extractSuiteFromTestCase(testCase);
@@ -178,7 +186,20 @@ export class ResultBuilder {
    * Splits a Vitest `fullName` ("Outer > Inner > test title") into its path
    * segments, leaf test title last. Single source of truth for both the
    * reported suite path and the case signature — do not add a second parser.
+   *
+   * `fullName` covers the describe chain only; the spec file that precedes it
+   * in a signature comes from `specPath()`, not from a second parse of this.
    */
+  /**
+   * The project-relative spec file for this case, '' when Vitest reports no
+   * module id (a virtual module, or a hand-built test case in a unit test).
+   * One segment, slashes intact — see commons' `normalizeSpecPath`.
+   */
+  static specPath(testCase: TestCase): string {
+    const moduleId = testCase.module?.moduleId;
+    return moduleId ? normalizeSpecPath(moduleId) : '';
+  }
+
   static splitFullName(testCase: TestCase): string[] {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     const fullName = testCase.fullName ?? testCase.name;

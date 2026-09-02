@@ -16,14 +16,23 @@ jest.mock('@tiden/reporter-commons', () => {
   };
 });
 
-const mkTestCase = (overrides: any = {}) => ({
-  name: 'Test',
-  id: 'test-id',
-  fullName: 'Suite > Test',
-  result: jest.fn().mockReturnValue({ state: 'passed', errors: [] }),
-  diagnostic: jest.fn().mockReturnValue({ duration: 100, startTime: 1_700_000_000_000 }),
-  ...overrides,
-}) as any;
+// Vitest hands a reporter the spec file via `testCase.module.moduleId` — an
+// absolute path (see vitest/node's TestModule). `fullName` carries the describe
+// chain and the leaf title ONLY; it never contains the file. Fixtures here must
+// keep those two separate or they assert a shape Vitest cannot produce.
+const SPEC = 'src/example.test.ts';
+const mkTestCase = (overrides: any = {}) => {
+  const { moduleId = `${process.cwd()}/${SPEC}`, ...rest } = overrides;
+  return {
+    name: 'Test',
+    id: 'test-id',
+    fullName: 'Suite > Test',
+    module: moduleId === null ? undefined : { moduleId },
+    result: jest.fn().mockReturnValue({ state: 'passed', errors: [] }),
+    diagnostic: jest.fn().mockReturnValue({ duration: 100, startTime: 1_700_000_000_000 }),
+    ...rest,
+  } as any;
+};
 
 const emptyMeta = (): MetadataShape => ({
   steps: [],
@@ -48,7 +57,7 @@ describe('ResultBuilder.build', () => {
     expect(result.execution.duration).toBe(100);
     // Identity is commons' generateSignature() over the structural path,
     // matching the Playwright reporter — not the raw Vitest fullName.
-    expect(result.signature).toBe('suite::test');
+    expect(result.signature).toBe('src/example.test.ts::suite::test');
     expect(result.steps).toEqual([]);
   });
 
@@ -94,17 +103,87 @@ describe('ResultBuilder.build', () => {
   });
 
   describe('signature (case identity)', () => {
-    it('joins a nested suite path with :: and keeps the leaf test title', () => {
+    it('joins the spec file, the nested suites and the leaf test title with ::', () => {
       const result = ResultBuilder.build({
         testCase: mkTestCase({
           name: 'search works across browsers',
-          fullName: 'search.spec > Search > search works across browsers',
+          fullName: 'Search > search works across browsers',
+          moduleId: `${process.cwd()}/tests/search.spec.ts`,
         }),
         metadata: undefined,
         currentSuite: undefined,
         profilerSteps: [],
       });
-      expect(result.signature).toBe('search.spec::search::search_works_across_browsers');
+      expect(result.signature).toBe('tests/search.spec.ts::search::search_works_across_browsers');
+    });
+
+    it('keeps the spec file as ONE segment, slashes intact', () => {
+      const result = ResultBuilder.build({
+        testCase: mkTestCase({
+          name: 'nested',
+          fullName: 'Outer > nested',
+          moduleId: `${process.cwd()}/src/deep/nested/thing.test.ts`,
+        }),
+        metadata: undefined,
+        currentSuite: undefined,
+        profilerSteps: [],
+      });
+      // Same segment shape and normalization as the app's CI transform
+      // (.github/scripts/vitest-to-tiden.mjs), which joins
+      // [relFile, ...describes, title] identically. Splitting the path on '/'
+      // would mint yet another identity for the same case — tiden-app#445.
+      //
+      // Shape only: the two agree byte-for-byte just when they resolve the
+      // file against the SAME base. This reporter uses process.cwd() (the
+      // jest reporter's `normalizePath` convention); a caller resolving
+      // against a different root gets a different — still self-consistent —
+      // identity. See the cwd test below.
+      expect(result.signature).toBe('src/deep/nested/thing.test.ts::outer::nested');
+    });
+
+    it('distinguishes same-named tests living in different spec files', () => {
+      const mk = (moduleId: string) => ResultBuilder.build({
+        testCase: mkTestCase({ name: 'renders', fullName: 'Widget > renders', moduleId }),
+        metadata: undefined,
+        currentSuite: undefined,
+        profilerSteps: [],
+      });
+      const a = mk(`${process.cwd()}/src/a/widget.test.ts`);
+      const b = mk(`${process.cwd()}/src/b/widget.test.ts`);
+      expect(a.signature).not.toBe(b.signature);
+    });
+
+    it('resolves the spec file against process.cwd(), not the filesystem root', () => {
+      const result = ResultBuilder.build({
+        testCase: mkTestCase({
+          fullName: 'Suite > Test',
+          moduleId: `${process.cwd()}/src/example.test.ts`,
+        }),
+        metadata: undefined,
+        currentSuite: undefined,
+        profilerSteps: [],
+      });
+      expect(result.signature.startsWith('src/example.test.ts::')).toBe(true);
+    });
+
+    it('leaves a spec file outside cwd absolute rather than guessing a root', () => {
+      const result = ResultBuilder.build({
+        testCase: mkTestCase({ fullName: 'Suite > Test', moduleId: '/elsewhere/x.test.ts' }),
+        metadata: undefined,
+        currentSuite: undefined,
+        profilerSteps: [],
+      });
+      expect(result.signature).toBe('/elsewhere/x.test.ts::suite::test');
+    });
+
+    it('omits the file segment when Vitest reports no module id', () => {
+      const result = ResultBuilder.build({
+        testCase: mkTestCase({ fullName: 'Suite > Test', moduleId: null }),
+        metadata: undefined,
+        currentSuite: undefined,
+        profilerSteps: [],
+      });
+      expect(result.signature).toBe('suite::test');
     });
 
     it('prefixes the parsed Tiden id when the title carries one', () => {
@@ -118,7 +197,7 @@ describe('ResultBuilder.build', () => {
         profilerSteps: [],
       });
       expect(result.case_id).toBe(7);
-      expect(result.signature).toBe('7::auth::user_can_login_(tiden_id:_7)');
+      expect(result.signature).toBe('7::src/example.test.ts::auth::user_can_login_(tiden_id:_7)');
     });
 
     it('joins multiple parsed ids with - before the path', () => {
@@ -131,7 +210,7 @@ describe('ResultBuilder.build', () => {
         currentSuite: undefined,
         profilerSteps: [],
       });
-      expect(result.signature).toBe('1-2::auth::covers_two_cases_(tiden_id:_1,2)');
+      expect(result.signature).toBe('1-2::src/example.test.ts::auth::covers_two_cases_(tiden_id:_1,2)');
     });
 
     it('is param-free: parameters do not change identity', () => {
@@ -159,7 +238,7 @@ describe('ResultBuilder.build', () => {
         currentSuite: undefined,
         profilerSteps: [],
       });
-      expect(result.signature).toBe('standalone_test');
+      expect(result.signature).toBe('src/example.test.ts::standalone_test');
     });
   });
 
