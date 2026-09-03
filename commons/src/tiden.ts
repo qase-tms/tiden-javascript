@@ -132,6 +132,31 @@ export class TidenReporter implements ReporterInterface {
     return new Logger(opts);
   }
 
+  /**
+   * Announces that this reporter will send nothing, and why.
+   *
+   * A disabled reporter is indistinguishable from a working one: the suite
+   * runs, the tests pass, and nothing is reported. A field user concluded the
+   * reporter was broken and spent an hour on it before finding `mode: 'off'`
+   * in their own jest.config.js — the reporter was merely inert, and had said
+   * so nowhere. This is deliberately `log`, not `logDebug`: a message only
+   * visible once you already suspect the problem does not solve it.
+   */
+  private logReporterDisabled(reason: string, remedy: string, credentialsRelevant = false): void {
+    // The credentials sentence is opt-in, not a suffix on every message. Telling
+    // someone who set `mode: "off"` on purpose that "tiden" mode needs an API
+    // token answers a question they did not ask, and padding every message with
+    // the same tail is how a message stops being read.
+    const credentials = credentialsRelevant
+      ? ' "tiden" mode also requires tiden.api.token, tiden.product and' +
+        ' tiden.api.baseUrl (TIDEN_API_TOKEN, TIDEN_PRODUCT_ID, TIDEN_BASE_URL).'
+      : '';
+    this.logger.log(
+      `reporter disabled — nothing will be reported to Tiden, because ${reason}. ` +
+        `To enable it, ${remedy}.${credentials}`,
+    );
+  }
+
   private buildReporters(
     factory: ReporterFactory,
     resolved: ResolvedOptions,
@@ -155,10 +180,20 @@ export class TidenReporter implements ReporterInterface {
     } catch (error) {
       if (error instanceof DisabledException) {
         disabled = true;
+        this.logReporterDisabled(
+          `mode is "${resolved.effectiveMode}"`,
+          'set mode to "tiden" (or TIDEN_MODE=tiden) to report this run',
+          // Enabling it is the next thing they will do, and it needs all four.
+          true,
+        );
       } else {
         this.logger.logError('Unable to create upstream reporter:', error);
         if (resolved.composed.fallback === undefined) {
           disabled = true;
+          this.logReporterDisabled(
+            'the upstream reporter could not be created and no fallback is configured',
+            'fix the error above',
+          );
           return { upstream, fallback: fallbackReporter, disabled, useFallbackFromStart: false };
         }
         upstreamFailed = true;
@@ -173,10 +208,24 @@ export class TidenReporter implements ReporterInterface {
       );
     } catch (error) {
       if (error instanceof DisabledException) {
-        if (upstreamFailed) disabled = true;
+        if (upstreamFailed) {
+          disabled = true;
+          this.logReporterDisabled(
+            'the upstream reporter could not be created (see the error above) and ' +
+              `fallback is "${resolved.effectiveFallback}"`,
+            'fix the error above, or set a fallback mode',
+            true,
+          );
+        }
       } else {
         this.logger.logError('Unable to create fallback reporter:', error);
-        if (upstreamFailed && upstream === undefined) disabled = true;
+        if (upstreamFailed && upstream === undefined) {
+          disabled = true;
+          this.logReporterDisabled(
+            'neither the upstream nor the fallback reporter could be created',
+            'fix the errors above',
+          );
+        }
       }
     }
 

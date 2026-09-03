@@ -120,6 +120,52 @@ describe('VitestTidenReporter', () => {
     });
   });
 
+  describe('rootDir', () => {
+    // Regression: rootDir was declared as an option and threaded into the
+    // ResultBuilder, but TIDEN_ROOT_DIR never reached it — env is merged
+    // inside commons' OptionsResolver, whose result a framework reporter
+    // never sees. The setting looked wired and silently did nothing.
+    const KEY = 'TIDEN_ROOT_DIR';
+    let saved: string | undefined;
+
+    beforeEach(() => {
+      saved = process.env[KEY];
+      delete process.env[KEY];
+    });
+
+    afterEach(() => {
+      if (saved === undefined) delete process.env[KEY];
+      else process.env[KEY] = saved;
+    });
+
+    const signatureFor = async (moduleId: string): Promise<string> => {
+      const r = new VitestTidenReporter();
+      await r.onTestCaseResult?.(mkTestCase({
+        fullName: 'Suite > Test',
+        module: { moduleId },
+      }));
+      const calls = reporterMock.addTestResult.mock.calls;
+      return (calls[calls.length - 1]?.[0] as any).signature;
+    };
+
+    it('reads TIDEN_ROOT_DIR from the environment', async () => {
+      process.env[KEY] = '/repo';
+      expect(await signatureFor('/repo/app/frontend/src/a.test.ts'))
+        .toBe('app/frontend/src/a.test.ts::suite::test');
+    });
+
+    it('falls back to process.cwd() when TIDEN_ROOT_DIR is unset', async () => {
+      expect(await signatureFor(`${process.cwd()}/src/a.test.ts`))
+        .toBe('src/a.test.ts::suite::test');
+    });
+
+    it('ignores an empty TIDEN_ROOT_DIR rather than treating it as a root', async () => {
+      process.env[KEY] = '';
+      expect(await signatureFor(`${process.cwd()}/src/a.test.ts`))
+        .toBe('src/a.test.ts::suite::test');
+    });
+  });
+
   describe('onTestCaseResult', () => {
     it('forwards a built result to commons reporter.addTestResult', async () => {
       const tc = mkTestCase({ name: 'Test (Tiden ID: 42)' });

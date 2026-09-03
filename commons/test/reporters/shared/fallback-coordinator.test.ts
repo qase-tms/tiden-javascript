@@ -65,6 +65,39 @@ describe('FallbackCoordinator', () => {
     expect(coord.isUsingFallback()).toBe(false);
   });
 
+  // A reporter that stops mid-run is the same silent failure as one that never
+  // started: the suite keeps passing and nothing else reaches Tiden. The error
+  // was logged, but not the consequence — so the operator saw a stack trace and
+  // a green run and had no reason to connect them.
+  it('says the reporter is disabled when it stops mid-run', async () => {
+    const logger = silentLogger();
+    const upstream = makeReporter();
+    upstream.publish.mockRejectedValue(new Error('token rejected'));
+
+    const coord = new FallbackCoordinator(logger, upstream, undefined);
+    await coord.run(r => r.publish(), 'publish');
+
+    const said = logger.log.mock.calls.map(c => String(c[0])).join('\n');
+    expect(said).toContain('reporter disabled');
+    expect(said).toContain('nothing further');
+  });
+
+  it('says it once, however many operations fail afterwards', async () => {
+    const logger = silentLogger();
+    const upstream = makeReporter();
+    upstream.publish.mockRejectedValue(new Error('boom'));
+    upstream.complete.mockRejectedValue(new Error('boom'));
+
+    const coord = new FallbackCoordinator(logger, upstream, undefined);
+    await coord.run(r => r.publish(), 'publish');
+    await coord.run(r => r.complete(), 'complete');
+
+    const announcements = logger.log.mock.calls.filter(c =>
+      String(c[0]).includes('reporter disabled'),
+    );
+    expect(announcements).toHaveLength(1);
+  });
+
   it('disables when both upstream and fallback fail', async () => {
     const upstream = makeReporter();
     const fallback = makeReporter();

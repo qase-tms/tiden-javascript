@@ -101,9 +101,23 @@ export class FallbackCoordinator {
     }
   }
 
+  /**
+   * Turning the reporter off MID-RUN, after an upstream (and fallback) failure.
+   *
+   * The failure itself is logged by the caller, but the consequence was not:
+   * the suite carried on, every later result went nowhere, and the run ended
+   * green. That is the same silent-failure symptom the construction-time
+   * announcements in `tiden.ts` were added to remove, reached by a different
+   * path — a token that is present but rejected, rather than one that is
+   * missing. Guarded by `this.disabled`, so it says it once.
+   */
   private disable(): void {
     if (this.disabled) return;
     this.disabled = true;
+    this.logger.log(
+      'reporter disabled — the error above stopped it mid-run, and nothing further ' +
+        'from this suite will be reported to Tiden. Results already sent are unaffected.',
+    );
     if (!this.onDisabledFired) {
       this.onDisabledFired = true;
       this.callbacks.onDisabled?.();

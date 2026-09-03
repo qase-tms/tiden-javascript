@@ -206,6 +206,59 @@ describe('metadata overlay', () => {
   });
 });
 
+describe('rootDir', () => {
+  // Only the BASE is configurable. jest keeps splitting the path on '/' into
+  // one segment per directory — that shape is jest's and is unchanged here.
+  it('resolves the spec file against rootDir when set', () => {
+    const result = ResultBuilder.build({
+      value: mkAssertion(),
+      path: '/repo/app/frontend/src/login.test.ts',
+      metadata: MetadataApplier.empty(),
+      profilerSteps: [],
+      rootDir: '/repo',
+    });
+    expect(result.signature).toBe('app::frontend::src::login.test.ts::auth::logs_in');
+  });
+
+  it('still splits the path on / — jest keeps its own segment shape', () => {
+    const result = ResultBuilder.build({
+      value: mkAssertion(),
+      path: '/repo/a/b/login.test.ts',
+      metadata: MetadataApplier.empty(),
+      profilerSteps: [],
+      rootDir: '/repo',
+    });
+    // The vitest reporter keeps the file whole ('a/b/login.test.ts'); jest
+    // does not. Both are correct for their own reporter and must not be
+    // carried across — see qase-tms/tiden-app#445.
+    expect(result.signature).toBe('a::b::login.test.ts::auth::logs_in');
+  });
+
+  it('applies rootDir to the reported suite path too', () => {
+    const result = ResultBuilder.build({
+      value: mkAssertion(),
+      path: '/repo/app/frontend/src/login.test.ts',
+      metadata: MetadataApplier.empty(),
+      profilerSteps: [],
+      rootDir: '/repo',
+    });
+    const titles = result.relations?.suite?.data?.map((d: any) => d.title);
+    expect(titles).toEqual(['app', 'frontend', 'src', 'login.test.ts', 'Auth']);
+  });
+
+  it('falls back to process.cwd() when rootDir is not set', () => {
+    expect(build().signature).toBe(
+      ResultBuilder.build({
+        value: mkAssertion(),
+        path: SPEC,
+        metadata: MetadataApplier.empty(),
+        profilerSteps: [],
+        rootDir: process.cwd(),
+      }).signature,
+    );
+  });
+});
+
 describe('normalizePath', () => {
   it('makes the path relative to the working directory', () => {
     expect(ResultBuilder.normalizePath(SPEC)).toBe('src/utils/login.test.ts');

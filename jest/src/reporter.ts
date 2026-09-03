@@ -15,6 +15,7 @@ import { NetworkProfiler } from '@tiden/reporter-commons/profilers';
 import { MetadataApplier } from './metadata-applier';
 import { ProfilerTracker } from './profiler-tracker';
 import { ResultBuilder } from './result-builder';
+import { resolveRootDir } from '@tiden/reporter-commons/internal';
 import { Tiden } from './global';
 
 export type JestTidenOptionsType = ConfigType;
@@ -32,6 +33,9 @@ const NON_EXECUTED_STATUSES = new Set(['pending', 'todo', 'skipped', 'disabled']
  */
 export class JestTidenReporter implements Reporter {
   private reporter: ReporterInterface;
+  // Base for the spec-file segments of a signature. Undefined means
+  // process.cwd(); see OptionsType.rootDir.
+  private rootDir: string | undefined;
   private profilerTracker: ProfilerTracker;
   private metadataApplier: MetadataApplier;
 
@@ -66,6 +70,8 @@ export class JestTidenReporter implements Reporter {
     // commons' OptionsResolver folds env in last: env > config file > options.
     // Upstream jest-qase-reporter has the inverse order; do not port it.
     const composedOptions = composeOptions(options, config);
+
+    this.rootDir = resolveRootDir(composedOptions.rootDir);
 
     this.reporter = TidenReporter.getInstance({
       ...composedOptions,
@@ -118,6 +124,7 @@ export class JestTidenReporter implements Reporter {
       metadata: this.metadataApplier.get(),
       profilerSteps: this.profilerTracker.getNewSteps(),
       startTimeMs,
+      rootDir: this.rootDir,
     });
 
     this.metadataApplier.reset();
@@ -146,6 +153,7 @@ export class JestTidenReporter implements Reporter {
         path: result.testFilePath,
         metadata: MetadataApplier.empty(),
         profilerSteps: [],
+        rootDir: this.rootDir,
       });
       void this.reporter.addTestResult(model);
     });

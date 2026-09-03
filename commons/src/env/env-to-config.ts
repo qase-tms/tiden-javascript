@@ -20,10 +20,16 @@ import { FormatEnum } from '../writer/driver-enum';
  */
 export const envToConfig = (env: EnvType): ConfigType => ({
   mode: env[EnvEnum.mode],
+  // TIDEN_FALLBACK was declared in EnvEnum, EnvType and the validation schema
+  // but never mapped here, so setting it did nothing: the value validated, then
+  // vanished. It decides what happens when `tiden` mode cannot start, which is
+  // exactly the silent-disable path the reporter now announces.
+  fallback: env[EnvEnum.fallback],
   debug: env[EnvEnum.debug],
   environment: env[EnvEnum.environment],
   captureLogs: env[EnvEnum.captureLogs],
   rootSuite: env[EnvEnum.rootSuite],
+  rootDir: env[EnvEnum.rootDir],
   statusMapping: env[EnvEnum.statusMapping] ?
     Object.fromEntries(
       env[EnvEnum.statusMapping].split(',').map(item => {

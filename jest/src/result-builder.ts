@@ -8,7 +8,7 @@ import {
   TestResultType,
   TestStepType,
 } from '@tiden/reporter-commons';
-import { removeTidenIdsFromTitle } from '@tiden/reporter-commons/internal';
+import { normalizeSpecPath, removeTidenIdsFromTitle } from '@tiden/reporter-commons/internal';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Metadata } from './models';
@@ -29,6 +29,8 @@ export interface ResultBuilderArgs {
    * time, and for older Jest versions.
    */
   startTimeMs?: number | null;
+  /** Base for the spec-file segments; defaults to `process.cwd()`. */
+  rootDir?: string | undefined;
 }
 
 export class ResultBuilder {
@@ -38,9 +40,10 @@ export class ResultBuilder {
     metadata,
     profilerSteps,
     startTimeMs = null,
+    rootDir,
   }: ResultBuilderArgs): TestResultType {
     const parsed = parseTidenIdFromTitle(value.title);
-    const filePath = ResultBuilder.normalizePath(path);
+    const filePath = ResultBuilder.normalizePath(path, rootDir);
     const error = ResultBuilder.buildError(value);
 
     const title = metadata.title ?? (parsed.cleanedTitle || removeTidenIdsFromTitle(value.title));
@@ -195,11 +198,16 @@ export class ResultBuilder {
     return { suite };
   }
 
-  static normalizePath(fullPath: string): string {
-    const normalized = fullPath.replace(/\\/g, '/');
-    const executionPath = process.cwd().replace(/\\/g, '/') + '/';
-    return normalized.startsWith(executionPath)
-      ? normalized.slice(executionPath.length)
-      : normalized;
+  /**
+   * The spec file, relative to `rootDir` (default `process.cwd()`).
+   *
+   * Unlike the vitest reporter, the result is then split on `/` into one
+   * signature segment per directory — that is jest's shape and it stays. Only
+   * the base is configurable, because two producers reporting the same tests
+   * must measure the file from the same root or one test becomes two cases.
+   * See qase-tms/tiden-app#445.
+   */
+  static normalizePath(fullPath: string, rootDir?: string | undefined): string {
+    return rootDir ? normalizeSpecPath(fullPath, rootDir) : normalizeSpecPath(fullPath);
   }
 }

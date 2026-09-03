@@ -34,6 +34,10 @@ export const configValidationSchema = {
       type: 'string',
       nullable: true,
     },
+    rootDir: {
+      type: 'string',
+      nullable: true,
+    },
 
     statusMapping: {
       type: 'object',

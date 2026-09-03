@@ -8,7 +8,7 @@ import {
   generateSignature,
   parseTidenIdFromTitle,
 } from '@tiden/reporter-commons';
-import { extractAndCleanStep } from '@tiden/reporter-commons/internal';
+import { extractAndCleanStep, normalizeSpecPath } from '@tiden/reporter-commons/internal';
 import { v4 as uuidv4 } from 'uuid';
 import { MetadataShape } from './metadataAccumulator';
 
@@ -17,12 +17,14 @@ export interface BuildArgs {
   metadata: MetadataShape | undefined;
   currentSuite: string | undefined;
   profilerSteps: TestStepType[];
+  /** Base for the spec-file segment; defaults to `process.cwd()`. */
+  rootDir?: string | undefined;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class ResultBuilder {
   static build(args: BuildArgs): TestResultType {
-    const { testCase, metadata, currentSuite, profilerSteps } = args;
+    const { testCase, metadata, currentSuite, profilerSteps, rootDir } = args;
 
     const result = testCase.result();
     const parsed = parseTidenIdFromTitle(testCase.name);
@@ -52,6 +54,14 @@ export class ResultBuilder {
     // *including* the leaf test title, param-free — params are hashed
     // separately at attempt level.
     //
+    // The structural path is led by the project-relative spec file, as one
+    // segment with its slashes intact. Playwright gets that segment for free
+    // from `titlePath()`; Vitest's `fullName` carries only the describe chain,
+    // so it is prepended explicitly here. Without it two same-named tests in
+    // different files share an identity, and — the reason this was found — the
+    // reporter disagreed with the app's own CI transform, which has always
+    // emitted the file segment. See qase-tms/tiden-app#445.
+    //
     // DELIBERATE DIVERGENCE from upstream vitest-qase-reporter, which assigns
     // the raw Vitest `fullName` here. Do not revert this on an upstream
     // re-sync: it would make the same logical case key differently in the
@@ -61,18 +71,14 @@ export class ResultBuilder {
       : (Array.isArray(testResult.case_id) ? testResult.case_id : [testResult.case_id]);
     testResult.signature = generateSignature(
       idsForSignature,
-      ResultBuilder.splitFullName(testCase).filter(Boolean),
+      [ResultBuilder.specPath(testCase, rootDir), ...ResultBuilder.splitFullName(testCase)].filter(Boolean),
     );
 
-    const suiteToUse = metadata?.suite ?? currentSuite ?? ResultBuilder.extractSuiteFromTestCase(testCase);
-    if (suiteToUse) {
-      testResult.relations = { suite: { data: [] } };
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const suiteData = testResult.relations.suite!.data;
-      const suites = suiteToUse.split(' - ');
-      suites.forEach((suite) => {
-        suiteData.push({ title: suite.trim(), public_id: null });
-      });
+    const suiteSegments = ResultBuilder.suitePath(testCase, metadata?.suite, currentSuite, rootDir);
+    if (suiteSegments.length > 0) {
+      testResult.relations = {
+        suite: { data: suiteSegments.map((title) => ({ title, public_id: null })) },
+      };
     }
 
     // Vitest's `testCase.diagnostic()` exposes both the absolute `startTime`
@@ -178,13 +184,82 @@ export class ResultBuilder {
    * Splits a Vitest `fullName` ("Outer > Inner > test title") into its path
    * segments, leaf test title last. Single source of truth for both the
    * reported suite path and the case signature — do not add a second parser.
+   *
+   * `fullName` covers the describe chain only; the spec file that precedes it
+   * in a signature comes from `specPath()`, not from a second parse of this.
    */
+  /**
+   * The project-relative spec file for this case, '' when Vitest reports no
+   * module id (a virtual module, or a hand-built test case in a unit test).
+   * One segment, slashes intact — see commons' `normalizeSpecPath`.
+   */
+  static specPath(testCase: TestCase, rootDir?: string | undefined): string {
+    const moduleId = testCase.module?.moduleId;
+    if (!moduleId) {
+      return '';
+    }
+    return rootDir ? normalizeSpecPath(moduleId, rootDir) : normalizeSpecPath(moduleId);
+  }
+
   static splitFullName(testCase: TestCase): string[] {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     const fullName = testCase.fullName ?? testCase.name;
     return fullName.split(' > ');
   }
 
+  /**
+   * The reported suite path, outermost segment first: the spec file, then the
+   * describe chain. Mirrors the app-side vitest CI transform, which reports
+   * `[relFile, ...describeTitles]`, so a case does not bounce between two tree
+   * locations depending on which side reported the run.
+   *
+   * Two things this deliberately does NOT do any more:
+   *
+   *   - It no longer prefers `currentSuite` over the derived path. That value
+   *     is one describe's `name` from `onTestSuiteReady`, so preferring it
+   *     truncated every nested test to its innermost describe ("Outer > Inner
+   *     > t" reported as just ["Inner"]) and dropped the file. It survives
+   *     only as a fallback for a case with neither a module id nor a describe.
+   *   - It no longer round-trips the path through a joined string. The old
+   *     code joined the derived chain with ' > ' and the caller split it on
+   *     ' - ', which never matched, so a nested path arrived as ONE suite
+   *     titled "Outer > Inner".
+   *
+   * An explicit `tiden.suite()` annotation still replaces the whole computed
+   * path, and keeps its ' - ' nesting convention — that string is authored by
+   * the user, where the convention is meaningful. `currentSuite` is a literal
+   * describe name and is never split: `describe('Feature - edge cases')` is
+   * one suite, not two.
+   */
+  static suitePath(
+    testCase: TestCase,
+    metadataSuite: string | undefined,
+    currentSuite: string | undefined,
+    rootDir?: string | undefined,
+  ): string[] {
+    const clean = (segments: string[]): string[] =>
+      segments.map((segment) => segment.trim()).filter(Boolean);
+
+    if (metadataSuite) {
+      return clean(metadataSuite.split(' - '));
+    }
+
+    const derived = clean([
+      ResultBuilder.specPath(testCase, rootDir),
+      ...ResultBuilder.splitFullName(testCase).slice(0, -1),
+    ]);
+    if (derived.length > 0) {
+      return derived;
+    }
+
+    return currentSuite ? clean([currentSuite]) : [];
+  }
+
+  /**
+   * @deprecated Not used by `build()` any more, and not the reported suite
+   * path — it returns the describe chain joined with ' > ' as a single string,
+   * which is what the collapse bug was made of. Use `suitePath()`.
+   */
   static extractSuiteFromTestCase(testCase: TestCase): string | undefined {
     const parts = ResultBuilder.splitFullName(testCase);
     if (parts.length > 1) {
