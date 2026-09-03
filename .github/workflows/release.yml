@@ -15,9 +15,14 @@
 # first already-published package and never reaches the one that failed.
 #
 # The workflow_dispatch trigger exists for exactly that finish-the-job case:
-# run it against the release tag, optionally narrowing `packages` to the ones
-# left over. It takes the version from package.json rather than the ref, so it
-# works from a branch too; the lockstep check below still applies.
+# run it and optionally narrow `packages` to the ones left over. It takes the
+# version from package.json rather than the ref, and the lockstep check below
+# still applies, so it cannot ship a version the set is not at.
+#
+# Run it against a BRANCH, not the release tag. A dispatch uses the workflow
+# file from the ref it runs on, and a tag cut before this trigger existed does
+# not have it. Publishing from the branch the tag was cut from is equivalent as
+# long as the package sources have not moved since.
 #
 # OIDC trusted publishing (no NPM_TOKEN secret): with `id-token: write`, npm
 # exchanges this workflow's GitHub Actions OIDC token for a short-lived
