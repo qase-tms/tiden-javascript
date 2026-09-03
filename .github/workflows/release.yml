@@ -7,6 +7,23 @@
 # Push a `vX.Y.Z` tag matching the versions already set in each package's
 # package.json to publish.
 #
+# Publishing is resumable. Each package is skipped when its version is already
+# on the registry, so a run that dies partway through — v0.2.0 published
+# commons, playwright and vitest, then failed on jest — can be finished by
+# re-running it rather than by burning a version number. `npm publish` refuses
+# to overwrite a published version, so without the skip the retry dies on the
+# first already-published package and never reaches the one that failed.
+#
+# The workflow_dispatch trigger exists for exactly that finish-the-job case:
+# run it and optionally narrow `packages` to the ones left over. It takes the
+# version from package.json rather than the ref, and the lockstep check below
+# still applies, so it cannot ship a version the set is not at.
+#
+# Run it against a BRANCH, not the release tag. A dispatch uses the workflow
+# file from the ref it runs on, and a tag cut before this trigger existed does
+# not have it. Publishing from the branch the tag was cut from is equivalent as
+# long as the package sources have not moved since.
+#
 # OIDC trusted publishing (no NPM_TOKEN secret): with `id-token: write`, npm
 # exchanges this workflow's GitHub Actions OIDC token for a short-lived
 # publish token and attaches provenance to each published package.
@@ -15,18 +32,29 @@
 # before its first OIDC release. npm can only configure that on a package that
 # already exists, so a package published here for the very first time needs one
 # token-based publish to create it; every release after that goes through this
-# workflow.
+# workflow. A package missing that configuration fails with a 404 on PUT — the
+# token is fine, it just carries no permission for that package.
 name: Release
 
 on:
   push:
     tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      packages:
+        description: 'Workspaces to publish, space-separated (default: all four)'
+        required: false
+        default: 'commons playwright vitest jest'
 
 permissions:
   contents: read
   id-token: write # npm OIDC trusted publishing + provenance
 
 concurrency: release-${{ github.ref }}
+
+env:
+  # Indirected through env so the input is never interpolated into a shell script.
+  PACKAGES: ${{ inputs.packages || 'commons playwright vitest jest' }}
 
 jobs:
   publish:
@@ -40,21 +68,55 @@ jobs:
       - name: Upgrade npm (OIDC trusted publishing needs >= 11.5.1)
         run: npm install -g npm@latest
       - run: npm ci
-      - name: Verify tag matches package versions
+      - name: Resolve the release version and check the packages are in lockstep
         run: |
-          TAG="${GITHUB_REF_NAME#v}"
+          set -euo pipefail
+          if [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+            echo "Tag release: v$VERSION"
+          else
+            VERSION=$(node -p "require('./commons/package.json').version")
+            echo "Manual release: $VERSION, from commons/package.json"
+          fi
+          # All four move together, whatever subset this run publishes — a
+          # mismatch means someone tagged before finishing the version bump.
           for pkg in commons playwright vitest jest; do
             V=$(node -p "require('./$pkg/package.json').version")
-            if [ "$V" != "$TAG" ]; then
-              echo "::error::$pkg is at version $V but the tag is v$TAG — bump package versions before tagging"
+            if [ "$V" != "$VERSION" ]; then
+              echo "::error::$pkg is at version $V but the release version is $VERSION — bump package versions before releasing"
               exit 1
             fi
           done
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+      - name: Check the requested workspaces exist
+        run: |
+          set -euo pipefail
+          for pkg in $PACKAGES; do
+            case "$pkg" in
+              commons|playwright|vitest|jest) ;;
+              *) echo "::error::unknown workspace '$pkg' — expected some of: commons playwright vitest jest"; exit 1 ;;
+            esac
+          done
+      # Always build and test all four: commons is a dependency of the rest, so
+      # a narrowed publish still has to prove the whole set is green.
       - run: npm run build -w commons -w playwright -w vitest -w jest
       - run: npm run test -w commons -w playwright -w vitest -w jest
       # Publish order follows the dependency graph: commons is a runtime
       # dependency of both framework reporters.
-      - run: npm publish -w commons --provenance --access public
-      - run: npm publish -w playwright --provenance --access public
-      - run: npm publish -w vitest --provenance --access public
-      - run: npm publish -w jest --provenance --access public
+      - name: Publish
+        run: |
+          set -euo pipefail
+          published=0
+          for pkg in commons playwright vitest jest; do
+            case " $PACKAGES " in *" $pkg "*) ;; *) continue ;; esac
+            NAME=$(node -p "require('./$pkg/package.json').name")
+            SLUG=$(node -p "encodeURIComponent(require('./$pkg/package.json').name)")
+            if curl -sfo /dev/null "https://registry.npmjs.org/$SLUG/$VERSION"; then
+              echo "$NAME@$VERSION is already on the registry — skipping"
+              continue
+            fi
+            echo "Publishing $NAME@$VERSION"
+            npm publish -w "$pkg" --provenance --access public
+            published=$((published + 1))
+          done
+          echo "Published $published package(s) at $VERSION"
