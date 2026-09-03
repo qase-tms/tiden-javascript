@@ -13,11 +13,32 @@ import { EnvEnum } from '../env/env-enum';
  * `cwd` (a Vite virtual module, for instance) is returned unchanged rather
  * than forced into a relative form.
  */
+const SLASH = '/'.charCodeAt(0);
+
 export function normalizeSpecPath(fullPath: string, cwd: string = process.cwd()): string {
   const normalized = fullPath.replace(/\\/g, '/');
-  const root = cwd.replace(/\\/g, '/').replace(/\/+$/, '') + '/';
+  const root = rootPrefix(cwd);
   return normalized.startsWith(root) ? normalized.slice(root.length) : normalized;
 }
+
+/**
+ * The root as a `/`-terminated prefix, with any trailing slashes collapsed to
+ * exactly one.
+ *
+ * Trimmed by scanning rather than with `/\/+$/`: that pattern backtracks
+ * quadratically on a root of many slashes, and the root can come from
+ * configuration (`rootDir` / `TIDEN_ROOT_DIR`). Same class of defect as the
+ * step-marker parser fixed in commons 0.1.1 — keep this regex-free.
+ */
+function rootPrefix(cwd: string): string {
+  const normalized = cwd.replace(/\\/g, '/');
+  let end = normalized.length;
+  while (end > 0 && normalized.charCodeAt(end - 1) === SLASH) {
+    end -= 1;
+  }
+  return normalized.slice(0, end) + '/';
+}
+
 
 /**
  * The base a spec-file segment is resolved against, in precedence order:

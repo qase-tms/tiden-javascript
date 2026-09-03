@@ -8,6 +8,11 @@
   Env is read directly by `resolveRootDir` rather than through `OptionsResolver`, whose composed
   result never reaches a framework reporter — resolving it any other way leaves `TIDEN_ROOT_DIR`
   silently ignored while looking configured.
+- **Fixed a polynomial ReDoS in `normalizeSpecPath`.** The root's trailing slashes were trimmed
+  with `/\/+$/`, which backtracks quadratically on a root of repeated slashes — and the root is
+  configurable (`rootDir` / `TIDEN_ROOT_DIR`). Measured at 546ms for a 40k-character root against
+  0ms for the scan that replaces it. Caught by CodeQL (`js/polynomial-redos`) before release; same
+  class as the step-marker parser fixed in 0.1.1.
 - **`buildReporters` says why it disabled the reporter.** Both disabling paths — a config
   `mode`/`fallback` of `off`, and a `tiden` mode that cannot start because one of the four
   required settings is missing — used to set `disabled = true` with no output. A disabled reporter

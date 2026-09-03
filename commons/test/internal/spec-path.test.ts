@@ -17,6 +17,18 @@ describe('normalizeSpecPath', () => {
     expect(normalizeSpecPath('/repo/src/a.test.ts', '/repo/')).toBe('src/a.test.ts');
   });
 
+  it('collapses many trailing slashes without backtracking', () => {
+    // Trimmed by scanning, not with /\/+$/ — that pattern is quadratic on a
+    // root of repeated slashes, and the root is configurable (TIDEN_ROOT_DIR).
+    // CodeQL js/polynomial-redos flagged the regex form.
+    expect(normalizeSpecPath('/repo/src/a.test.ts', '/repo' + '/'.repeat(5000)))
+      .toBe('src/a.test.ts');
+  });
+
+  it('handles a root that is only slashes', () => {
+    expect(normalizeSpecPath('/src/a.test.ts', '/'.repeat(64))).toBe('src/a.test.ts');
+  });
+
   it('returns a path outside the root unchanged rather than forcing it relative', () => {
     expect(normalizeSpecPath('/elsewhere/a.test.ts', '/repo')).toBe('/elsewhere/a.test.ts');
   });
