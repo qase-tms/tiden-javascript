@@ -142,12 +142,18 @@ export class TidenReporter implements ReporterInterface {
    * so nowhere. This is deliberately `log`, not `logDebug`: a message only
    * visible once you already suspect the problem does not solve it.
    */
-  private logReporterDisabled(reason: string, remedy: string): void {
+  private logReporterDisabled(reason: string, remedy: string, credentialsRelevant = false): void {
+    // The credentials sentence is opt-in, not a suffix on every message. Telling
+    // someone who set `mode: "off"` on purpose that "tiden" mode needs an API
+    // token answers a question they did not ask, and padding every message with
+    // the same tail is how a message stops being read.
+    const credentials = credentialsRelevant
+      ? ' "tiden" mode also requires tiden.api.token, tiden.product and' +
+        ' tiden.api.baseUrl (TIDEN_API_TOKEN, TIDEN_PRODUCT_ID, TIDEN_BASE_URL).'
+      : '';
     this.logger.log(
       `reporter disabled — nothing will be reported to Tiden, because ${reason}. ` +
-        `To enable it, ${remedy}. "tiden" mode also requires tiden.api.token, ` +
-        'tiden.product and tiden.api.baseUrl (TIDEN_API_TOKEN, TIDEN_PRODUCT_ID, ' +
-        'TIDEN_BASE_URL).',
+        `To enable it, ${remedy}.${credentials}`,
     );
   }
 
@@ -177,6 +183,8 @@ export class TidenReporter implements ReporterInterface {
         this.logReporterDisabled(
           `mode is "${resolved.effectiveMode}"`,
           'set mode to "tiden" (or TIDEN_MODE=tiden) to report this run',
+          // Enabling it is the next thing they will do, and it needs all four.
+          true,
         );
       } else {
         this.logger.logError('Unable to create upstream reporter:', error);
@@ -206,6 +214,7 @@ export class TidenReporter implements ReporterInterface {
             'the upstream reporter could not be created (see the error above) and ' +
               `fallback is "${resolved.effectiveFallback}"`,
             'fix the error above, or set a fallback mode',
+            true,
           );
         }
       } else {

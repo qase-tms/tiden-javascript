@@ -4,6 +4,19 @@ import { EnvType } from '../../src/env/env-type';
 import { EnvConfigurationsEnum, EnvEnum } from '../../src/env/env-enum';
 
 describe('envToConfig', () => {
+  describe('fallback', () => {
+    // Regression: TIDEN_FALLBACK was declared in the enum, the type and the
+    // validation schema, and never mapped into ConfigType — so it validated
+    // and was then silently dropped.
+    it('maps TIDEN_FALLBACK onto fallback', () => {
+      expect(envToConfig({ [EnvEnum.fallback]: 'off' } as EnvType).fallback).toBe('off');
+    });
+
+    it('leaves fallback undefined when TIDEN_FALLBACK is unset', () => {
+      expect(envToConfig({}).fallback).toBeUndefined();
+    });
+  });
+
   describe('rootDir', () => {
     // The base a case signature's spec-file segment is measured from. Every
     // producer reporting into one product must agree on it, or the same test

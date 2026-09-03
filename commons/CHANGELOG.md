@@ -13,6 +13,17 @@
   configurable (`rootDir` / `TIDEN_ROOT_DIR`). Measured at 546ms for a 40k-character root against
   0ms for the scan that replaces it. Caught by CodeQL (`js/polynomial-redos`) before release; same
   class as the step-marker parser fixed in 0.1.1.
+- **Fixed: `TIDEN_FALLBACK` was silently ignored.** It was declared in `EnvEnum`, `EnvType` and the
+  env validation schema, but `envToConfig` never mapped it into `ConfigType` — so the value
+  validated and was then dropped. It decides what happens when `tiden` mode cannot start, which is
+  the disable path below.
+- **A reporter that stops MID-RUN says so too.** `FallbackCoordinator.disable()` turned reporting
+  off after an upstream (and fallback) failure while logging only the error, not the consequence:
+  the suite carried on, every later result went nowhere, and the run ended green. A present-but-
+  rejected token reached the same silent failure as a missing one by a different path.
+- **The credential list is no longer appended to every disabled message.** It is stated where a
+  missing setting is a live suspect, and omitted where the error above is the answer — a message
+  padded with the same tail every time stops being read.
 - **`buildReporters` says why it disabled the reporter.** Both disabling paths — a config
   `mode`/`fallback` of `off`, and a `tiden` mode that cannot start because one of the four
   required settings is missing — used to set `disabled = true` with no output. A disabled reporter

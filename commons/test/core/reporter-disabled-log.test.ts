@@ -25,6 +25,11 @@ describe('TidenReporter disabled announcement', () => {
     'TIDEN_PRODUCT_ID',
     'TIDEN_ROOT_SUITE',
     'TIDEN_DEBUG',
+    // These two decide whether the logger prints at all, so leaving them set
+    // would fail every case here for a reason unrelated to the behaviour under
+    // test — the message would be correct and simply not emitted.
+    'TIDEN_LOGGING_CONSOLE',
+    'TIDEN_LOGGING_FILE',
   ];
 
   beforeEach(() => {
@@ -86,6 +91,7 @@ describe('TidenReporter disabled announcement', () => {
     expect(out).toContain('TIDEN_PRODUCT_ID');
     expect(out).toContain('TIDEN_BASE_URL');
   });
+
 
   it('stays quiet when the reporter is actually working', () => {
     build({ mode: ModeEnum.report });
