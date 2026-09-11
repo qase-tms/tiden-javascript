@@ -1,4 +1,4 @@
-import { normalizeSpecPath, resolveRootDir } from '../../src/internal/spec-path';
+import { normalizeSpecPath, resolveFilePath, resolveRootDir } from '../../src/internal/spec-path';
 
 describe('normalizeSpecPath', () => {
   it('makes an absolute path project-relative', () => {
@@ -73,5 +73,42 @@ describe('resolveRootDir', () => {
   it('treats an empty env var as unset, not as the filesystem root', () => {
     process.env[KEY] = '';
     expect(resolveRootDir()).toBeUndefined();
+  });
+});
+
+describe('resolveFilePath', () => {
+  it('makes an absolute path root-relative', () => {
+    expect(resolveFilePath('/repo/tests/api/Tests/v1/m.api.spec.ts', '/repo'))
+      .toBe('tests/api/Tests/v1/m.api.spec.ts');
+  });
+
+  it('normalizes Windows separators', () => {
+    expect(resolveFilePath('C:\\repo\\src\\a.test.ts', 'C:\\repo')).toBe('src/a.test.ts');
+  });
+
+  it('tolerates trailing slashes on the root without backtracking', () => {
+    expect(resolveFilePath('/repo/src/a.test.ts', '/repo' + '/'.repeat(5000)))
+      .toBe('src/a.test.ts');
+  });
+
+  // The whole point of not reusing normalizeSpecPath: an absolute path that
+  // escaped the root can never match a repo-relative anchor, so it must be
+  // omitted rather than reported as a join key that never joins.
+  it('omits a path outside the root instead of returning it unchanged', () => {
+    expect(resolveFilePath('/elsewhere/a.test.ts', '/repo')).toBeUndefined();
+    expect(normalizeSpecPath('/elsewhere/a.test.ts', '/repo')).toBe('/elsewhere/a.test.ts');
+  });
+
+  it('omits a virtual module id', () => {
+    expect(resolveFilePath('virtual:generated-tests', '/repo')).toBeUndefined();
+  });
+
+  it('does not treat a sibling directory sharing the root prefix as inside it', () => {
+    expect(resolveFilePath('/repo-other/a.test.ts', '/repo')).toBeUndefined();
+  });
+
+  it('omits the root itself, which relativizes to an empty path', () => {
+    expect(resolveFilePath('/repo', '/repo')).toBeUndefined();
+    expect(resolveFilePath('/repo/', '/repo')).toBeUndefined();
   });
 });

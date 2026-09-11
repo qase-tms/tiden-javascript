@@ -54,3 +54,31 @@ export function resolveRootDir(explicit?: string | undefined): string | undefine
   const fromEnv = process.env[EnvEnum.rootDir];
   return explicit ?? (fromEnv !== undefined && fromEnv !== '' ? fromEnv : undefined);
 }
+
+/**
+ * The repo-relative source file of a test, for the `file_path` result field.
+ *
+ * Held to a stricter standard than `normalizeSpecPath`, which returns a path
+ * outside the root unchanged. `file_path` is the key the server joins a
+ * requirement's repo-relative `repo_file` anchors against, so an absolute
+ * machine path — or a virtual module id — can never match one: reporting it
+ * yields a field that looks like a join key and silently never joins.
+ * `undefined` means "omit the field", and the caller warns. Omitting is not
+ * fabricating; it is what the Go CLI's filemap and the PHPUnit reporter's
+ * FilePathResolver already do.
+ *
+ * Note what this CANNOT detect: a path that resolves cleanly against the wrong
+ * root. Playwright run from `tests/api` with no `TIDEN_ROOT_DIR` yields
+ * `Tests/v1/x.api.spec.ts`, which is well-formed and matches no anchor. Set
+ * `rootDir`/`TIDEN_ROOT_DIR` to the repository root wherever the runner's cwd
+ * is not already it.
+ */
+export function resolveFilePath(fullPath: string, root: string = process.cwd()): string | undefined {
+  const normalized = fullPath.replace(/\\/g, '/');
+  const prefix = rootPrefix(root);
+  if (!normalized.startsWith(prefix)) {
+    return undefined;
+  }
+  const relative = normalized.slice(prefix.length);
+  return relative === '' ? undefined : relative;
+}

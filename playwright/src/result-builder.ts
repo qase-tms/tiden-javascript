@@ -8,7 +8,7 @@ import {
   generateSignature,
   parseTidenIdFromTitle,
 } from '@tiden/reporter-commons';
-import { removeTidenIdsFromTitle } from '@tiden/reporter-commons/internal';
+import { removeTidenIdsFromTitle, resolveFilePath } from '@tiden/reporter-commons/internal';
 import { v4 as uuidv4 } from 'uuid';
 import { ReporterOptionsType } from './options';
 import { StepConverter } from './step-converter';
@@ -31,7 +31,13 @@ export interface BuildArgs {
 }
 
 export class ResultBuilder {
-  constructor(private readonly stepConverter: StepConverter) {}
+  /** Files already reported as unresolvable — one warning per file, not per test. */
+  private readonly warnedPaths = new Set<string>();
+
+  constructor(
+    private readonly stepConverter: StepConverter,
+    private readonly rootDir?: string | undefined,
+  ) {}
 
   build(args: BuildArgs): TestResultType | null {
     const { test, result, metadata, annotations, options, isCaptureLogs, tidenIdsRegistry } = args;
@@ -71,6 +77,17 @@ export class ResultBuilder {
 
     if (options.markAsFlaky && result.status === 'passed' && result.retry > 0) {
       metadata.fields['is_flaky'] = 'true';
+    }
+
+    // `fields.file_path` is the key the server joins a requirement's repo_file
+    // anchors against — without it a case can never be linked by derive. A
+    // value the test set for itself wins: it may deliberately point at the
+    // source file under test rather than at the spec's own location.
+    if (metadata.fields['file_path'] === undefined) {
+      const filePath = this.resolveTestFilePath(test);
+      if (filePath !== undefined) {
+        metadata.fields['file_path'] = filePath;
+      }
     }
 
     const titleParsed = parseTidenIdFromTitle(test.title);
@@ -159,6 +176,30 @@ export class ResultBuilder {
     }
 
     return testResult as unknown as TestResultType;
+  }
+  /**
+   * The spec file this case lives in, repo-relative, or undefined when it does
+   * not resolve under the reporting root. Undefined omits the field rather
+   * than reporting an absolute machine path, which could never match an
+   * anchor; the warning names the cause once per file.
+   */
+  private resolveTestFilePath(test: TestCase): string | undefined {
+    const file = test.location?.file;
+    if (!file) {
+      return undefined;
+    }
+    const resolved = this.rootDir === undefined
+      ? resolveFilePath(file)
+      : resolveFilePath(file, this.rootDir);
+    if (resolved === undefined && !this.warnedPaths.has(file)) {
+      this.warnedPaths.add(file);
+      console.warn(
+        `tiden: ${file} is outside the reporting root, omitting file_path — `
+        + 'this test cannot be linked to a requirement by file anchor. '
+        + 'Set rootDir (or TIDEN_ROOT_DIR) to the repository root.',
+      );
+    }
+    return resolved;
   }
 }
 

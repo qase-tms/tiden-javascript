@@ -8,3 +8,4 @@ export { filterPositiveIds } from './filter-positive-ids';
 export { normalizeSuitePart } from './suite-normalizer';
 export { normalizeSpecPath } from './spec-path';
 export { resolveRootDir } from './spec-path';
+export { resolveFilePath } from './spec-path';

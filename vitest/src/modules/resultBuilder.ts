@@ -8,7 +8,7 @@ import {
   generateSignature,
   parseTidenIdFromTitle,
 } from '@tiden/reporter-commons';
-import { extractAndCleanStep, normalizeSpecPath } from '@tiden/reporter-commons/internal';
+import { extractAndCleanStep, normalizeSpecPath, resolveFilePath } from '@tiden/reporter-commons/internal';
 import { v4 as uuidv4 } from 'uuid';
 import { MetadataShape } from './metadataAccumulator';
 
@@ -23,6 +23,9 @@ export interface BuildArgs {
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class ResultBuilder {
+  /** Module ids already reported as unresolvable — one warning per file. */
+  private static readonly warnedPaths = new Set<string>();
+
   static build(args: BuildArgs): TestResultType {
     const { testCase, metadata, currentSuite, profilerSteps, rootDir } = args;
 
@@ -121,7 +124,10 @@ export class ResultBuilder {
         testResult.message = metadata.comment;
       }
       if (metadata.fields) {
-        testResult.fields = metadata.fields;
+        // Copied, not aliased: file_path is written onto testResult.fields
+        // below, and assigning the caller's object by reference would mutate
+        // the accumulator's metadata for whatever else reads it.
+        testResult.fields = { ...metadata.fields };
       }
       if (metadata.parameters) {
         testResult.params = metadata.parameters;
@@ -169,6 +175,16 @@ export class ResultBuilder {
       }
     }
 
+    // `fields.file_path` is the key the server joins a requirement's repo_file
+    // anchors against — without it a case can never be linked by derive. Set
+    // after the metadata block so a value the test chose for itself wins.
+    if (testResult.fields['file_path'] === undefined) {
+      const filePath = ResultBuilder.filePath(testCase, rootDir);
+      if (filePath !== undefined) {
+        testResult.fields['file_path'] = filePath;
+      }
+    }
+
     if (metadata?._profilerSteps) {
       testResult.steps = [...testResult.steps, ...metadata._profilerSteps];
     }
@@ -193,6 +209,32 @@ export class ResultBuilder {
    * module id (a virtual module, or a hand-built test case in a unit test).
    * One segment, slashes intact — see commons' `normalizeSpecPath`.
    */
+  /**
+   * The spec file this case lives in, repo-relative, or undefined when it does
+   * not resolve under the reporting root (a virtual module, or a root that
+   * does not contain the file). Undefined omits the field rather than
+   * reporting an absolute machine path, which could never match an anchor;
+   * the warning names the cause once per file.
+   */
+  static filePath(testCase: TestCase, rootDir?: string | undefined): string | undefined {
+    const moduleId = testCase.module?.moduleId;
+    if (!moduleId) {
+      return undefined;
+    }
+    const resolved = rootDir === undefined
+      ? resolveFilePath(moduleId)
+      : resolveFilePath(moduleId, rootDir);
+    if (resolved === undefined && !ResultBuilder.warnedPaths.has(moduleId)) {
+      ResultBuilder.warnedPaths.add(moduleId);
+      console.warn(
+        `tiden: ${moduleId} is outside the reporting root, omitting file_path — `
+        + 'this test cannot be linked to a requirement by file anchor. '
+        + 'Set rootDir (or TIDEN_ROOT_DIR) to the repository root.',
+      );
+    }
+    return resolved;
+  }
+
   static specPath(testCase: TestCase, rootDir?: string | undefined): string {
     const moduleId = testCase.module?.moduleId;
     if (!moduleId) {
