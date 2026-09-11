@@ -8,7 +8,7 @@ import {
   generateSignature,
   parseTidenIdFromTitle,
 } from '@tiden/reporter-commons';
-import { removeTidenIdsFromTitle, resolveFilePath } from '@tiden/reporter-commons/internal';
+import { isUsableFilePath, removeTidenIdsFromTitle, resolveFilePath } from '@tiden/reporter-commons/internal';
 import { v4 as uuidv4 } from 'uuid';
 import { ReporterOptionsType } from './options';
 import { StepConverter } from './step-converter';
@@ -16,6 +16,16 @@ import { TestCaseMetadata } from './metadata-extractor';
 
 const PROFILER_CONTENT_TYPE = 'application/tiden.profiler-steps+json';
 const logMimeType = 'text/plain';
+
+const UNRESOLVED_FILE_PATH = (file: string): string =>
+  `tiden: ${file} is outside the reporting root, omitting file_path — `
+  + 'this test cannot be linked to a requirement by file anchor. '
+  + 'Set rootDir (or TIDEN_ROOT_DIR) to the repository root.';
+
+const REJECTED_FILE_PATH = (value: string): string =>
+  `tiden: file_path "${value}" was set by the test but is absolute or escapes the `
+  + 'reporting root, so it could never match a requirement anchor — deriving from '
+  + 'the spec file instead.';
 
 export interface BuildArgs {
   test: TestCase;
@@ -83,12 +93,7 @@ export class ResultBuilder {
     // anchors against — without it a case can never be linked by derive. A
     // value the test set for itself wins: it may deliberately point at the
     // source file under test rather than at the spec's own location.
-    if (metadata.fields['file_path'] === undefined) {
-      const filePath = this.resolveTestFilePath(test);
-      if (filePath !== undefined) {
-        metadata.fields['file_path'] = filePath;
-      }
-    }
+    this.applyFilePath(metadata.fields, test.location?.file);
 
     const titleParsed = parseTidenIdFromTitle(test.title);
     const testTitle = titleParsed.cleanedTitle || removeTidenIdsFromTitle(test.title);
@@ -178,28 +183,45 @@ export class ResultBuilder {
     return testResult as unknown as TestResultType;
   }
   /**
-   * The spec file this case lives in, repo-relative, or undefined when it does
-   * not resolve under the reporting root. Undefined omits the field rather
-   * than reporting an absolute machine path, which could never match an
-   * anchor; the warning names the cause once per file.
+   * Write `fields.file_path`, the key the server joins a requirement's
+   * repo_file anchors against.
+   *
+   * A value the test set for itself wins — it may deliberately name the source
+   * file under test — but only when it could ever match an anchor; an absolute
+   * or escaping one is dropped for the derived path, because keeping it would
+   * fabricate a link that never joins. A file that does not resolve under the
+   * reporting root omits the field rather than reporting an absolute machine
+   * path; the warning names the cause once per file.
    */
-  private resolveTestFilePath(test: TestCase): string | undefined {
-    const file = test.location?.file;
+  private applyFilePath(fields: Record<string, string>, file: string | undefined): void {
+    const provided = fields['file_path'];
+    if (provided !== undefined) {
+      if (isUsableFilePath(provided)) {
+        return;
+      }
+      this.warnOnce(provided, REJECTED_FILE_PATH(provided));
+      // Brackets are required (TS4111, noPropertyAccessFromIndexSignature) and
+      // the lint rule wants dot access; the compiler wins.
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete fields['file_path'];
+    }
     if (!file) {
-      return undefined;
+      return;
     }
-    const resolved = this.rootDir === undefined
-      ? resolveFilePath(file)
-      : resolveFilePath(file, this.rootDir);
-    if (resolved === undefined && !this.warnedPaths.has(file)) {
-      this.warnedPaths.add(file);
-      console.warn(
-        `tiden: ${file} is outside the reporting root, omitting file_path — `
-        + 'this test cannot be linked to a requirement by file anchor. '
-        + 'Set rootDir (or TIDEN_ROOT_DIR) to the repository root.',
-      );
+    const resolved = resolveFilePath(file, this.rootDir);
+    if (resolved === undefined) {
+      this.warnOnce(file, UNRESOLVED_FILE_PATH(file));
+      return;
     }
-    return resolved;
+    fields['file_path'] = resolved;
+  }
+
+  private warnOnce(key: string, message: string): void {
+    if (this.warnedPaths.has(key)) {
+      return;
+    }
+    this.warnedPaths.add(key);
+    console.warn(message);
   }
 }
 

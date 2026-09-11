@@ -145,6 +145,7 @@ override both the config file and any explicit `vitest.config.ts` reporter optio
 | `captureLogs`                       | `TIDEN_CAPTURE_LOGS`                 | Capture `stdout`/`stderr` into the reported result                               |
 | `rootSuite`                         | `TIDEN_ROOT_SUITE`                   | Wrap all reported suites under a single root suite name                          |
 | `rootDir`                           | `TIDEN_ROOT_DIR`                     | Base the spec-file segment of a case signature is resolved against (default: `process.cwd()`) |
+| `fields.file_path` (reported)       | —                                    | Set automatically from the test's source file, relative to `rootDir`; the key requirement `repo_file` anchors join against |
 | `statusMapping`                     | `TIDEN_STATUS_MAPPING`               | Rename result statuses, format `fromStatus=toStatus[,fromStatus=toStatus...]`     |
 | **Tiden reporting**                 |                                       |                                                                                    |
 | `tiden.product`                     | `TIDEN_PRODUCT_ID`                   | Tiden product ID (**required** in `tiden` mode)                                  |

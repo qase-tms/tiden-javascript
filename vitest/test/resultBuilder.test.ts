@@ -652,4 +652,22 @@ describe('ResultBuilder file_path', () => {
     const metadata: MetadataShape = { steps: [], attachments: [], fields: { file_path: 'src/thing.ts' } };
     expect(build({}, metadata).fields['file_path']).toBe('src/thing.ts');
   });
+
+  // A hand-written value is held to the same standard a derived one is.
+  it('replaces an unusable file_path the test set', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const metadata: MetadataShape = { steps: [], attachments: [], fields: { file_path: '/abs/x.ts' } };
+      expect(build({ moduleId: '/repo/src/example.test.ts' }, metadata, '/repo').fields['file_path'])
+        .toBe('src/example.test.ts');
+      expect(warn).toHaveBeenCalled();
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('resolves a relative root, so a monorepo sub-package is not silently disabled', () => {
+    expect(build({ moduleId: `${process.cwd()}/src/example.test.ts` }, undefined, '.').fields['file_path'])
+      .toBe(SPEC);
+  });
 });

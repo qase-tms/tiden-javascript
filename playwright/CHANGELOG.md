@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased
+
+- **Every result now carries `fields.file_path`**, the repo-relative source file of the test —
+  the key the server joins a requirement's `repo_file` anchors against. Until now no JS reporter
+  set it (only the Go CLI and the PHPUnit reporter did), so a case reported from here could not
+  be linked to a requirement by file anchor at all.
+- **It depends entirely on `rootDir` / `TIDEN_ROOT_DIR`.** The path is resolved against that
+  root; set it to the repository root wherever the runner's cwd is not already it. A file that
+  does not resolve under the root omits the field rather than reporting an absolute machine path
+  that could never match an anchor, and warns once per file on stderr:
+  `tiden: <file> is outside the reporting root, omitting file_path`.
+- **A `file_path` the test sets for itself still wins** — it may deliberately name the source
+  file under test — but it is held to the same standard a derived one is. An absolute or
+  escaping value is replaced by the derived path, with a warning, since keeping it would
+  fabricate a link that never joins.
+
 ## 0.2.0
 
 - No code changes. Version bumped with the rest of the workspace; the release workflow requires

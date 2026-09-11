@@ -306,6 +306,24 @@ describe('file_path', () => {
       .toBe('src/utils/login.ts');
   });
 
+  // A hand-written value is held to the same standard a derived one is.
+  it('replaces an unusable file_path the test set', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const metadata = MetadataApplier.empty();
+      metadata.fields['file_path'] = '../outside/a.ts';
+      expect(buildAt('/repo/src/utils/login.test.ts', '/repo', metadata).fields['file_path'])
+        .toBe('src/utils/login.test.ts');
+      expect(warn).toHaveBeenCalled();
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('resolves a relative root, so a monorepo sub-package is not silently disabled', () => {
+    expect(buildAt(SPEC, '.').fields['file_path']).toBe('src/utils/login.test.ts');
+  });
+
   it('does not mutate the metadata it was handed', () => {
     const metadata = MetadataApplier.empty();
     metadata.fields['severity'] = 'major';

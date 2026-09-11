@@ -236,6 +236,28 @@ describe('ResultBuilder file_path', () => {
     expect(r.fields['file_path']).toBe('tests/a.spec.ts');
   });
 
+  // A hand-written value is held to the same standard a derived one is: an
+  // absolute path can never match a repo-relative anchor, so keeping it would
+  // fabricate a link that never joins.
+  it('replaces an unusable file_path the test set, and says why', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const metadata = emptyMetadata();
+      metadata.fields['file_path'] = '/absolute/elsewhere.php';
+      const r = buildAt('/repo/tests/api/m.api.spec.ts', '/repo', metadata);
+      expect(r.fields['file_path']).toBe('tests/api/m.api.spec.ts');
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(String(warn.mock.calls[0]![0])).toContain('could never match a requirement anchor');
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('resolves a relative root, so a monorepo sub-package is not silently disabled', () => {
+    const r = buildAt(`${process.cwd()}/tests/a.spec.ts`, '.');
+    expect(r.fields['file_path']).toBe('tests/a.spec.ts');
+  });
+
   it('omits the field when the test carries no location', () => {
     const builder = new ResultBuilder(new StepConverter(new StepIndex()), '/repo');
     const r = builder.build(defaultArgs())!;
