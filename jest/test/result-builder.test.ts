@@ -199,7 +199,8 @@ describe('metadata overlay', () => {
     expect(result.relations!.suite!.data).toEqual([
       { title: 'Custom Suite', public_id: null },
     ]);
-    expect(result.fields).toEqual({ severity: 'high' });
+    // file_path is added by the reporter itself — see the 'file_path' describe.
+    expect(result.fields).toEqual({ severity: 'high', file_path: 'src/utils/login.test.ts' });
     expect(result.params).toEqual({ browser: 'chrome' });
     expect(result.group_params).toEqual({ shard: '1' });
     expect(result.tags).toEqual(['smoke']);
@@ -270,5 +271,45 @@ describe('normalizePath', () => {
 
   it('normalizes Windows separators', () => {
     expect(ResultBuilder.normalizePath('C:\\repo\\a.test.ts')).toBe('C:/repo/a.test.ts');
+  });
+});
+
+describe('file_path', () => {
+  const buildAt = (specPath: string, rootDir?: string, metadata: Metadata = MetadataApplier.empty()) =>
+    ResultBuilder.build({
+      value: mkAssertion(),
+      path: specPath,
+      metadata,
+      profilerSteps: [],
+      ...(rootDir === undefined ? {} : { rootDir }),
+    });
+
+  it('reports the spec file relative to the root', () => {
+    expect(buildAt('/repo/src/utils/login.test.ts', '/repo').fields['file_path'])
+      .toBe('src/utils/login.test.ts');
+  });
+
+  it('falls back to cwd when no root is configured', () => {
+    expect(buildAt(SPEC).fields['file_path']).toBe('src/utils/login.test.ts');
+  });
+
+  // The field is the join key for requirement repo_file anchors; an absolute
+  // machine path could never match one, so omitting beats reporting it.
+  it('omits the field when the spec is outside the root', () => {
+    expect(buildAt('/elsewhere/a.test.ts', '/repo').fields['file_path']).toBeUndefined();
+  });
+
+  it('does not overwrite a file_path the test set for itself', () => {
+    const metadata = MetadataApplier.empty();
+    metadata.fields['file_path'] = 'src/utils/login.ts';
+    expect(buildAt('/repo/src/utils/login.test.ts', '/repo', metadata).fields['file_path'])
+      .toBe('src/utils/login.ts');
+  });
+
+  it('does not mutate the metadata it was handed', () => {
+    const metadata = MetadataApplier.empty();
+    metadata.fields['severity'] = 'major';
+    buildAt('/repo/src/utils/login.test.ts', '/repo', metadata);
+    expect(metadata.fields['file_path']).toBeUndefined();
   });
 });

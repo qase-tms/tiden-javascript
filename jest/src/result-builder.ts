@@ -8,7 +8,7 @@ import {
   TestResultType,
   TestStepType,
 } from '@tiden/reporter-commons';
-import { normalizeSpecPath, removeTidenIdsFromTitle } from '@tiden/reporter-commons/internal';
+import { normalizeSpecPath, removeTidenIdsFromTitle, resolveFilePath } from '@tiden/reporter-commons/internal';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Metadata } from './models';
@@ -34,6 +34,9 @@ export interface ResultBuilderArgs {
 }
 
 export class ResultBuilder {
+  /** Files already reported as unresolvable — one warning per file. */
+  private static readonly warnedPaths = new Set<string>();
+
   static build({
     value,
     path,
@@ -94,6 +97,16 @@ export class ResultBuilder {
     result.message = error?.message ?? null;
 
     ResultBuilder.applyMetadata(result, metadata);
+
+    // `fields.file_path` is the key the server joins a requirement's repo_file
+    // anchors against — without it a case can never be linked by derive. Set
+    // after applyMetadata so a value the test chose for itself wins.
+    if (result.fields['file_path'] === undefined) {
+      const anchorPath = ResultBuilder.anchorPath(path, rootDir);
+      if (anchorPath !== undefined) {
+        result.fields['file_path'] = anchorPath;
+      }
+    }
 
     if (profilerSteps.length > 0) {
       result.steps = [...result.steps, ...profilerSteps];
@@ -156,7 +169,10 @@ export class ResultBuilder {
       result.relations = { suite: { data: [{ title: metadata.suite, public_id: null }] } };
     }
     if (Object.keys(metadata.fields).length > 0) {
-      result.fields = metadata.fields;
+      // Copied, not aliased: file_path is written onto result.fields by the
+      // caller, and assigning this object by reference would mutate the
+      // metadata the applier holds.
+      result.fields = { ...metadata.fields };
     }
     if (Object.keys(metadata.parameters).length > 0) {
       result.params = metadata.parameters;
@@ -209,5 +225,26 @@ export class ResultBuilder {
    */
   static normalizePath(fullPath: string, rootDir?: string | undefined): string {
     return rootDir ? normalizeSpecPath(fullPath, rootDir) : normalizeSpecPath(fullPath);
+  }
+
+  /**
+   * The spec file for `fields.file_path`, or undefined when it does not resolve
+   * under the reporting root. Undefined omits the field rather than reporting
+   * an absolute machine path, which could never match an anchor; the warning
+   * names the cause once per file.
+   */
+  static anchorPath(fullPath: string, rootDir?: string | undefined): string | undefined {
+    const resolved = rootDir === undefined
+      ? resolveFilePath(fullPath)
+      : resolveFilePath(fullPath, rootDir);
+    if (resolved === undefined && !ResultBuilder.warnedPaths.has(fullPath)) {
+      ResultBuilder.warnedPaths.add(fullPath);
+      console.warn(
+        `tiden: ${fullPath} is outside the reporting root, omitting file_path — `
+        + 'this test cannot be linked to a requirement by file anchor. '
+        + 'Set rootDir (or TIDEN_ROOT_DIR) to the repository root.',
+      );
+    }
+    return resolved;
   }
 }
