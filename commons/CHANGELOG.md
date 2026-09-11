@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.3.0
+
+- **`resolveFilePath` and `isUsableFilePath` on the `/internal` entry point.** The rule behind
+  every reporter's `fields.file_path`, which is the key the server joins a requirement's
+  repo-relative `repo_file` anchors against. Deliberately NOT `normalizeSpecPath`: that one
+  returns a path outside the root unchanged, which is right for a signature segment and wrong
+  for a join key — an absolute machine path or a virtual module id can never match an anchor,
+  so it would be a field that looks like a join key and silently never joins. `undefined`
+  means omit; omitting is not fabricating.
+- **`resolveFilePath` resolves the root rather than trusting the string.** A relative root
+  (`..`, `.`, or `''` from a config file) matched no absolute test path, so every file was
+  omitted for the whole run while the warning told the user to set the variable they had just
+  set. Relative roots now resolve against cwd, `.`/`..` segments are collapsed on both sides,
+  and a symlinked root — `/tmp/x` while the runner emits `/private/tmp/x/...` on macOS — is
+  compared again via `realpath`, memoized and only after the plain comparison fails.
+  `tiden-phpunit-reporter`'s `FilePathResolver` already did this for the same macOS reason.
+- **`normalizeSpecPath` and `resolveRootDir` are deliberately unchanged.** They feed the case
+  SIGNATURE, and changing how a root resolves would change the file segment of every signature
+  computed under a relative or symlinked root — forking the history of every case already
+  reported under the old spelling. A join key can be corrected; an identity cannot.
+
 ## 0.2.0
 
 - **`rootDir` / `TIDEN_ROOT_DIR` option**, plus `normalizeSpecPath` and `resolveRootDir` on the

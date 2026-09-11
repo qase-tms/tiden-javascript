@@ -8,7 +8,18 @@ import {
   generateSignature,
   parseTidenIdFromTitle,
 } from '@tiden/reporter-commons';
-import { extractAndCleanStep, normalizeSpecPath } from '@tiden/reporter-commons/internal';
+import { extractAndCleanStep, isUsableFilePath, normalizeSpecPath, resolveFilePath } from '@tiden/reporter-commons/internal';
+
+const UNRESOLVED_FILE_PATH = (file: string): string =>
+  `tiden: ${file} is outside the reporting root, omitting file_path — `
+  + 'this test cannot be linked to a requirement by file anchor. '
+  + 'Set rootDir (or TIDEN_ROOT_DIR) to the repository root.';
+
+const REJECTED_FILE_PATH = (value: string): string =>
+  `tiden: file_path "${value}" was set by the test but is absolute or escapes the `
+  + 'reporting root, so it could never match a requirement anchor — deriving from '
+  + 'the spec file instead.';
+
 import { v4 as uuidv4 } from 'uuid';
 import { MetadataShape } from './metadataAccumulator';
 
@@ -23,6 +34,9 @@ export interface BuildArgs {
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class ResultBuilder {
+  /** Module ids already reported as unresolvable — one warning per file. */
+  private static readonly warnedPaths = new Set<string>();
+
   static build(args: BuildArgs): TestResultType {
     const { testCase, metadata, currentSuite, profilerSteps, rootDir } = args;
 
@@ -121,7 +135,10 @@ export class ResultBuilder {
         testResult.message = metadata.comment;
       }
       if (metadata.fields) {
-        testResult.fields = metadata.fields;
+        // Copied, not aliased: file_path is written onto testResult.fields
+        // below, and assigning the caller's object by reference would mutate
+        // the accumulator's metadata for whatever else reads it.
+        testResult.fields = { ...metadata.fields };
       }
       if (metadata.parameters) {
         testResult.params = metadata.parameters;
@@ -169,6 +186,11 @@ export class ResultBuilder {
       }
     }
 
+    // `fields.file_path` is the key the server joins a requirement's repo_file
+    // anchors against — without it a case can never be linked by derive. Set
+    // after the metadata block so a value the test chose for itself wins.
+    ResultBuilder.applyFilePath(testResult.fields, testCase.module?.moduleId, rootDir);
+
     if (metadata?._profilerSteps) {
       testResult.steps = [...testResult.steps, ...metadata._profilerSteps];
     }
@@ -181,13 +203,51 @@ export class ResultBuilder {
   }
 
   /**
-   * Splits a Vitest `fullName` ("Outer > Inner > test title") into its path
-   * segments, leaf test title last. Single source of truth for both the
-   * reported suite path and the case signature — do not add a second parser.
+   * Write `fields.file_path`, the key the server joins a requirement's
+   * repo_file anchors against.
    *
-   * `fullName` covers the describe chain only; the spec file that precedes it
-   * in a signature comes from `specPath()`, not from a second parse of this.
+   * A value the test set for itself wins — it may deliberately name the source
+   * file under test — but only when it could ever match an anchor; an absolute
+   * or escaping one is dropped for the derived path, because keeping it would
+   * fabricate a link that never joins. A file that does not resolve under the
+   * reporting root omits the field rather than reporting an absolute machine
+   * path; the warning names the cause once per file.
    */
+  static applyFilePath(
+    fields: Record<string, string>,
+    file: string | undefined,
+    rootDir?: string | undefined,
+  ): void {
+    const provided = fields['file_path'];
+    if (provided !== undefined) {
+      if (isUsableFilePath(provided)) {
+        return;
+      }
+      ResultBuilder.warnOnce(provided, REJECTED_FILE_PATH(provided));
+      // Brackets are required (TS4111, noPropertyAccessFromIndexSignature) and
+      // the lint rule wants dot access; the compiler wins.
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete fields['file_path'];
+    }
+    if (!file) {
+      return;
+    }
+    const resolved = resolveFilePath(file, rootDir);
+    if (resolved === undefined) {
+      ResultBuilder.warnOnce(file, UNRESOLVED_FILE_PATH(file));
+      return;
+    }
+    fields['file_path'] = resolved;
+  }
+
+  private static warnOnce(key: string, message: string): void {
+    if (ResultBuilder.warnedPaths.has(key)) {
+      return;
+    }
+    ResultBuilder.warnedPaths.add(key);
+    console.warn(message);
+  }
+
   /**
    * The project-relative spec file for this case, '' when Vitest reports no
    * module id (a virtual module, or a hand-built test case in a unit test).
@@ -201,6 +261,14 @@ export class ResultBuilder {
     return rootDir ? normalizeSpecPath(moduleId, rootDir) : normalizeSpecPath(moduleId);
   }
 
+  /**
+   * Splits a Vitest `fullName` ("Outer > Inner > test title") into its path
+   * segments, leaf test title last. Single source of truth for both the
+   * reported suite path and the case signature — do not add a second parser.
+   *
+   * `fullName` covers the describe chain only; the spec file that precedes it
+   * in a signature comes from `specPath()`, not from a second parse of this.
+   */
   static splitFullName(testCase: TestCase): string[] {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     const fullName = testCase.fullName ?? testCase.name;

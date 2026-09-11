@@ -8,7 +8,18 @@ import {
   TestResultType,
   TestStepType,
 } from '@tiden/reporter-commons';
-import { normalizeSpecPath, removeTidenIdsFromTitle } from '@tiden/reporter-commons/internal';
+import { isUsableFilePath, normalizeSpecPath, removeTidenIdsFromTitle, resolveFilePath } from '@tiden/reporter-commons/internal';
+
+const UNRESOLVED_FILE_PATH = (file: string): string =>
+  `tiden: ${file} is outside the reporting root, omitting file_path — `
+  + 'this test cannot be linked to a requirement by file anchor. '
+  + 'Set rootDir (or TIDEN_ROOT_DIR) to the repository root.';
+
+const REJECTED_FILE_PATH = (value: string): string =>
+  `tiden: file_path "${value}" was set by the test but is absolute or escapes the `
+  + 'reporting root, so it could never match a requirement anchor — deriving from '
+  + 'the spec file instead.';
+
 import { v4 as uuidv4 } from 'uuid';
 
 import { Metadata } from './models';
@@ -34,6 +45,9 @@ export interface ResultBuilderArgs {
 }
 
 export class ResultBuilder {
+  /** Files already reported as unresolvable — one warning per file. */
+  private static readonly warnedPaths = new Set<string>();
+
   static build({
     value,
     path,
@@ -94,6 +108,11 @@ export class ResultBuilder {
     result.message = error?.message ?? null;
 
     ResultBuilder.applyMetadata(result, metadata);
+
+    // `fields.file_path` is the key the server joins a requirement's repo_file
+    // anchors against — without it a case can never be linked by derive. Set
+    // after applyMetadata so a value the test chose for itself wins.
+    ResultBuilder.applyFilePath(result.fields, path, rootDir);
 
     if (profilerSteps.length > 0) {
       result.steps = [...result.steps, ...profilerSteps];
@@ -156,7 +175,10 @@ export class ResultBuilder {
       result.relations = { suite: { data: [{ title: metadata.suite, public_id: null }] } };
     }
     if (Object.keys(metadata.fields).length > 0) {
-      result.fields = metadata.fields;
+      // Copied, not aliased: file_path is written onto result.fields by the
+      // caller, and assigning this object by reference would mutate the
+      // metadata the applier holds.
+      result.fields = { ...metadata.fields };
     }
     if (Object.keys(metadata.parameters).length > 0) {
       result.params = metadata.parameters;
@@ -209,5 +231,51 @@ export class ResultBuilder {
    */
   static normalizePath(fullPath: string, rootDir?: string | undefined): string {
     return rootDir ? normalizeSpecPath(fullPath, rootDir) : normalizeSpecPath(fullPath);
+  }
+
+  /**
+   * Write `fields.file_path`, the key the server joins a requirement's
+   * repo_file anchors against.
+   *
+   * A value the test set for itself wins — it may deliberately name the source
+   * file under test — but only when it could ever match an anchor; an absolute
+   * or escaping one is dropped for the derived path, because keeping it would
+   * fabricate a link that never joins. A file that does not resolve under the
+   * reporting root omits the field rather than reporting an absolute machine
+   * path; the warning names the cause once per file.
+   */
+  static applyFilePath(
+    fields: Record<string, string>,
+    file: string | undefined,
+    rootDir?: string | undefined,
+  ): void {
+    const provided = fields['file_path'];
+    if (provided !== undefined) {
+      if (isUsableFilePath(provided)) {
+        return;
+      }
+      ResultBuilder.warnOnce(provided, REJECTED_FILE_PATH(provided));
+      // Brackets are required (TS4111, noPropertyAccessFromIndexSignature) and
+      // the lint rule wants dot access; the compiler wins.
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete fields['file_path'];
+    }
+    if (!file) {
+      return;
+    }
+    const resolved = resolveFilePath(file, rootDir);
+    if (resolved === undefined) {
+      ResultBuilder.warnOnce(file, UNRESOLVED_FILE_PATH(file));
+      return;
+    }
+    fields['file_path'] = resolved;
+  }
+
+  private static warnOnce(key: string, message: string): void {
+    if (ResultBuilder.warnedPaths.has(key)) {
+      return;
+    }
+    ResultBuilder.warnedPaths.add(key);
+    console.warn(message);
   }
 }

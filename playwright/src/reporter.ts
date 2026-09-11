@@ -8,6 +8,7 @@ import {
   ReporterInterface,
   TestStatusEnum,
 } from '@tiden/reporter-commons';
+import { resolveRootDir } from '@tiden/reporter-commons/internal';
 import { ReporterOptionsType } from './options';
 import { StepIndex } from './step-index';
 import { AnnotationExtractor } from './annotation-extractor';
@@ -49,7 +50,7 @@ export class PlaywrightTidenReporter implements Reporter {
 
   private metadataExtractor: MetadataExtractor = new MetadataExtractor(this.stepIndex);
 
-  private resultBuilder: ResultBuilder = new ResultBuilder(this.stepConverter);
+  private resultBuilder: ResultBuilder;
 
   /**
    * @type {ReporterInterface}
@@ -71,6 +72,14 @@ export class PlaywrightTidenReporter implements Reporter {
     const { framework, ...composedOptions } = composeOptions(options, config);
 
     this.options = options.framework ?? {};
+
+    // Resolved here, not in the builder: composedOptions is the only place the
+    // merged config is visible, and resolveRootDir also reads TIDEN_ROOT_DIR,
+    // which never reaches a framework reporter through the config pipeline.
+    this.resultBuilder = new ResultBuilder(
+      this.stepConverter,
+      resolveRootDir(composedOptions.rootDir),
+    );
 
     this.reporter = TidenReporter.getInstance({
       ...composedOptions,

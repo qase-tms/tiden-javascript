@@ -498,7 +498,8 @@ describe('ResultBuilder.build', () => {
       currentSuite: undefined,
       profilerSteps: [],
     });
-    expect(result.fields).toEqual({ severity: 'major' });
+    // file_path is added by the reporter itself — see 'ResultBuilder file_path'.
+    expect(result.fields).toEqual({ severity: 'major', file_path: SPEC });
     expect(result.params).toEqual({ env: 'prod' });
     expect(result.group_params).toEqual({ region: 'eu' });
     expect(result.tags).toEqual(['smoke']);
@@ -609,5 +610,64 @@ describe('ResultBuilder.extractSuiteFromTestCase', () => {
   it('falls back to testCase.name when fullName missing', () => {
     const tc = { name: 'OnlyName' } as any;
     expect(ResultBuilder.extractSuiteFromTestCase(tc)).toBeUndefined();
+  });
+});
+
+describe('ResultBuilder file_path', () => {
+  const build = (over: any = {}, metadata: MetadataShape | undefined = undefined, rootDir?: string) =>
+    ResultBuilder.build({
+      testCase: mkTestCase(over),
+      metadata,
+      currentSuite: undefined,
+      profilerSteps: [],
+      ...(rootDir === undefined ? {} : { rootDir }),
+    });
+
+  it('reports the spec file relative to the root', () => {
+    const result = build({ moduleId: '/repo/src/example.test.ts' }, undefined, '/repo');
+    expect(result.fields['file_path']).toBe('src/example.test.ts');
+  });
+
+  it('falls back to cwd when no root is configured', () => {
+    expect(build().fields['file_path']).toBe(SPEC);
+  });
+
+  // The field is the join key for requirement repo_file anchors; an absolute
+  // machine path could never match one, so omitting beats reporting it.
+  it('omits the field when the module is outside the root', () => {
+    const result = build({ moduleId: '/elsewhere/a.test.ts' }, undefined, '/repo');
+    expect(result.fields['file_path']).toBeUndefined();
+  });
+
+  it('omits the field for a virtual module id', () => {
+    const result = build({ moduleId: 'virtual:generated-tests' }, undefined, '/repo');
+    expect(result.fields['file_path']).toBeUndefined();
+  });
+
+  it('omits the field when Vitest reports no module', () => {
+    expect(build({ moduleId: null }).fields['file_path']).toBeUndefined();
+  });
+
+  it('does not overwrite a file_path the test set for itself', () => {
+    const metadata: MetadataShape = { steps: [], attachments: [], fields: { file_path: 'src/thing.ts' } };
+    expect(build({}, metadata).fields['file_path']).toBe('src/thing.ts');
+  });
+
+  // A hand-written value is held to the same standard a derived one is.
+  it('replaces an unusable file_path the test set', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const metadata: MetadataShape = { steps: [], attachments: [], fields: { file_path: '/abs/x.ts' } };
+      expect(build({ moduleId: '/repo/src/example.test.ts' }, metadata, '/repo').fields['file_path'])
+        .toBe('src/example.test.ts');
+      expect(warn).toHaveBeenCalled();
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('resolves a relative root, so a monorepo sub-package is not silently disabled', () => {
+    expect(build({ moduleId: `${process.cwd()}/src/example.test.ts` }, undefined, '.').fields['file_path'])
+      .toBe(SPEC);
   });
 });

@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { describe, expect, it, beforeEach } from '@jest/globals';
+import { describe, expect, it, beforeEach, jest } from '@jest/globals';
 import { TestCase, TestResult, TestStatus } from '@playwright/test/reporter';
 import { ResultBuilder, BuildArgs } from '../src/result-builder';
 import { StepConverter } from '../src/step-converter';
@@ -181,5 +181,86 @@ describe('ResultBuilder feature flags and merging', () => {
     const r = builder.build(args)!;
     expect(r.attachments.find((a: any) => a.file_name === 'stdout.log')).toBeDefined();
     expect(r.attachments.find((a: any) => a.file_name === 'stderr.log')).toBeDefined();
+  });
+});
+
+describe('ResultBuilder file_path', () => {
+  function testAt(file: string): TestCase {
+    return {
+      title: 'test title',
+      titlePath: () => ['file.spec.ts', 'test title'],
+      annotations: [],
+      location: { file, line: 1, column: 1 },
+    } as unknown as TestCase;
+  }
+
+  function buildAt(file: string, rootDir?: string, metadata = emptyMetadata()) {
+    const builder = new ResultBuilder(new StepConverter(new StepIndex()), rootDir);
+    return builder.build(defaultArgs({ test: testAt(file), metadata }))!;
+  }
+
+  it('reports the spec file relative to the root', () => {
+    const r = buildAt('/repo/tests/api/Tests/v1/m.api.spec.ts', '/repo');
+    expect(r.fields['file_path']).toBe('tests/api/Tests/v1/m.api.spec.ts');
+  });
+
+  // The field is the join key for requirement repo_file anchors; an absolute
+  // machine path could never match one, so omitting beats reporting it.
+  it('omits the field when the file is outside the root', () => {
+    const r = buildAt('/elsewhere/a.spec.ts', '/repo');
+    expect(r.fields['file_path']).toBeUndefined();
+  });
+
+  it('warns once per file, not once per test', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const builder = new ResultBuilder(new StepConverter(new StepIndex()), '/repo');
+      builder.build(defaultArgs({ test: testAt('/elsewhere/a.spec.ts') }));
+      builder.build(defaultArgs({ test: testAt('/elsewhere/a.spec.ts') }));
+      builder.build(defaultArgs({ test: testAt('/elsewhere/b.spec.ts') }));
+      expect(warn).toHaveBeenCalledTimes(2);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('does not overwrite a file_path the test set for itself', () => {
+    const metadata = emptyMetadata();
+    metadata.fields['file_path'] = 'app/Services/Milestone.php';
+    const r = buildAt('/repo/tests/api/Tests/v1/m.api.spec.ts', '/repo', metadata);
+    expect(r.fields['file_path']).toBe('app/Services/Milestone.php');
+  });
+
+  it('falls back to cwd when no root is configured', () => {
+    const r = buildAt(`${process.cwd()}/tests/a.spec.ts`);
+    expect(r.fields['file_path']).toBe('tests/a.spec.ts');
+  });
+
+  // A hand-written value is held to the same standard a derived one is: an
+  // absolute path can never match a repo-relative anchor, so keeping it would
+  // fabricate a link that never joins.
+  it('replaces an unusable file_path the test set, and says why', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const metadata = emptyMetadata();
+      metadata.fields['file_path'] = '/absolute/elsewhere.php';
+      const r = buildAt('/repo/tests/api/m.api.spec.ts', '/repo', metadata);
+      expect(r.fields['file_path']).toBe('tests/api/m.api.spec.ts');
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(String(warn.mock.calls[0]![0])).toContain('could never match a requirement anchor');
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('resolves a relative root, so a monorepo sub-package is not silently disabled', () => {
+    const r = buildAt(`${process.cwd()}/tests/a.spec.ts`, '.');
+    expect(r.fields['file_path']).toBe('tests/a.spec.ts');
+  });
+
+  it('omits the field when the test carries no location', () => {
+    const builder = new ResultBuilder(new StepConverter(new StepIndex()), '/repo');
+    const r = builder.build(defaultArgs())!;
+    expect(r.fields['file_path']).toBeUndefined();
   });
 });
