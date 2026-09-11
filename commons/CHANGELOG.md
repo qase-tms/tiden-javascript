@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.3.0
 
 - **`resolveFilePath` and `isUsableFilePath` on the `/internal` entry point.** The rule behind
   every reporter's `fields.file_path`, which is the key the server joins a requirement's

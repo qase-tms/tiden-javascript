@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.3.0
 
 - **Every result now carries `fields.file_path`**, the repo-relative source file of the test —
   the key the server joins a requirement's `repo_file` anchors against. Until now no JS reporter
