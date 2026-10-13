@@ -247,7 +247,7 @@ describe('ResultBuilder file_path', () => {
       const r = buildAt('/repo/tests/api/m.api.spec.ts', '/repo', metadata);
       expect(r.fields['file_path']).toBe('tests/api/m.api.spec.ts');
       expect(warn).toHaveBeenCalledTimes(1);
-      expect(String(warn.mock.calls[0]![0])).toContain('could never match a requirement anchor');
+      expect(String(warn.mock.calls[0]![0])).toContain('could never match a spec anchor');
     } finally {
       warn.mockRestore();
     }

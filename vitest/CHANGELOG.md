@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- The file-anchor warnings say "spec", the product's new name for what it used to call a
+  requirement: `this test cannot be linked to a spec by file anchor`, and an absolute or
+  escaping `file_path` "could never match a spec anchor", so the path is derived from the test
+  file instead. Wording only; `fields.file_path` and the warning conditions are unchanged.
+
 ## 0.3.0
 
 - **Every result now carries `fields.file_path`**, the repo-relative source file of the test —
