@@ -19,13 +19,13 @@ const logMimeType = 'text/plain';
 
 const UNRESOLVED_FILE_PATH = (file: string): string =>
   `tiden: ${file} is outside the reporting root, omitting file_path — `
-  + 'this test cannot be linked to a requirement by file anchor. '
+  + 'this test cannot be linked to a spec by file anchor. '
   + 'Set rootDir (or TIDEN_ROOT_DIR) to the repository root.';
 
 const REJECTED_FILE_PATH = (value: string): string =>
   `tiden: file_path "${value}" was set by the test but is absolute or escapes the `
-  + 'reporting root, so it could never match a requirement anchor — deriving from '
-  + 'the spec file instead.';
+  + 'reporting root, so it could never match a spec anchor — deriving from '
+  + 'the test file instead.';
 
 export interface BuildArgs {
   test: TestCase;
