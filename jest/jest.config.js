@@ -13,4 +13,5 @@ module.exports = {
   moduleFileExtensions: ['js', 'ts'],
   collectCoverage: true,
   testEnvironment: 'node',
+  setupFilesAfterEnv: ['<rootDir>/test/spend-identity-warning.ts'],
 };

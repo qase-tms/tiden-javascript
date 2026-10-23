@@ -8,7 +8,13 @@ import {
   TestResultType,
   TestStepType,
 } from '@tiden/reporter-commons';
-import { isUsableFilePath, normalizeSpecPath, removeTidenIdsFromTitle, resolveFilePath } from '@tiden/reporter-commons/internal';
+import {
+  buildTestIdentity,
+  isUsableFilePath,
+  normalizeSpecPath,
+  removeTidenIdsFromTitle,
+  resolveFilePath,
+} from '@tiden/reporter-commons/internal';
 
 const UNRESOLVED_FILE_PATH = (file: string): string =>
   `tiden: ${file} is outside the reporting root, omitting file_path — `
@@ -95,6 +101,19 @@ export class ResultBuilder {
       idsForSignature,
       ResultBuilder.structuralPath(filePath, value).filter(Boolean),
     );
+
+    // Identity parts: sent next to the legacy signature above, which stays as
+    // it is. Raw titles, the file relative to the repository root, and no
+    // marker — see commons' `buildTestIdentity`.
+    const identity = buildTestIdentity({
+      file: path,
+      describes: value.ancestorTitles,
+      title: value.title,
+      startDir: rootDir,
+    });
+    if (identity) {
+      result.identity = identity;
+    }
 
     result.relations = ResultBuilder.getRelations(filePath, value.ancestorTitles);
 

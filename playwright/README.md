@@ -126,6 +126,8 @@ always override committed config without editing checked-in files.
 | `environment`                       | `TIDEN_ENVIRONMENT`                  | Environment slug attached to the run (auto-created server-side if unknown)       |
 | `captureLogs`                       | `TIDEN_CAPTURE_LOGS`                 | Capture `stdout`/`stderr` into the reported result                               |
 | `rootSuite`                         | `TIDEN_ROOT_SUITE`                   | Wrap all reported suites under a single root suite name                          |
+| `identity` (reported)               | `TIDEN_REPOSITORY`                   | The repository a test belongs to, sent with the test's identity parts. Resolved once per process: `TIDEN_REPOSITORY`, then the CI variables (`GITHUB_SERVER_URL`+`GITHUB_REPOSITORY`, `CI_SERVER_URL`+`CI_PROJECT_PATH`, `BITBUCKET_GIT_HTTP_ORIGIN`, `BUILD_REPOSITORY_URI`), then the `origin` URL in `.git/config`. Without one, no identity is sent and one warning is printed |
+| `tiden.playwright.project` (reported) | —                                  | The Playwright project name, reported as this param. It is a variant of a test, not part of its identity: one test run under `chromium` and `firefox` is one case with two executions |
 | `statusMapping`                     | `TIDEN_STATUS_MAPPING`               | Rename result statuses, format `fromStatus=toStatus[,fromStatus=toStatus...]`     |
 | **Tiden reporting**                 |                                       |                                                                                    |
 | `tiden.product`                     | `TIDEN_PRODUCT_ID`                   | Tiden product ID (**required** in `tiden` mode)                                  |

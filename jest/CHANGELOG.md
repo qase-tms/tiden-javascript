@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- **Every result now carries `identity`** next to the unchanged legacy `signature`:
+  `{ language: "js", repository, scope: [<repo-relative POSIX file>], name: [...describe titles, test title] }`.
+  Titles are raw, not lowercased or underscored, and the `(Tiden ID: N)` marker is removed from the
+  test title, so adding an id to a test does not fork its history. A describe's title and a test's title come from jest's `ancestorTitles` and `title`.
+- **It needs a repository.** `TIDEN_REPOSITORY`, then the CI variables, then the `origin` URL in
+  `.git/config`; the file must be under the repository root (the nearest ancestor with `.git`).
+  Otherwise no `identity` is sent and one warning is printed per process; results are still
+  reported, matched by signature only.
+- A server that does not know `identity` yet answers 400 `unknown field "identity"`; the batch is
+  resent without it and the reporter stops sending it.
+- The run's `clientMeta` carries `gitRepository`.
 - The file-anchor warnings say "spec", the product's new name for what it used to call a
   requirement: `this test cannot be linked to a spec by file anchor`, and an absolute or
   escaping `file_path` "could never match a spec anchor", so the path is derived from the test
