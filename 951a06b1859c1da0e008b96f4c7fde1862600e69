@@ -1,0 +1,30 @@
+commons/CHANGELOG.md
+  s_08994899526032::t_8e0444d549117c 12
+api-client/LICENSE
+  s_08994899526032::t_02004b5467d897 1-201
+.github/workflows/release.yml
+  s_08994899526032::t_8803f72cdefd7c 16-20
+commons/src/client/services/result-transformer.ts
+  s_08994899526032::t_dbcfd32be5803f 60-62
+commons/src/client/tiden-client.ts
+  s_08994899526032::t_4bba1f26cfb78a 19-20
+README.md
+  s_08994899526032::t_4d47c675343b4f 96-99
+  s_08994899526032::t_aaca48d6fd27a7 108
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "951a06b1859c1da0e008b96f4c7fde1862600e69",
+  "prompts": {},
+  "sessions": {
+    "s_08994899526032": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ce9d07e4-1f0f-4374-a531-8faf01911c87",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Nikolay Pisarev <npisarev@qase.io>"
+    }
+  }
+}
