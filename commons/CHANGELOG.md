@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.4.0
+
+- **Test identity parts.** A result can carry `identity`: `{ language, repository, scope, name }`,
+  sent next to the unchanged legacy `signature`. The server builds the identity key from these
+  parts, so a reporter never normalizes titles itself. `ResultCreate.identity` is added to the
+  hand-written DTOs and mapped by `ResultTransformer`; `TestResultType.identity` carries it.
+- **Repository resolution on the `/internal` entry point:** `resolveRepositoryContext`,
+  `buildTestIdentity`. The repository is `TIDEN_REPOSITORY`, then the CI variables
+  (`GITHUB_SERVER_URL`+`GITHUB_REPOSITORY`, `CI_SERVER_URL`+`CI_PROJECT_PATH`,
+  `BITBUCKET_GIT_HTTP_ORIGIN`, `BUILD_REPOSITORY_URI`), then the `origin` URL in the `.git/config`
+  of the nearest ancestor holding `.git` (a directory, or a file that points to the git directory:
+  worktrees and submodules). No subprocess, resolved once per process, sent raw: the server
+  normalizes it. The same ancestor is the root the test file is made relative to. No repository, or
+  a file outside that root, means no `identity` and one warning per process; the legacy
+  `signature` still identifies the test.
+- **`clientMeta.gitRepository`** on the run, when a repository resolves.
+- **Fallback for an older server.** A 400 whose body contains the gateway's
+  `unknown field "identity"` error makes the client resend the same batch (same result ids, so the
+  server still deduplicates) without `identity`, and stop sending it. Any other 400 is still a real
+  error.
+- `CreateTestRunBody` gains `intentSessionId` and `intentBranch` in the hand-written DTO, which
+  the generated model already had.
+
 ## 0.3.0
 
 - **`resolveFilePath` and `isUsableFilePath` on the `/internal` entry point.** The rule behind

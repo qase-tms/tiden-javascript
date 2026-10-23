@@ -10,3 +10,6 @@ export { normalizeSpecPath } from './spec-path';
 export { resolveRootDir } from './spec-path';
 export { resolveFilePath } from './spec-path';
 export { isUsableFilePath } from './spec-path';
+export { resolveRepositoryContext, resetRepositoryContext, REPOSITORY_ENV } from './repository';
+export type { RepositoryContext } from './repository';
+export { buildTestIdentity, resetIdentityWarning, JS_IDENTITY_LANGUAGE } from './test-identity';

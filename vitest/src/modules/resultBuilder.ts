@@ -8,7 +8,13 @@ import {
   generateSignature,
   parseTidenIdFromTitle,
 } from '@tiden/reporter-commons';
-import { extractAndCleanStep, isUsableFilePath, normalizeSpecPath, resolveFilePath } from '@tiden/reporter-commons/internal';
+import {
+  buildTestIdentity,
+  extractAndCleanStep,
+  isUsableFilePath,
+  normalizeSpecPath,
+  resolveFilePath,
+} from '@tiden/reporter-commons/internal';
 
 const UNRESOLVED_FILE_PATH = (file: string): string =>
   `tiden: ${file} is outside the reporting root, omitting file_path — `
@@ -87,6 +93,19 @@ export class ResultBuilder {
       idsForSignature,
       [ResultBuilder.specPath(testCase, rootDir), ...ResultBuilder.splitFullName(testCase)].filter(Boolean),
     );
+
+    // Identity parts, next to the legacy signature above. The legacy signature
+    // keeps the `(Tiden ID: N)` marker in its last segment (changing that would
+    // fork every case already reported); the identity name never has it.
+    const identity = buildTestIdentity({
+      file: testCase.module?.moduleId,
+      describes: ResultBuilder.describeTitles(testCase),
+      title: testCase.name,
+      startDir: rootDir,
+    });
+    if (identity) {
+      testResult.identity = identity;
+    }
 
     const suiteSegments = ResultBuilder.suitePath(testCase, metadata?.suite, currentSuite, rootDir);
     if (suiteSegments.length > 0) {
@@ -273,6 +292,29 @@ export class ResultBuilder {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     const fullName = testCase.fullName ?? testCase.name;
     return fullName.split(' > ');
+  }
+
+  /**
+   * The describe titles above a test, outermost first.
+   *
+   * Taken from the real parent chain, not from splitting `fullName` on
+   * ' > ': a describe titled `a > b` would split into two levels there, and
+   * jest, which reports its ancestor titles as an array, would then disagree
+   * with vitest about the same test. A test case without a parent (a
+   * hand-built one in a unit test) falls back to the `fullName` split.
+   */
+  static describeTitles(testCase: TestCase): string[] {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (!testCase.parent) {
+      return ResultBuilder.splitFullName(testCase).slice(0, -1);
+    }
+    const titles: string[] = [];
+    let node: TestCase['parent'] | undefined = testCase.parent;
+    while (node?.type === 'suite') {
+      titles.unshift(node.name);
+      node = node.parent;
+    }
+    return titles;
   }
 
   /**

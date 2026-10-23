@@ -15,6 +15,8 @@ export interface CreateTestRunBody {
   buildSha?: string;
   startedAt?: string;
   clientMeta?: Record<string, string>;
+  intentSessionId?: string;
+  intentBranch?: string;
 }
 
 export interface ReporterTestRun {
@@ -72,10 +74,23 @@ export interface SuiteSegment {
   externalId?: string;
 }
 
+/**
+ * `ResultCreate.identity`: the parts of a test's identity. Optional; a server
+ * that predates it rejects the field, which the client handles by resending
+ * the batch without it (see `TidenApiClient`).
+ */
+export interface ResultIdentity {
+  language?: string;
+  repository?: string;
+  scope?: string[];
+  name?: string[];
+}
+
 export interface ResultCreate {
   id?: string;
   title?: string;
   signature?: string;
+  identity?: ResultIdentity;
   externalId?: string;
   testopsIds?: number[];
   execution?: ResultExecution;

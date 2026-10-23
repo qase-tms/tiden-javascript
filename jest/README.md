@@ -133,6 +133,7 @@ override both the config file and any explicit `jest.config.js` reporter options
 | `rootSuite`                         | `TIDEN_ROOT_SUITE`                   | Wrap all reported suites under a single root suite name                          |
 | `rootDir`                           | `TIDEN_ROOT_DIR`                     | Base the spec-file segments of a case signature are resolved against (default: `process.cwd()`) |
 | `fields.file_path` (reported)       | —                                    | Set automatically from the test's source file, relative to `rootDir`; the key spec `repo_file` anchors join against     |
+| `identity` (reported)               | `TIDEN_REPOSITORY`                   | The repository a test belongs to, sent with the test's identity parts. Resolved once per process: `TIDEN_REPOSITORY`, then the CI variables (`GITHUB_SERVER_URL`+`GITHUB_REPOSITORY`, `CI_SERVER_URL`+`CI_PROJECT_PATH`, `BITBUCKET_GIT_HTTP_ORIGIN`, `BUILD_REPOSITORY_URI`), then the `origin` URL in `.git/config`. Without one, no identity is sent and one warning is printed |
 | `statusMapping`                     | `TIDEN_STATUS_MAPPING`               | Rename result statuses, format `fromStatus=toStatus[,fromStatus=toStatus...]`     |
 | **Tiden reporting**                 |                                       |                                                                                    |
 | `tiden.product`                     | `TIDEN_PRODUCT_ID`                   | Tiden product ID (**required** in `tiden` mode)                                  |

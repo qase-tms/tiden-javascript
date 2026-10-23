@@ -76,6 +76,16 @@ export class ResultTransformer {
       fields: result.fields,
       defect: false,
       ...(result.signature != null ? { signature: result.signature } : {}),
+      ...(result.identity
+        ? {
+          identity: {
+            language: result.identity.language,
+            repository: result.identity.repository,
+            scope: [...result.identity.scope],
+            name: [...result.identity.name],
+          },
+        }
+        : {}),
     };
 
     if (result.tags && result.tags.length > 0) {

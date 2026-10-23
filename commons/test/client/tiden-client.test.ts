@@ -172,3 +172,141 @@ describe('TidenApiClient', () => {
     expect((logger.logError as jest.Mock).mock.calls.flat().join('\n')).toContain('INVALID_TITLE');
   });
 });
+
+describe('TidenApiClient identity fallback', () => {
+  const IDENTITY = { language: 'js', repository: 'git@github.com:acme/shop.git', scope: ['src/a.test.ts'], name: ['a', 'b'] };
+  const UNKNOWN_IDENTITY_BODY = {
+    code: 3,
+    message: 'proto: (line 1:412): unknown field "identity"',
+    details: [],
+  };
+
+  type SentResult = Record<string, unknown>;
+
+  /** Records every posted batch; answers each with `respond(callNumber)`. */
+  async function recordingServer(
+    respond: (call: number) => { status: number; body: unknown },
+  ): Promise<{ srv: Server; batches: SentResult[][] }> {
+    const batches: SentResult[][] = [];
+    const srv = await testServer((_req, body, res) => {
+      batches.push((JSON.parse(body) as { results: SentResult[] }).results);
+      const { status, body: payload } = respond(batches.length);
+      res.statusCode = status;
+      res.setHeader('content-type', 'application/json');
+      res.end(JSON.stringify(payload));
+    });
+    return { srv, batches };
+  }
+
+  const ok = { status: 200, body: { status: true, accepted: '2', duplicates: '0', errors: [] } };
+
+  it('sends identity next to the legacy signature', async () => {
+    const { srv, batches } = await recordingServer(() => ok);
+
+    await makeClient(srv).uploadResults(7, [makeResult({ id: 'r1', identity: IDENTITY })]);
+    srv.close();
+
+    expect(batches).toHaveLength(1);
+    expect(batches[0]?.[0]).toMatchObject({ id: 'r1', signature: 'sig-1', identity: IDENTITY });
+  });
+
+  it('omits identity for a result that has none', async () => {
+    const { srv, batches } = await recordingServer(() => ok);
+
+    await makeClient(srv).uploadResults(7, [makeResult({ id: 'r1' })]);
+    srv.close();
+
+    expect(Object.keys(batches[0]?.[0] ?? {})).not.toContain('identity');
+  });
+
+  it('resends the same batch with the same ids and without identity when the server does not know the field', async () => {
+    const { srv, batches } = await recordingServer((call) =>
+      call === 1 ? { status: 400, body: UNKNOWN_IDENTITY_BODY } : ok);
+
+    await makeClient(srv).uploadResults(7, [
+      makeResult({ id: 'r1', identity: IDENTITY }),
+      makeResult({ id: 'r2', identity: IDENTITY }),
+    ]);
+    srv.close();
+
+    expect(batches).toHaveLength(2);
+    expect(batches[0]?.map((r) => r['id'])).toEqual(['r1', 'r2']);
+    expect(batches[0]?.every((r) => r['identity'] !== undefined)).toBe(true);
+    expect(batches[1]?.map((r) => r['id'])).toEqual(['r1', 'r2']);
+    expect(batches[1]?.some((r) => 'identity' in r)).toBe(false);
+    // Everything else is the same request: the signature still identifies the test.
+    expect(batches[1]?.[0]).toMatchObject({ signature: 'sig-1', title: 'Test case' });
+  });
+
+  it('stops sending identity for the rest of the process after the server rejected it', async () => {
+    const { srv, batches } = await recordingServer((call) =>
+      call === 1 ? { status: 400, body: UNKNOWN_IDENTITY_BODY } : ok);
+    const client = makeClient(srv);
+
+    await client.uploadResults(7, [makeResult({ id: 'r1', identity: IDENTITY })]);
+    await client.uploadResults(7, [makeResult({ id: 'r2', identity: IDENTITY })]);
+    srv.close();
+
+    expect(batches).toHaveLength(3); // rejected, resent, then straight to the plain request
+    expect(batches[2]?.map((r) => r['id'])).toEqual(['r2']);
+    expect('identity' in (batches[2]?.[0] ?? {})).toBe(false);
+  });
+
+  it('recognises the error when the text is a plain-string body', async () => {
+    const { srv, batches } = await recordingServer((call) =>
+      call === 1 ? { status: 400, body: 'proto: (line 1:9): unknown field "identity"' } : ok);
+
+    await makeClient(srv).uploadResults(7, [makeResult({ id: 'r1', identity: IDENTITY })]);
+    srv.close();
+
+    expect(batches).toHaveLength(2);
+  });
+
+  it('treats a 400 about another field as a real error and does not resend', async () => {
+    const { srv, batches } = await recordingServer(() => ({
+      status: 400,
+      body: { code: 3, message: 'proto: (line 1:9): unknown field "idenity"', details: [] },
+    }));
+
+    await expect(makeClient(srv).uploadResults(7, [makeResult({ id: 'r1', identity: IDENTITY })])).rejects.toThrow();
+    srv.close();
+
+    expect(batches).toHaveLength(1);
+  });
+
+  it('treats a validation 400 as a real error and keeps identity for the next batch', async () => {
+    const { srv, batches } = await recordingServer((call) =>
+      call === 1
+        ? { status: 400, body: { code: 3, message: 'REPORT_VALIDATION: 1 result entries rejected', details: [] } }
+        : ok);
+    const client = makeClient(srv);
+
+    await expect(client.uploadResults(7, [makeResult({ id: 'r1', identity: IDENTITY })])).rejects.toThrow();
+    await client.uploadResults(7, [makeResult({ id: 'r2', identity: IDENTITY })]);
+    srv.close();
+
+    expect(batches).toHaveLength(2);
+    expect(batches[1]?.[0]?.['identity']).toEqual(IDENTITY);
+  });
+
+  it('does not resend when the batch carried no identity, even if the server says the field is unknown', async () => {
+    const { srv, batches } = await recordingServer(() => ({ status: 400, body: UNKNOWN_IDENTITY_BODY }));
+
+    await expect(makeClient(srv).uploadResults(7, [makeResult({ id: 'r1' })])).rejects.toThrow();
+    srv.close();
+
+    expect(batches).toHaveLength(1);
+  });
+
+  it('still fails when the resend without identity is rejected too', async () => {
+    const { srv, batches } = await recordingServer((call) =>
+      call === 1
+        ? { status: 400, body: UNKNOWN_IDENTITY_BODY }
+        : { status: 400, body: { code: 3, message: 'REPORT_VALIDATION: bad', details: [] } });
+
+    await expect(makeClient(srv).uploadResults(7, [makeResult({ id: 'r1', identity: IDENTITY })])).rejects.toThrow();
+    srv.close();
+
+    expect(batches).toHaveLength(2);
+  });
+});

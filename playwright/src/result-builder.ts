@@ -8,7 +8,12 @@ import {
   generateSignature,
   parseTidenIdFromTitle,
 } from '@tiden/reporter-commons';
-import { isUsableFilePath, removeTidenIdsFromTitle, resolveFilePath } from '@tiden/reporter-commons/internal';
+import {
+  buildTestIdentity,
+  isUsableFilePath,
+  removeTidenIdsFromTitle,
+  resolveFilePath,
+} from '@tiden/reporter-commons/internal';
 import { v4 as uuidv4 } from 'uuid';
 import { ReporterOptionsType } from './options';
 import { StepConverter } from './step-converter';
@@ -16,6 +21,13 @@ import { TestCaseMetadata } from './metadata-extractor';
 
 const PROFILER_CONTENT_TYPE = 'application/tiden.profiler-steps+json';
 const logMimeType = 'text/plain';
+
+/**
+ * The Playwright project is a variant of a test, not part of its name: the
+ * same test run under `chromium` and `firefox` is one case with two
+ * executions. A reserved param keeps them apart in the run.
+ */
+export const PROJECT_PARAM = 'tiden.playwright.project';
 
 const UNRESOLVED_FILE_PATH = (file: string): string =>
   `tiden: ${file} is outside the reporting root, omitting file_path — `
@@ -120,6 +132,20 @@ export class ResultBuilder {
     const testStatus = determineTestStatus(errorForStatus, result.status);
     const idsForSignature = case_id == null ? null : (Array.isArray(case_id) ? case_id : [case_id]);
 
+    // Identity parts, next to the legacy signature above. The name ignores
+    // `tiden.suite()` / `TidenSuite` annotations (they only decide the suite
+    // path shown in the run) and the project (it is a param, below).
+    const { project, describes } = splitTitlePath(test);
+    if (project !== '') {
+      metadata.parameters[PROJECT_PARAM] = project;
+    }
+    const identity = buildTestIdentity({
+      file: test.location?.file,
+      describes,
+      title: test.title,
+      startDir: this.rootDir,
+    });
+
     const testResult = {
       attachments: metadata.attachments,
       author: null,
@@ -151,6 +177,7 @@ export class ResultBuilder {
       },
       run_id: null,
       signature: generateSignature(idsForSignature, suites),
+      ...(identity ? { identity } : {}),
       steps: this.stepConverter.transform(result.steps, null),
       case_id,
       // Multi-project mapping was removed; the internal TestResultType model
@@ -240,6 +267,22 @@ function transformError(testErrors: TestError[]): CompoundError {
 
 function transformSuiteTitle(test: TestCase): string[] {
   return test.titlePath().filter(Boolean).map((s) => s.replace(/\\/g, '/'));
+}
+
+/**
+ * Playwright's `titlePath()` is `['', <project>, <file>, ...describes, <title>]`;
+ * the root and the file are unnamed levels, an anonymous `describe` is left
+ * out, and the project may be an empty string. That layout has been the same
+ * across every supported Playwright version, unlike `Suite.type`.
+ */
+function splitTitlePath(test: TestCase): { project: string; describes: string[] } {
+  const path = test.titlePath();
+  // Shorter than that is not a Playwright path (hand-built in a unit test):
+  // there is no project and no describe to read from it.
+  if (path.length < 3) {
+    return { project: '', describes: [] };
+  }
+  return { project: path[1] ?? '', describes: path.slice(3, -1) };
 }
 
 function convertLogsToAttachments(logs: (string | Buffer)[], name: string): Attachment {

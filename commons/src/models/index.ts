@@ -9,3 +9,4 @@ export type { Report } from './report';
 export { CompoundError } from './error';
 export type { ConfigurationGroup, ConfigurationItem, ConfigurationGroupResponse } from './configuration';
 export type { TidenOptionsType, TidenApiType, TidenRunType, TidenBatchType, TidenConfigurationType, TidenConfigurationValueType } from './config/TidenOptionsType';
+export type { TestIdentity } from './test-identity';
