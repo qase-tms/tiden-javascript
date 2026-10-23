@@ -1,5 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unnecessary-type-assertion, @typescript-eslint/require-await */
 import { expect } from '@jest/globals';
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
 import { ReporterFactory } from '../../src/core/reporter-factory';
 import { ModeEnum, OptionsType } from '../../src/options';
 import { ConfigType } from '../../src/config';
@@ -9,6 +12,7 @@ import { HostData } from '../../src/models/host-data';
 import { DisabledException } from '../../src/utils/disabled-exception';
 import { RunReporter, ReportReporter } from '../../src/reporters';
 import { TidenApiClient } from '../../src/client/tiden-client';
+import { REPOSITORY_ENV, resetRepositoryContext } from '../../src/internal/repository';
 
 const silentLogger = (): jest.Mocked<LoggerInterface> => ({
   log: jest.fn(),
@@ -79,33 +83,82 @@ describe('ReporterFactory', () => {
       expect((r as RunReporter)['api']).toBeInstanceOf(TidenApiClient);
     });
 
-    it('builds client_meta from hostData and framework/reporter names', () => {
+    describe('client_meta', () => {
+      const REPO_ENV_NAMES = [
+        REPOSITORY_ENV, 'GITHUB_SERVER_URL', 'GITHUB_REPOSITORY', 'CI_SERVER_URL',
+        'CI_PROJECT_PATH', 'BITBUCKET_GIT_HTTP_ORIGIN', 'BUILD_REPOSITORY_URI',
+      ];
+      const saved: Record<string, string | undefined> = {};
+      // No `.git` above it, so no repository resolves unless the test sets one.
+      let noRepoDir: string;
+
       const hostData: HostData = {
-        system: 'linux',
-        machineName: 'host',
-        release: '1.0',
-        version: '1.0',
-        arch: 'x64',
-        language: 'v20',
-        packageManager: 'npm',
-        framework: '1.2.3',
-        reporter: '4.5.6',
-        commons: '7.8.9',
+        system: 'linux', machineName: 'host', release: '1.0', version: '1.0', arch: 'x64',
+        language: 'v20', packageManager: 'npm', framework: '1.2.3', reporter: '4.5.6', commons: '7.8.9',
       };
-      const localFactory = new ReporterFactory(silentLogger(), hostData);
-      const opts = {
+      const tidenOptions = (): any => ({
         ...baseOptions(),
+        rootDir: noRepoDir,
         tiden: { api: { token: 't', baseUrl: 'https://api.tiden.example' }, product: 'DEMO' },
-      } as any;
-      localFactory.create(ModeEnum.tiden, opts, false);
-      expect(opts.tiden.clientMeta).toEqual({
-        framework: 'playwright',
-        reporter: 'tiden-playwright',
-        framework_version: '1.2.3',
-        reporter_version: '4.5.6',
-        commons_version: '7.8.9',
-        os: 'linux',
-        node: 'v20',
+      });
+
+      beforeEach(() => {
+        for (const name of REPO_ENV_NAMES) {
+          saved[name] = process.env[name];
+          Reflect.deleteProperty(process.env, name);
+        }
+        resetRepositoryContext();
+        noRepoDir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'tiden-factory-')));
+      });
+
+      afterEach(() => {
+        for (const name of REPO_ENV_NAMES) {
+          if (saved[name] === undefined) {
+            Reflect.deleteProperty(process.env, name);
+          } else {
+            process.env[name] = saved[name];
+          }
+        }
+        resetRepositoryContext();
+        fs.rmSync(noRepoDir, { recursive: true, force: true });
+      });
+
+      it('builds client_meta from hostData and framework/reporter names', () => {
+        const localFactory = new ReporterFactory(silentLogger(), hostData);
+        const opts = tidenOptions();
+        localFactory.create(ModeEnum.tiden, opts, false);
+        expect(opts.tiden.clientMeta).toEqual({
+          framework: 'playwright',
+          reporter: 'tiden-playwright',
+          framework_version: '1.2.3',
+          reporter_version: '4.5.6',
+          commons_version: '7.8.9',
+          os: 'linux',
+          node: 'v20',
+        });
+      });
+
+      it('adds the raw repository as gitRepository when one resolves', () => {
+        process.env[REPOSITORY_ENV] = 'git@github.com:acme/shop.git';
+        const opts = tidenOptions();
+
+        new ReporterFactory(silentLogger(), hostData).create(ModeEnum.tiden, opts, false);
+
+        expect(opts.tiden.clientMeta.gitRepository).toBe('git@github.com:acme/shop.git');
+      });
+
+      it('reads gitRepository from the .git/config of the reporting root', () => {
+        fs.mkdirSync(path.join(noRepoDir, '.git'));
+        fs.writeFileSync(
+          path.join(noRepoDir, '.git', 'config'),
+          '[remote "origin"]\n\turl = https://github.com/acme/shop.git\n',
+        );
+        resetRepositoryContext();
+        const opts = tidenOptions();
+
+        new ReporterFactory(silentLogger(), hostData).create(ModeEnum.tiden, opts, false);
+
+        expect(opts.tiden.clientMeta.gitRepository).toBe('https://github.com/acme/shop.git');
       });
     });
   });

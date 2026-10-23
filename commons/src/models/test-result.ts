@@ -1,6 +1,7 @@
 import { TestStepType } from './test-step';
 import { Attachment } from './attachment';
 import { TestExecution } from './test-execution';
+import { TestIdentity } from './test-identity';
 
 /**
  * Project code to test case IDs mapping for multi-project support.
@@ -32,6 +33,12 @@ export class TestResultType {
   message: string | null;
   tags: string[];
   preparedAttachments?: string[];
+  /**
+   * Identity parts sent next to the legacy `signature`. Absent when the
+   * reporter could not resolve a repository or the test file is outside the
+   * repository root. Deliberately not set by the constructor.
+   */
+  identity?: TestIdentity | undefined;
 
   constructor(title: string) {
     this.id = '';

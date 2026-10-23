@@ -28,6 +28,11 @@ export class TidenApiClient implements IClient {
   private readonly runService: RunService;
   private readonly attachmentService: AttachmentService;
   private readonly resultTransformer: ResultTransformer;
+  /**
+   * Set once the server has rejected `identity` as an unknown field. From then
+   * on this client sends results without it. See `postResultsWithRetry`.
+   */
+  private identityRejected = false;
 
   constructor(
     private readonly logger: LoggerInterface,
@@ -73,16 +78,21 @@ export class TidenApiClient implements IClient {
           ),
         ),
       );
-      await this.postResultsWithRetry(runId, models);
+      await this.postResultsWithRetry(runId, this.identityRejected ? models.map(withoutIdentity) : models);
     } catch (error) {
       throw processError(error, 'Error on uploading results', results);
     }
   }
 
-  /** 429-only retry (Retry-After honored, exp backoff, 30s cap); 400 is
+  /** 429 is retried (Retry-After honored, exp backoff, 30s cap). A 400 is
    *  terminal — resending an identical batch fails identically, so log
-   *  every per-entry ReportError from details[] and re-throw. */
-  private async postResultsWithRetry(runId: number, models: ResultCreate[], maxRetries = 5): Promise<void> {
+   *  every per-entry ReportError from details[] and re-throw — with one
+   *  exception: a server that predates `identity` answers 400 with the
+   *  gateway's `unknown field "identity"` error. Then the same batch (same
+   *  result ids, so the server still deduplicates) is resent without it, and
+   *  this client stops sending it. Any other 400 is a real error. */
+  private async postResultsWithRetry(runId: number, batch: ResultCreate[], maxRetries = 5): Promise<void> {
+    let models = batch;
     let delay = 1000;
     for (let attempt = 0; ; attempt++) {
       try {
@@ -106,6 +116,17 @@ export class TidenApiClient implements IClient {
           delay = Math.min(delay * 2, 30_000);
           continue;
         }
+        if (
+          isAxiosError(error)
+          && error.response?.status === 400
+          && models.some((model) => model.identity !== undefined)
+          && mentionsUnknownIdentityField(error.response.data)
+        ) {
+          this.identityRejected = true;
+          this.logger.log('The server does not accept test identity yet; reporting by signature only.');
+          models = models.map(withoutIdentity);
+          continue;
+        }
         if (isAxiosError(error) && error.response?.status === 400) {
           const details = (error.response.data as { details?: ReportErrorDetail[] } | undefined)?.details ?? [];
           for (const d of details) {
@@ -118,4 +139,27 @@ export class TidenApiClient implements IClient {
       }
     }
   }
+}
+
+/** The gateway's wording for a JSON field the API does not know. */
+const UNKNOWN_IDENTITY_FIELD = 'unknown field "identity"';
+
+function withoutIdentity(model: ResultCreate): ResultCreate {
+  const { identity: _identity, ...rest } = model;
+  return rest;
+}
+
+/**
+ * Whether an error body carries the unknown-`identity` error. The text sits in
+ * `message`, but a JSON-serialized body escapes its quotes, so strings are
+ * collected from the parsed body instead of searching the serialized form.
+ */
+function mentionsUnknownIdentityField(body: unknown, depth = 0): boolean {
+  if (typeof body === 'string') {
+    return body.includes(UNKNOWN_IDENTITY_FIELD);
+  }
+  if (depth > 4 || body === null || typeof body !== 'object') {
+    return false;
+  }
+  return Object.values(body).some((value) => mentionsUnknownIdentityField(value, depth + 1));
 }

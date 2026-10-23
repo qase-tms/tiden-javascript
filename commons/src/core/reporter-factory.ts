@@ -12,6 +12,8 @@ import { HostData } from '../models/host-data';
 import { TidenOptionsType } from '../models/config/TidenOptionsType';
 import { TidenApiClient } from '../client/tiden-client';
 import { DriverEnum, FsWriter } from '../writer';
+import { resolveRepositoryContext } from '../internal/repository';
+import { resolveRootDir } from '../internal/spec-path';
 
 /**
  * Builds a mode-specific InternalReporterInterface. Throws DisabledException
@@ -71,6 +73,13 @@ export class ReporterFactory {
       os: this.hostData.system,
       node: this.hostData.language,
     };
+    // The raw remote of the repository under test, so the run itself is
+    // attributed even when no result carries identity parts. The server
+    // normalizes it. Omitted, not empty, when nothing resolves.
+    const gitRepository = resolveRepositoryContext(resolveRootDir(options.rootDir)).repository;
+    if (gitRepository) {
+      tiden.clientMeta['gitRepository'] = gitRepository;
+    }
 
     const apiClient = new TidenApiClient(
       this.logger,

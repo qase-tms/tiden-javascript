@@ -45,6 +45,22 @@ type SameSlice<A, B> = [keyof A] extends [keyof B]
 
 // The tuple makes OpenAPI drift a TypeScript compilation failure. Runtime
 // contract tests separately verify paths, auth and JSON serialization.
+// `ResultCreate.identity` is pending sync. The server side ships it first and
+// the generated `api-client` is synced from tiden-specs by automation, so until
+// that PR lands the generated model has no such field and a plain `SameShape`
+// would fail. Exactly this one key is tolerated, and only while the generated
+// model lacks it:
+//   - before the sync: `identity` is left out of both sides;
+//   - after the sync: `identity` is still left out of the whole-model check,
+//     and `IdentityCheck` below starts comparing its type against the generated
+//     one, so a drift in the new field fails here instead of passing silently.
+// Nothing needs editing when the sync lands. Do not hand-edit `api-client`.
+type PendingKey = 'identity';
+type WithoutPending<T> = Omit<T, PendingKey>;
+type IdentityCheck<Generated> = PendingKey extends keyof Generated
+  ? SameShape<NonNullable<ResultCreate['identity']>, NonNullable<Generated[PendingKey & keyof Generated]>>
+  : true;
+
 type ContractChecks = [
   SameShape<CreateTestRunBody, GeneratedCreateTestRunBody>,
   SameSlice<CreateTestRunResponse, GeneratedCreateTestRunResponse>,
@@ -56,7 +72,8 @@ type ContractChecks = [
   SameShape<StepCode, GeneratedStepCode>,
   SameShape<ResultStep, GeneratedResultStep>,
   SameShape<SuiteSegment, GeneratedSuiteSegment>,
-  SameShape<ResultCreate, GeneratedResultCreate>,
+  SameShape<WithoutPending<ResultCreate>, WithoutPending<GeneratedResultCreate>>,
+  IdentityCheck<GeneratedResultCreate>,
   SameShape<ReportResultsBody, GeneratedReportResultsBody>,
   SameShape<ReportError, GeneratedReportError>,
   SameShape<ReportResultsResponse, GeneratedReportResultsResponse>,
@@ -65,6 +82,7 @@ type ContractChecks = [
 const contractChecks: ContractChecks = [
   true, true, true, true, true, true, true,
   true, true, true, true, true, true, true,
+  true,
 ];
 
 describe('reporter API model contract', () => {

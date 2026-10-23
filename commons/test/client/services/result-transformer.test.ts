@@ -55,6 +55,32 @@ describe('ResultTransformer', () => {
     transformer = new ResultTransformer(silentLogger(), undefined);
   });
 
+  describe('identity', () => {
+    it('maps identity onto the wire model next to the signature', async () => {
+      const identity = { language: 'js', repository: 'git@github.com:acme/shop.git', scope: ['src/a.test.ts'], name: ['Suite', 'works'] };
+
+      const model = await transformer.transform(makeResult({ identity }), mockUploader);
+
+      expect(model.identity).toEqual(identity);
+      expect(model.signature).toBe('sig-1');
+    });
+
+    it('copies the arrays so a later change to the result cannot change the request', async () => {
+      const identity = { language: 'js', repository: 'r', scope: ['a'], name: ['b'] };
+
+      const model = await transformer.transform(makeResult({ identity }), mockUploader);
+      identity.scope.push('mutated');
+
+      expect(model.identity?.scope).toEqual(['a']);
+    });
+
+    it('leaves identity out when the result has none', async () => {
+      const model = await transformer.transform(makeResult(), mockUploader);
+
+      expect('identity' in model).toBe(false);
+    });
+  });
+
   describe('transform', () => {
     it('should transform a basic result', async () => {
       const model = await transformer.transform(makeResult(), mockUploader);
