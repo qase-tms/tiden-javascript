@@ -7,13 +7,28 @@ import { buildTestIdentity, resetIdentityWarning } from '../../src/internal/test
 
 const REPOSITORY = 'git@github.com:acme/shop.git';
 
+// Every source the resolver reads. CI sets the GitHub pair, so a test that
+// expects no repository must clear them, not only TIDEN_REPOSITORY.
+const REPO_ENV_NAMES = [
+  REPOSITORY_ENV,
+  'GITHUB_SERVER_URL',
+  'GITHUB_REPOSITORY',
+  'CI_SERVER_URL',
+  'CI_PROJECT_PATH',
+  'BITBUCKET_GIT_HTTP_ORIGIN',
+  'BUILD_REPOSITORY_URI',
+];
+
 describe('buildTestIdentity', () => {
   let root: string;
-  let savedRepository: string | undefined;
+  const saved: Record<string, string | undefined> = {};
   let warn: jest.SpyInstance;
 
   beforeEach(() => {
-    savedRepository = process.env[REPOSITORY_ENV];
+    for (const name of REPO_ENV_NAMES) {
+      saved[name] = process.env[name];
+      Reflect.deleteProperty(process.env, name);
+    }
     process.env[REPOSITORY_ENV] = REPOSITORY;
     resetRepositoryContext();
     resetIdentityWarning();
@@ -24,10 +39,12 @@ describe('buildTestIdentity', () => {
 
   afterEach(() => {
     warn.mockRestore();
-    if (savedRepository === undefined) {
-      Reflect.deleteProperty(process.env, REPOSITORY_ENV);
-    } else {
-      process.env[REPOSITORY_ENV] = savedRepository;
+    for (const name of REPO_ENV_NAMES) {
+      if (saved[name] === undefined) {
+        Reflect.deleteProperty(process.env, name);
+      } else {
+        process.env[name] = saved[name];
+      }
     }
     resetRepositoryContext();
     resetIdentityWarning();
