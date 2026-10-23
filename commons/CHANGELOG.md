@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.4.0
 
 - **Test identity parts.** A result can carry `identity`: `{ language, repository, scope, name }`,
   sent next to the unchanged legacy `signature`. The server builds the identity key from these

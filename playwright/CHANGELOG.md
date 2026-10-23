@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.4.0
 
 - **Every result now carries `identity`** next to the unchanged legacy `signature`:
   `{ language: "js", repository, scope: [<repo-relative POSIX file>], name: [...describe titles, test title] }`.
