@@ -1,0 +1,20 @@
+commons/test/internal/test-identity.test.ts
+  s_167fffd223cbe1::t_8ecd0893be2ac6 42-47
+  s_167fffd223cbe1::t_4b4d8957026fd0 10-21,24,28-31
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1257f1114247374e1a7eca2134a69d48b17ffc3c",
+  "prompts": {},
+  "sessions": {
+    "s_167fffd223cbe1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e135bf6c-9a07-4bc4-8606-5e4560437095",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Nikolay Pisarev <npisarev@qase.io>"
+    }
+  }
+}
