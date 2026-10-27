@@ -59,3 +59,31 @@ describe('RunService against the Tiden wire', () => {
     expect(calls).toEqual(['/v1/products/p1/runs/42:complete', '/v1/products/p1/runs/42:complete']);
   });
 });
+
+describe('RunService buildSha', () => {
+  const saved = { ...process.env };
+  afterEach(() => { process.env = { ...saved }; });
+
+  async function createBody(): Promise<Record<string, unknown>> {
+    let body: Record<string, unknown> = {};
+    const srv = await testServer((_req, raw, res) => {
+      body = JSON.parse(raw) as Record<string, unknown>;
+      res.setHeader('content-type', 'application/json');
+      res.end(JSON.stringify({ run: { seqNum: 1 } }));
+    });
+    const service = new RunService(logger, new ReporterApi(createTidenClient(baseUrl(srv), 't')));
+    await service.createRun({ product: 'p', api: { token: 't' }, run: { branch: 'main' } } as never, undefined);
+    srv.close();
+    return body;
+  }
+
+  it('sends TIDEN_BUILD_SHA as buildSha', async () => {
+    process.env['TIDEN_BUILD_SHA'] = 'c'.repeat(40);
+    expect((await createBody())['buildSha']).toBe('c'.repeat(40));
+  });
+
+  it('omits buildSha when opted out', async () => {
+    process.env['TIDEN_BUILD_SHA'] = '';
+    expect(await createBody()).not.toHaveProperty('buildSha');
+  });
+});
