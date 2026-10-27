@@ -1,0 +1,35 @@
+jest/CHANGELOG.md
+  s_167fffd223cbe1::t_40edc9b755d657 3
+playwright/package.json
+  s_167fffd223cbe1::t_40edc9b755d657 3,58
+commons/package.json
+  s_167fffd223cbe1::t_40edc9b755d657 3
+vitest/package.json
+  s_167fffd223cbe1::t_40edc9b755d657 3,59
+playwright/CHANGELOG.md
+  s_167fffd223cbe1::t_40edc9b755d657 3
+vitest/CHANGELOG.md
+  s_167fffd223cbe1::t_40edc9b755d657 3
+jest/package.json
+  s_167fffd223cbe1::t_40edc9b755d657 3,59
+commons/CHANGELOG.md
+  s_167fffd223cbe1::t_ea5a67e21cff04 3
+package-lock.json
+  s_167fffd223cbe1::t_5040a49a290963 52,93,96,9440,9443,9462,9465
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fed6ce83225dc9e24b98858bdab3fcee3614ef4b",
+  "prompts": {},
+  "sessions": {
+    "s_167fffd223cbe1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e135bf6c-9a07-4bc4-8606-5e4560437095",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Nikolay Pisarev <npisarev@qase.io>"
+    }
+  }
+}

@@ -1,0 +1,57 @@
+jest/test/result-builder-identity.test.ts
+  s_167fffd223cbe1::t_79863e119856ad 1-169
+jest/jest.config.js
+  s_167fffd223cbe1::t_8808ea3be5139f 16
+jest/src/result-builder.ts
+  s_167fffd223cbe1::t_aa0b90c751e2d4 11-17,105-116
+  s_167fffd223cbe1::t_b8212ff775c437 117
+playwright/jest.config.js
+  s_167fffd223cbe1::t_8808ea3be5139f 16
+vitest/src/modules/resultBuilder.ts
+  s_167fffd223cbe1::t_aa0b90c751e2d4 11-17,97-109,297-317
+  s_167fffd223cbe1::t_87ac203b67c654 318-319
+playwright/src/result-builder.ts
+  s_167fffd223cbe1::t_b680142af9e726 180,280-284
+  s_167fffd223cbe1::t_aa0b90c751e2d4 11-16,25-31,135-147,272-279,285
+  s_167fffd223cbe1::t_9ad1ce7395a733 148,286-287
+jest/test/spend-identity-warning.ts
+  s_167fffd223cbe1::t_8808ea3be5139f 1-13
+playwright/test/spend-identity-warning.ts
+  s_167fffd223cbe1::t_8808ea3be5139f 1-13
+vitest/jest.config.js
+  s_167fffd223cbe1::t_8808ea3be5139f 16
+vitest/test/spend-identity-warning.ts
+  s_167fffd223cbe1::t_8808ea3be5139f 1-13
+jest/CHANGELOG.md
+  s_167fffd223cbe1::t_a52fcdff1058ec 5-15
+jest/README.md
+  s_167fffd223cbe1::t_c1c2aa7a3717a2 136
+playwright/CHANGELOG.md
+  s_167fffd223cbe1::t_fd288e0aca513e 5-18
+playwright/README.md
+  s_167fffd223cbe1::t_e5fe5e86a5fb9c 129-130
+playwright/test/result-builder-identity.test.ts
+  s_167fffd223cbe1::t_d97121d6f24af3 1-248
+vitest/CHANGELOG.md
+  s_167fffd223cbe1::t_b81bcc9e31ce1c 5-15
+vitest/README.md
+  s_167fffd223cbe1::t_45c5ce92a218fe 149
+vitest/test/resultBuilder-identity.test.ts
+  s_167fffd223cbe1::t_25f9579acea4f9 1-184
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "09760859596b9125150f8aca0b29ee5160033cd3",
+  "prompts": {},
+  "sessions": {
+    "s_167fffd223cbe1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e135bf6c-9a07-4bc4-8606-5e4560437095",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Nikolay Pisarev <npisarev@qase.io>"
+    }
+  }
+}

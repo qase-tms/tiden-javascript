@@ -1,0 +1,27 @@
+LICENSE
+  s_adc345102486d7::t_86e544e18a01eb 189
+api-client/LICENSE
+  s_adc345102486d7::t_dc9b66f92ef791 1-201
+commons/LICENSE
+  s_adc345102486d7::t_a1af8ad115778c 189
+playwright/LICENSE
+  s_adc345102486d7::t_886913beda3ebb 189
+vitest/LICENSE
+  s_adc345102486d7::t_b30e0033a06477 189
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "28d6ed2e6219fa02a4f34678d63f30305d52d0fb",
+  "prompts": {},
+  "sessions": {
+    "s_adc345102486d7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "99aaa5be-ca66-4169-a179-6d506444230e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Nikolay Pisarev <npisarev@qase.io>"
+    }
+  }
+}
