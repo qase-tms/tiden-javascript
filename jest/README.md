@@ -147,6 +147,7 @@ override both the config file and any explicit `jest.config.js` reporter options
 | `tiden.run.description`             | `TIDEN_RUN_DESCRIPTION`              | Test run description                                                             |
 | `tiden.run.complete`                | `TIDEN_RUN_COMPLETE`                 | Whether this process completes the run when it finishes (default `true`; set `false` on CI shards) |
 | `tiden.run.branch`                  | `TIDEN_BRANCH`                       | Branch name attached to the run                                                  |
+| —                                   | `TIDEN_BUILD_SHA`                       | Commit SHA of the build under test. Falls back to `GITHUB_SHA`, then `git rev-parse HEAD`; omitted when none is available; set to an empty string to opt out. Used by by-SHA release gates |
 | `tiden.batch.size`                  | `TIDEN_BATCH_SIZE`                   | Batch size for uploading results (default `200`, max `2000`)                      |
 | `tiden.configurations.values`       | `TIDEN_CONFIGURATIONS_VALUES`        | Configuration group values, format `group1=value1,group2=value2`                 |
 | **Report mode (local file output)**|                                       |                                                                                    |

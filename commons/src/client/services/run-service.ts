@@ -4,6 +4,7 @@ import { LoggerInterface } from '../../utils/logger';
 import { TidenError } from '../../utils/tiden-error';
 import { TidenOptionsType } from '../../models/config/TidenOptionsType';
 import { processError } from './api-error-handler';
+import { resolveBranch, resolveBuildSha } from '../../utils/build-sha';
 
 export class RunService {
   constructor(
@@ -27,12 +28,16 @@ export class RunService {
         title: config.run.title ?? '',
         description: config.run.description ?? '',
         environment: environment ?? '',
-        branch: config.run.branch ?? '',
+        branch: config.run.branch ?? resolveBranch() ?? '',
         configurations: config.configurations
           ? Object.fromEntries(config.configurations.values.map((v) => [v.name, v.value]))
           : {},
         clientMeta: config.clientMeta ?? {},
       };
+      const buildSha = resolveBuildSha();
+      if (buildSha) {
+        body.buildSha = buildSha; // omitted, never empty, when unknown
+      }
       this.logger.logDebug(`Creating test run: ${JSON.stringify(body)}`);
       const { data } = await this.api.createTestRun(config.product, body);
       const seqNum = data.run?.seqNum;
