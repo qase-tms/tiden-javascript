@@ -1,0 +1,31 @@
+commons/test/utils/build-sha.test.ts
+  s_89f448a790ee78::t_57e5ecc5a1627a 1-59
+playwright/README.md
+  s_89f448a790ee78::t_6a228bda5cc7f0 142
+vitest/README.md
+  s_89f448a790ee78::t_6a228bda5cc7f0 162
+commons/test/client/services/run-service.test.ts
+  s_89f448a790ee78::t_6a228bda5cc7f0 62-89
+commons/src/utils/build-sha.ts
+  s_89f448a790ee78::t_76228d1c7614e6 1-57
+jest/README.md
+  s_89f448a790ee78::t_6a228bda5cc7f0 149
+commons/src/client/services/run-service.ts
+  s_89f448a790ee78::t_76228d1c7614e6 7,31,37-40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "39f29bda43f8fbad964d3868f84d61fb09c4408f",
+  "prompts": {},
+  "sessions": {
+    "s_89f448a790ee78": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c537db77-78dc-42ea-a64a-6720c0118669",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "prostoandrei <avaganov@qase.io>"
+    }
+  }
+}
