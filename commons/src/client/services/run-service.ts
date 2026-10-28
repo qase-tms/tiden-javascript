@@ -33,6 +33,10 @@ export class RunService {
           : {},
         clientMeta: config.clientMeta ?? {},
       };
+      // Resolved by ReporterFactory; omitted, never empty, when nothing did.
+      if (config.run.buildSha) {
+        body.buildSha = config.run.buildSha;
+      }
       this.logger.logDebug(`Creating test run: ${JSON.stringify(body)}`);
       const { data } = await this.api.createTestRun(config.product, body);
       const seqNum = data.run?.seqNum;

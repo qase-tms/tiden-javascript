@@ -9,6 +9,11 @@ export interface RepositoryContext {
   repository: string | undefined;
   /** The nearest ancestor of the start directory that contains `.git`. */
   root: string | undefined;
+  /**
+   * The commit checked out at the root: git HEAD, followed through its ref.
+   * Only ever read from `.git`; `TIDEN_BUILD_SHA` is handled by the config.
+   */
+  headSha: string | undefined;
 }
 
 const SLASH = '/'.charCodeAt(0);
@@ -34,6 +39,10 @@ const cache = new Map<string, RepositoryContext>();
  * contains `.git`. A directory, or a file that points to the real git
  * directory (worktrees and submodules).
  *
+ * Head SHA: `HEAD` of that git directory. A detached HEAD holds the SHA
+ * itself; a symbolic one names a ref, read from its loose file or from
+ * `packed-refs`. Undefined on an unborn branch or anything unreadable.
+ *
  * No subprocess: `git` may be missing from a CI image, and spawning it for
  * every test run costs more than reading one small file. The value is not
  * normalized here; the server owns that rule, so a reporter can never drift
@@ -46,9 +55,11 @@ export function resolveRepositoryContext(startDir?: string): RepositoryContext {
     return cached;
   }
   const found = findGitEntry(start);
+  const dirs = found ? gitDirs(found.dotGit) : undefined;
   const context: RepositoryContext = {
-    repository: repositoryFromEnv(process.env) ?? (found ? repositoryFromGit(found.dotGit) : undefined),
+    repository: repositoryFromEnv(process.env) ?? (dirs ? repositoryFromGit(dirs) : undefined),
     root: found?.root,
+    headSha: dirs ? headShaFromGit(dirs) : undefined,
   };
   cache.set(start, context);
   return context;
@@ -123,17 +134,84 @@ function exists(candidate: string): boolean {
   }
 }
 
-function repositoryFromGit(dotGit: string): string | undefined {
+interface GitDirs {
+  /** Where this checkout's own HEAD lives. */
+  gitDir: string;
+  /** Where the config, branches and `packed-refs` live. */
+  commonDir: string;
+}
+
+function gitDirs(dotGit: string): GitDirs | undefined {
   const gitDir = resolveGitDir(dotGit);
   if (!gitDir) {
     return undefined;
   }
   // A linked worktree keeps its own HEAD and index in `<main>/.git/worktrees/<n>`
-  // but shares the remotes with the main repository, named by `commondir`.
+  // but shares the remotes and branches with the main repository, named by
+  // `commondir`.
   const commonDir = readTrimmed(path.join(gitDir, 'commondir'));
-  const configDir = commonDir ? path.resolve(gitDir, commonDir) : gitDir;
-  const config = readText(path.join(configDir, 'config'));
+  return { gitDir, commonDir: commonDir ? path.resolve(gitDir, commonDir) : gitDir };
+}
+
+function repositoryFromGit({ commonDir }: GitDirs): string | undefined {
+  const config = readText(path.join(commonDir, 'config'));
   return config === undefined ? undefined : originUrl(config);
+}
+
+/** SHA-1, or SHA-256 for a repository created with `--object-format=sha256`. */
+const OBJECT_ID = /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/i;
+
+const SYMREF_PREFIX = 'ref:';
+
+/** More than any real chain (HEAD → branch); stops a ref cycle. */
+const MAX_SYMREF_DEPTH = 5;
+
+function headShaFromGit(dirs: GitDirs): string | undefined {
+  let value = readTrimmed(path.join(dirs.gitDir, 'HEAD'));
+  for (let depth = 0; value !== undefined && depth < MAX_SYMREF_DEPTH; depth += 1) {
+    if (!value.startsWith(SYMREF_PREFIX)) {
+      return OBJECT_ID.test(value) ? value : undefined;
+    }
+    const ref = value.slice(SYMREF_PREFIX.length).trim();
+    if (!ref.startsWith('refs/')) {
+      return undefined;
+    }
+    value = readRef(dirs, ref);
+  }
+  return undefined;
+}
+
+/**
+ * A ref's value: its loose file, else its line in `packed-refs`. Per-worktree
+ * refs sit in the worktree's own git directory, shared ones in the common one.
+ */
+function readRef({ gitDir, commonDir }: GitDirs, ref: string): string | undefined {
+  for (const dir of gitDir === commonDir ? [gitDir] : [gitDir, commonDir]) {
+    const loose = readTrimmed(path.join(dir, ref));
+    if (loose) {
+      return loose;
+    }
+  }
+  return packedRef(commonDir, ref);
+}
+
+/** `<sha> <ref>` lines; `#` opens the header, `^` a peeled tag target. */
+function packedRef(commonDir: string, ref: string): string | undefined {
+  const packed = readText(path.join(commonDir, 'packed-refs'));
+  if (packed === undefined) {
+    return undefined;
+  }
+  for (const raw of packed.split(/\r?\n/)) {
+    const line = raw.trim();
+    if (!line || line.startsWith('#') || line.startsWith('^')) {
+      continue;
+    }
+    const space = line.indexOf(' ');
+    if (space > 0 && line.slice(space + 1).trim() === ref) {
+      return line.slice(0, space);
+    }
+  }
+  return undefined;
 }
 
 /** `.git` as a directory is the git directory; as a file it holds `gitdir: <path>`. */

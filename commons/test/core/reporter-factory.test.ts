@@ -6,7 +6,8 @@ import path from 'path';
 import { ReporterFactory } from '../../src/core/reporter-factory';
 import { ModeEnum, OptionsType } from '../../src/options';
 import { ConfigType } from '../../src/config';
-import { EnvApiEnum, EnvTidenEnum } from '../../src/env';
+import { EnvApiEnum, EnvRunEnum, EnvTidenEnum } from '../../src/env';
+import { OptionsResolver } from '../../src/core/options-resolver';
 import { LoggerInterface } from '../../src/utils/logger';
 import { HostData } from '../../src/models/host-data';
 import { DisabledException } from '../../src/utils/disabled-exception';
@@ -145,6 +146,65 @@ describe('ReporterFactory', () => {
         new ReporterFactory(silentLogger(), hostData).create(ModeEnum.tiden, opts, false);
 
         expect(opts.tiden.clientMeta.gitRepository).toBe('git@github.com:acme/shop.git');
+      });
+
+      describe('build SHA', () => {
+        const SHA = '0123456789abcdef0123456789abcdef01234567';
+
+        /** Turns the reporting root into a checkout detached at `SHA`. */
+        const detachedCheckout = (): void => {
+          fs.mkdirSync(path.join(noRepoDir, '.git'));
+          fs.writeFileSync(path.join(noRepoDir, '.git', 'HEAD'), `${SHA}\n`);
+          resetRepositoryContext();
+        };
+
+        const createWith = (run: Record<string, unknown> | undefined): any => {
+          const opts = tidenOptions();
+          if (run) {
+            opts.tiden.run = run;
+          }
+          new ReporterFactory(silentLogger(), hostData).create(ModeEnum.tiden, opts, false);
+          return opts.tiden.run;
+        };
+
+        it('keeps a configured build SHA over the checkout HEAD, trimmed', () => {
+          detachedCheckout();
+
+          expect(createWith({ buildSha: '  configured-sha \n' }).buildSha).toBe('configured-sha');
+        });
+
+        it('falls back to the HEAD of the reporting root when none is configured', () => {
+          detachedCheckout();
+
+          expect(createWith(undefined).buildSha).toBe(SHA);
+        });
+
+        it('falls back to the HEAD when the configured build SHA is blank', () => {
+          detachedCheckout();
+
+          expect(createWith({ buildSha: '   ', title: 't' })).toEqual({ buildSha: SHA, title: 't' });
+        });
+
+        it('takes TIDEN_BUILD_SHA, through the options resolver, over the checkout HEAD', () => {
+          detachedCheckout();
+          process.env[EnvRunEnum.buildSha] = 'env-sha';
+          try {
+            const { composed } = new OptionsResolver().resolve({
+              ...tidenOptions(),
+              mode: ModeEnum.tiden,
+            });
+
+            new ReporterFactory(silentLogger(), hostData).create(ModeEnum.tiden, composed, false);
+
+            expect(composed.tiden?.run?.buildSha).toBe('env-sha');
+          } finally {
+            Reflect.deleteProperty(process.env, EnvRunEnum.buildSha);
+          }
+        });
+
+        it('leaves the build SHA unset outside a checkout', () => {
+          expect(createWith({ buildSha: ' ' }).buildSha).toBeUndefined();
+        });
       });
 
       it('reads gitRepository from the .git/config of the reporting root', () => {

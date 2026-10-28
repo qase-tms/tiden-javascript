@@ -35,6 +35,7 @@ export interface EnvType {
   [EnvRunEnum.description]?: string;
   [EnvRunEnum.complete]?: boolean;
   [EnvRunEnum.branch]?: string;
+  [EnvRunEnum.buildSha]?: string;
 
   [EnvBatchEnum.size]?: number;
 

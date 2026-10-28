@@ -73,13 +73,22 @@ export class ReporterFactory {
       os: this.hostData.system,
       node: this.hostData.language,
     };
+    const repositoryContext = resolveRepositoryContext(resolveRootDir(options.rootDir));
     // The raw remote of the repository under test, so the run itself is
     // attributed even when no result carries identity parts. The server
     // normalizes it. Omitted, not empty, when nothing resolves.
-    const gitRepository = resolveRepositoryContext(resolveRootDir(options.rootDir)).repository;
+    const gitRepository = repositoryContext.repository;
     if (gitRepository) {
       tiden.clientMeta['gitRepository'] = gitRepository;
     }
+    // The commit under test: a release's Quality Gate counts only the runs of
+    // its own build SHA. TIDEN_BUILD_SHA, then the config (OptionsResolver),
+    // then the checkout's HEAD; a blank value falls through. Trimmed, otherwise
+    // sent as found: the server lowercases it. Omitted when nothing resolves.
+    tiden.run = {
+      ...tiden.run,
+      buildSha: tiden.run?.buildSha?.trim() || repositoryContext.headSha,
+    };
 
     const apiClient = new TidenApiClient(
       this.logger,

@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.5.0
+
+- **The run carries `buildSha`.** `RunService.createRun` sends `run.buildSha` as the run's
+  `buildSha` (the field `CreateTestRunBody` already had) and omits it when none resolves. A
+  release's Quality Gate counts only the runs of the release's own build SHA.
+- **Resolution order:** the new `TIDEN_BUILD_SHA`, then `tiden.run.buildSha` from the config, then
+  the git `HEAD` of the reporting root: the environment wins, as for every other option, the order
+  every Tiden reporter uses. The value is trimmed and otherwise sent as found; the server lowercases
+  it. A blank value counts as not set (`OptionsResolver` keeps the config's value under a blank
+  `TIDEN_BUILD_SHA`).
+- **`RepositoryContext.headSha`** on the `/internal` entry point: `HEAD` of the git directory
+  `resolveRepositoryContext` already finds, read from files with no subprocess. A detached `HEAD`
+  holds the SHA; a symbolic one is followed to its loose ref or its `packed-refs` line. A linked
+  worktree reads its own `HEAD` and the branch from the main repository (`commondir`); a submodule
+  `.git` file is followed to its `gitdir:`. Undefined on an unborn branch, a `HEAD` outside `refs/`,
+  or a ref cycle.
+
 ## 0.4.0
 
 - **Test identity parts.** A result can carry `identity`: `{ language, repository, scope, name }`,

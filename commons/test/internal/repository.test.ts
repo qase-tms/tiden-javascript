@@ -239,6 +239,148 @@ describe('resolveRepositoryContext', () => {
     });
   });
 
+  describe('head SHA from .git', () => {
+    const SHA = '0123456789abcdef0123456789abcdef01234567';
+    const OTHER_SHA = 'fedcba9876543210fedcba9876543210fedcba98';
+
+    /** A checkout whose `.git/HEAD` holds `head`. */
+    function withHead(head: string, name = 'repo'): string {
+      const root = checkout({}, name);
+      fs.writeFileSync(path.join(root, '.git', 'HEAD'), `${head}\n`);
+      return root;
+    }
+
+    function writeRef(gitDir: string, ref: string, sha: string): void {
+      fs.mkdirSync(path.dirname(path.join(gitDir, ref)), { recursive: true });
+      fs.writeFileSync(path.join(gitDir, ref), `${sha}\n`);
+    }
+
+    it('follows HEAD to the loose ref of the checked-out branch', () => {
+      const root = withHead('ref: refs/heads/feature/x');
+      writeRef(path.join(root, '.git'), 'refs/heads/feature/x', SHA);
+
+      expect(resolveRepositoryContext(root).headSha).toBe(SHA);
+    });
+
+    it('reads the branch from packed-refs when it has no loose ref', () => {
+      const root = withHead('ref: refs/heads/main');
+      fs.writeFileSync(
+        path.join(root, '.git', 'packed-refs'),
+        [
+          '# pack-refs with: peeled fully-peeled sorted ',
+          `${OTHER_SHA} refs/heads/main-old`,
+          `${SHA} refs/heads/main`,
+          `${OTHER_SHA} refs/tags/v1`,
+          `^${OTHER_SHA}`,
+          '',
+        ].join('\n'),
+      );
+
+      expect(resolveRepositoryContext(root).headSha).toBe(SHA);
+    });
+
+    it('prefers the loose ref over a stale packed-refs line', () => {
+      const root = withHead('ref: refs/heads/main');
+      writeRef(path.join(root, '.git'), 'refs/heads/main', SHA);
+      fs.writeFileSync(path.join(root, '.git', 'packed-refs'), `${OTHER_SHA} refs/heads/main\n`);
+
+      expect(resolveRepositoryContext(root).headSha).toBe(SHA);
+    });
+
+    it('reads a detached HEAD as the SHA itself', () => {
+      const root = withHead(SHA);
+
+      expect(resolveRepositoryContext(root).headSha).toBe(SHA);
+    });
+
+    it('returns the SHA as found, without changing its case', () => {
+      const root = withHead(SHA.toUpperCase());
+
+      expect(resolveRepositoryContext(root).headSha).toBe(SHA.toUpperCase());
+    });
+
+    it('accepts a SHA-256 object id', () => {
+      const sha256 = SHA + SHA.slice(0, 24);
+      const root = withHead(sha256);
+
+      expect(resolveRepositoryContext(root).headSha).toBe(sha256);
+    });
+
+    it('reads a linked worktree\'s own HEAD and its branch from the main repository', () => {
+      const main = checkout({}, 'main');
+      const mainGitDir = path.join(main, '.git');
+      fs.writeFileSync(path.join(mainGitDir, 'HEAD'), 'ref: refs/heads/main\n');
+      writeRef(mainGitDir, 'refs/heads/main', OTHER_SHA);
+      fs.writeFileSync(path.join(mainGitDir, 'packed-refs'), `${SHA} refs/heads/feature\n`);
+      const worktreeGitDir = path.join(mainGitDir, 'worktrees', 'feature');
+      fs.mkdirSync(worktreeGitDir, { recursive: true });
+      fs.writeFileSync(path.join(worktreeGitDir, 'commondir'), '../..\n');
+      fs.writeFileSync(path.join(worktreeGitDir, 'HEAD'), 'ref: refs/heads/feature\n');
+      const worktree = path.join(tmp, 'feature-worktree');
+      fs.mkdirSync(path.join(worktree, 'src'), { recursive: true });
+      fs.writeFileSync(path.join(worktree, '.git'), `gitdir: ${worktreeGitDir}\n`);
+
+      expect(resolveRepositoryContext(path.join(worktree, 'src')).headSha).toBe(SHA);
+      expect(resolveRepositoryContext(main).headSha).toBe(OTHER_SHA);
+    });
+
+    it('reads a detached HEAD in a linked worktree', () => {
+      const main = checkout({}, 'main');
+      const worktreeGitDir = path.join(main, '.git', 'worktrees', 'detached');
+      fs.mkdirSync(worktreeGitDir, { recursive: true });
+      fs.writeFileSync(path.join(worktreeGitDir, 'commondir'), '../..\n');
+      fs.writeFileSync(path.join(worktreeGitDir, 'HEAD'), `${SHA}\n`);
+      const worktree = path.join(tmp, 'detached-worktree');
+      fs.mkdirSync(worktree, { recursive: true });
+      fs.writeFileSync(path.join(worktree, '.git'), `gitdir: ${worktreeGitDir}\n`);
+
+      expect(resolveRepositoryContext(worktree).headSha).toBe(SHA);
+    });
+
+    it('follows a relative gitdir in a submodule .git file', () => {
+      const parent = path.join(tmp, 'parent');
+      const moduleGitDir = path.join(parent, '.git', 'modules', 'sub');
+      fs.mkdirSync(moduleGitDir, { recursive: true });
+      fs.writeFileSync(path.join(moduleGitDir, 'HEAD'), `${SHA}\n`);
+      const sub = path.join(parent, 'sub');
+      fs.mkdirSync(sub, { recursive: true });
+      fs.writeFileSync(path.join(sub, '.git'), 'gitdir: ../.git/modules/sub\n');
+
+      expect(resolveRepositoryContext(sub).headSha).toBe(SHA);
+    });
+
+    it('is undefined on an unborn branch', () => {
+      const root = withHead('ref: refs/heads/main');
+
+      expect(resolveRepositoryContext(root).headSha).toBeUndefined();
+    });
+
+    it('is undefined when HEAD holds neither a ref nor an object id', () => {
+      const root = withHead('not-a-sha');
+
+      expect(resolveRepositoryContext(root).headSha).toBeUndefined();
+    });
+
+    it('is undefined when HEAD points outside refs/', () => {
+      const root = withHead('ref: ../../outside');
+      fs.writeFileSync(path.join(tmp, 'outside'), `${SHA}\n`);
+
+      expect(resolveRepositoryContext(root).headSha).toBeUndefined();
+    });
+
+    it('is undefined when refs point at each other in a cycle', () => {
+      const root = withHead('ref: refs/heads/a');
+      writeRef(path.join(root, '.git'), 'refs/heads/a', 'ref: refs/heads/b');
+      writeRef(path.join(root, '.git'), 'refs/heads/b', 'ref: refs/heads/a');
+
+      expect(resolveRepositoryContext(root).headSha).toBeUndefined();
+    });
+
+    it('is undefined outside any checkout', () => {
+      expect(resolveRepositoryContext(tmp).headSha).toBeUndefined();
+    });
+  });
+
   it('keeps the repository root when the environment names the repository', () => {
     const root = checkout({});
     process.env[REPOSITORY_ENV] = 'git@github.com:acme/shop.git';

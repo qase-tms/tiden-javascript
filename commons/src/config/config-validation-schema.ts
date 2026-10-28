@@ -120,6 +120,10 @@ export const configValidationSchema = {
               type: 'string',
               nullable: true,
             },
+            buildSha: {
+              type: 'string',
+              nullable: true,
+            },
           },
         },
 
