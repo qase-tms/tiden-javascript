@@ -32,6 +32,14 @@ export class OptionsResolver {
     const env = envToConfig(envSchema({ schema: envValidationSchema }));
     const composed = composeOptions(options, env);
 
+    // The one field where the reporter config wins over its environment
+    // variable: the build SHA resolves as config, then TIDEN_BUILD_SHA, then
+    // git HEAD (ReporterFactory).
+    const configuredSha = options.tiden?.run?.buildSha;
+    if (configuredSha?.trim() && composed.tiden?.run) {
+      composed.tiden.run.buildSha = configuredSha;
+    }
+
     return {
       effectiveMode: (composed.mode as ModeEnum) ?? ModeEnum.off,
       effectiveFallback: (composed.fallback as ModeEnum) ?? ModeEnum.off,

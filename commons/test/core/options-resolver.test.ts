@@ -18,6 +18,7 @@ const resetEnv = () => {
   delete process.env[EnvRunEnum.id];
   delete process.env.TIDEN_MODE;
   delete process.env.TIDEN_API_TOKEN;
+  delete process.env[EnvRunEnum.buildSha];
 };
 
 describe('OptionsResolver', () => {
@@ -126,6 +127,46 @@ describe('OptionsResolver', () => {
       });
       expect(r.effectiveMode).toBe(ModeEnum.tiden);
       expect(r.effectiveFallback).toBe(ModeEnum.report);
+    });
+  });
+
+  describe('build SHA', () => {
+    const resolveWith = (buildSha?: string) =>
+      new OptionsResolver().resolve({
+        frameworkName: 'playwright',
+        frameworkPackage: 'playwright',
+        reporterName: 'tiden-playwright',
+        ...(buildSha === undefined ? {} : { tiden: { run: { buildSha } } }),
+      } as any).composed.tiden?.run?.buildSha;
+
+    beforeEach(() => {
+      (StateManager.isStateExists as jest.Mock).mockReturnValue(false);
+    });
+
+    afterEach(() => {
+      delete process.env[EnvRunEnum.buildSha];
+    });
+
+    it('prefers run.buildSha from the config over TIDEN_BUILD_SHA', () => {
+      process.env[EnvRunEnum.buildSha] = 'from-env';
+
+      expect(resolveWith('from-config')).toBe('from-config');
+    });
+
+    it('takes TIDEN_BUILD_SHA when the config sets no run.buildSha', () => {
+      process.env[EnvRunEnum.buildSha] = 'from-env';
+
+      expect(resolveWith()).toBe('from-env');
+    });
+
+    it('takes TIDEN_BUILD_SHA when the config\'s run.buildSha is blank', () => {
+      process.env[EnvRunEnum.buildSha] = 'from-env';
+
+      expect(resolveWith('  ')).toBe('from-env');
+    });
+
+    it('leaves run.buildSha unset when neither the config nor the environment sets it', () => {
+      expect(resolveWith()).toBeUndefined();
     });
   });
 });

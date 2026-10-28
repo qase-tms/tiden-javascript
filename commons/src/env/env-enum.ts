@@ -39,6 +39,7 @@ export enum EnvRunEnum {
   description = 'TIDEN_RUN_DESCRIPTION',
   complete = 'TIDEN_RUN_COMPLETE',
   branch = 'TIDEN_BRANCH',
+  buildSha = 'TIDEN_BUILD_SHA',
 }
 
 /**

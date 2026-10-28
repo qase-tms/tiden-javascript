@@ -33,6 +33,22 @@ describe('RunService against the Tiden wire', () => {
     });
   });
 
+  it('sends run.buildSha as the run\'s buildSha, and omits the field when none resolved', async () => {
+    const bodies: Record<string, unknown>[] = [];
+    const srv = await testServer((_req, body, res) => {
+      bodies.push(JSON.parse(body) as Record<string, unknown>);
+      res.setHeader('content-type', 'application/json');
+      res.end(JSON.stringify({ run: { seqNum: 42, status: 'new' } }));
+    });
+    const service = new RunService(logger, new ReporterApi(createTidenClient(baseUrl(srv), 'tfy_token')));
+    const sha = '0123456789abcdef0123456789abcdef01234567';
+    await service.createRun({ product: 'p', api: { token: 't' }, run: { buildSha: sha } } as never, undefined);
+    await service.createRun({ product: 'p', api: { token: 't' }, run: {} } as never, undefined);
+    srv.close();
+    expect(bodies[0]).toMatchObject({ buildSha: sha });
+    expect(bodies[1]).not.toHaveProperty('buildSha');
+  });
+
   it('returns config.run.id without any HTTP call when preset (sharded CI)', async () => {
     const http = createTidenClient('http://127.0.0.1:9', 'tfy_token'); // unroutable — must not be called
     const service = new RunService(logger, new ReporterApi(http));

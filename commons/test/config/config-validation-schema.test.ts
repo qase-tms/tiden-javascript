@@ -6,6 +6,16 @@ describe('configValidationSchema', () => {
   const ajv = new Ajv();
   const validate = ajv.compile(configValidationSchema);
 
+  describe('tiden.run.buildSha', () => {
+    it('accepts a string', () => {
+      expect(validate({ tiden: { run: { buildSha: '0123abc' } } })).toBe(true);
+    });
+
+    it('rejects a non-string', () => {
+      expect(validate({ tiden: { run: { buildSha: 123 } } })).toBe(false);
+    });
+  });
+
   describe('tiden.configurations', () => {
     it('should validate valid configurations object', () => {
       const validConfig = {

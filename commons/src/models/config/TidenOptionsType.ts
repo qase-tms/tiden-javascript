@@ -25,6 +25,11 @@ export interface TidenRunType {
   description?: string;
   complete?: boolean | undefined;
   branch?: string;
+  /**
+   * The commit under test, sent as the run's `buildSha`. Wins over
+   * `TIDEN_BUILD_SHA`; when neither is set, the git HEAD of the checkout.
+   */
+  buildSha?: string | undefined;
 }
 
 export interface TidenBatchType {

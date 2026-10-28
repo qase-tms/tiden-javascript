@@ -54,6 +54,7 @@ export const envToConfig = (env: EnvType): ConfigType => ({
       description: env[EnvRunEnum.description],
       complete: env[EnvRunEnum.complete],
       branch: env[EnvRunEnum.branch],
+      buildSha: env[EnvRunEnum.buildSha],
     },
 
     batch: {

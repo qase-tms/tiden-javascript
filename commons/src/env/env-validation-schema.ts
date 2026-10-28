@@ -102,6 +102,10 @@ export const envValidationSchema: JSONSchemaType<EnvType> = {
       type: 'string',
       nullable: true,
     },
+    [EnvRunEnum.buildSha]: {
+      type: 'string',
+      nullable: true,
+    },
 
     [EnvBatchEnum.size]: {
       type: 'number',

@@ -132,7 +132,8 @@ unreachable).
 
 ### Environment variables
 
-All options can also be set via environment variables, which take the highest priority — they
+All options can also be set via environment variables, which take the highest priority (except
+`tiden.run.buildSha`, see [Build SHA](#build-sha)) — they
 override both the config file and any explicit `vitest.config.ts` reporter options.
 
 | Config key                        | Environment variable                | Description                                                                    |
@@ -160,6 +161,7 @@ override both the config file and any explicit `vitest.config.ts` reporter optio
 | `tiden.run.description`             | `TIDEN_RUN_DESCRIPTION`              | Test run description                                                             |
 | `tiden.run.complete`                | `TIDEN_RUN_COMPLETE`                 | Whether this process completes the run when it finishes (default `true`; set `false` on CI shards) |
 | `tiden.run.branch`                  | `TIDEN_BRANCH`                       | Branch name attached to the run                                                  |
+| `tiden.run.buildSha`                | `TIDEN_BUILD_SHA`                    | The commit under test, sent as the run's build SHA. The config value wins over the variable; with neither, the git `HEAD` of the checkout. See [Build SHA](#build-sha) |
 | `tiden.batch.size`                  | `TIDEN_BATCH_SIZE`                   | Batch size for uploading results (default `200`, max `2000`)                      |
 | `tiden.configurations.values`       | `TIDEN_CONFIGURATIONS_VALUES`        | Configuration group values, format `group1=value1,group2=value2`                 |
 | **Report mode (local file output)**|                                       |                                                                                    |
@@ -187,6 +189,30 @@ TIDEN_ROOT_DIR="$GITHUB_WORKSPACE" npx vitest run
 It applies to the reported suite path as well, so the tree placement matches the
 identity.
 
+
+### Build SHA
+
+Every run the reporter creates carries the commit it tested, as the run's `buildSha`. A release's
+Quality Gate counts only the runs of the release's own build SHA, so a run without one counts
+toward no release.
+
+The reporter resolves it in this order, and the first value found wins:
+
+1. `tiden.run.buildSha`, from the reporter options or `tiden.config.json`. This is the one option
+   where the config wins over its environment variable.
+2. `TIDEN_BUILD_SHA`.
+3. The git `HEAD` of the checkout: the nearest ancestor of `rootDir` (`TIDEN_ROOT_DIR`), or of the
+   working directory, that contains `.git`. The reporter reads the files under `.git` and does not
+   run `git`. A branch ref, `packed-refs`, a detached `HEAD`, a linked worktree and a submodule all
+   resolve.
+4. Nothing: the run is created without a build SHA.
+
+The value is trimmed and otherwise sent as found; the server lowercases it. A blank value counts as
+not set.
+
+In CI, the checkout's `HEAD` is usually the commit under test. Set `TIDEN_BUILD_SHA` when it is not:
+for example, in a container without the `.git` directory, or in a pull-request job that checks out a
+merge commit.
 
 > **CLI alignment:** `TIDEN_PRODUCT_ID`, `TIDEN_API_TOKEN`, and `TIDEN_BASE_URL` are the same
 > environment variables read by the `tiden` CLI. Set them once in your CI environment and both the

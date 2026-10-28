@@ -1,7 +1,7 @@
 import { expect } from '@jest/globals';
 import { envToConfig } from '../../src/env/env-to-config';
 import { EnvType } from '../../src/env/env-type';
-import { EnvConfigurationsEnum, EnvEnum } from '../../src/env/env-enum';
+import { EnvConfigurationsEnum, EnvEnum, EnvRunEnum } from '../../src/env/env-enum';
 
 describe('envToConfig', () => {
   describe('fallback', () => {
@@ -29,6 +29,18 @@ describe('envToConfig', () => {
 
     it('leaves rootDir undefined when TIDEN_ROOT_DIR is unset', () => {
       expect(envToConfig({}).rootDir).toBeUndefined();
+    });
+  });
+
+  describe('buildSha', () => {
+    it('maps TIDEN_BUILD_SHA onto tiden.run.buildSha', () => {
+      const env: EnvType = { [EnvRunEnum.buildSha]: 'abc123' };
+
+      expect(envToConfig(env).tiden?.run?.buildSha).toBe('abc123');
+    });
+
+    it('leaves tiden.run.buildSha undefined when TIDEN_BUILD_SHA is unset', () => {
+      expect(envToConfig({}).tiden?.run?.buildSha).toBeUndefined();
     });
   });
 
