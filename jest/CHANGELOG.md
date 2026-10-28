@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.0
+
+- **Every run carries the commit it tested as `buildSha`**, so a release's Quality Gate can count
+  it. Set `tiden.run.buildSha` or `TIDEN_BUILD_SHA`; with neither, the reporter reads the git
+  `HEAD` of the checkout from `.git` (no `git` subprocess). The config value wins over the
+  variable, unlike every other option. See [Build SHA](README.md#build-sha).
+- Requires `@tiden/reporter-commons` `^0.5.0`.
+
 ## 0.4.0
 
 - **Every result now carries `identity`** next to the unchanged legacy `signature`:
