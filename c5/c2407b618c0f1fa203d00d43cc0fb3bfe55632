@@ -1,0 +1,72 @@
+commons/src/client/services/run-service.ts
+  s_acfe2340dae968::t_45372112743d7f 36-39
+commons/src/core/options-resolver.ts
+  s_acfe2340dae968::t_1b0cb191368d9f 36-37
+  s_acfe2340dae968::t_c415c534d1f05a 35,38-42
+commons/test/env/env-to-config.test.ts
+  s_acfe2340dae968::t_88e9f6a6f6e52b 4,33-44
+commons/src/env/env-enum.ts
+  s_acfe2340dae968::t_b1e0bdedfa46de 42
+commons/src/internal/repository.ts
+  s_acfe2340dae968::t_ace4aff750c7e7 137-144,150-151,153-157,161-215
+  s_acfe2340dae968::t_c50a828004d195 42-45
+  s_acfe2340dae968::t_dee04d437a4abe 12-16
+  s_acfe2340dae968::t_57f95cf7cc2218 58,60,62
+  s_acfe2340dae968::t_2367fc33959375 216
+commons/test/config/config-validation-schema.test.ts
+  s_acfe2340dae968::t_9a5cb6ffadaf46 9-18
+commons/test/core/options-resolver.test.ts
+  s_acfe2340dae968::t_d04e8db51b5646 21,132-170
+  s_acfe2340dae968::t_7ca37bfe38aaf7 171
+vitest/README.md
+  s_acfe2340dae968::t_1b0cb191368d9f 202
+  s_acfe2340dae968::t_c32ef6ce4add7b 135-136,164,193-201,203-215
+  s_acfe2340dae968::t_1c7fccf385c87c 216
+commons/test/internal/repository.test.ts
+  s_acfe2340dae968::t_68689b2ea04916 242-383
+commons/src/env/env-to-config.ts
+  s_acfe2340dae968::t_b1e0bdedfa46de 57
+jest/README.md
+  s_acfe2340dae968::t_c32ef6ce4add7b 122-123,151,161-169,171-183
+  s_acfe2340dae968::t_1b0cb191368d9f 170
+  s_acfe2340dae968::t_9fd3c553f32bc5 184
+playwright/README.md
+  s_acfe2340dae968::t_c32ef6ce4add7b 116-117,145,155-163,165-177
+  s_acfe2340dae968::t_1b0cb191368d9f 164
+  s_acfe2340dae968::t_46c821a207ef1e 178
+commons/src/models/config/TidenOptionsType.ts
+  s_acfe2340dae968::t_b1e0bdedfa46de 28-32
+commons/test/core/reporter-factory.test.ts
+  s_acfe2340dae968::t_d04e8db51b5646 151-187,205-209
+  s_acfe2340dae968::t_13617d7ff23733 188-200,202-204
+  s_acfe2340dae968::t_05500a31edaa90 201
+  s_acfe2340dae968::t_a1dfbf98e31908 9-10
+commons/src/config/config-validation-schema.ts
+  s_acfe2340dae968::t_b1e0bdedfa46de 123-126
+commons/src/env/env-validation-schema.ts
+  s_acfe2340dae968::t_b1e0bdedfa46de 105-108
+commons/src/core/reporter-factory.ts
+  s_acfe2340dae968::t_529324724dcc5f 88-91
+  s_acfe2340dae968::t_982389a9602518 76,80,84-85
+  s_acfe2340dae968::t_05500a31edaa90 86-87
+commons/src/env/env-type.ts
+  s_acfe2340dae968::t_b1e0bdedfa46de 38
+commons/test/client/services/run-service.test.ts
+  s_acfe2340dae968::t_9a5cb6ffadaf46 36-51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c5c2407b618c0f1fa203d00d43cc0fb3bfe55632",
+  "prompts": {},
+  "sessions": {
+    "s_acfe2340dae968": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d55807a2-e282-4814-bd9d-a7fc2525cbc4",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "prostoandrei <avaganov@qase.io>"
+    }
+  }
+}
