@@ -1,0 +1,38 @@
+jest/CHANGELOG.md
+  s_183d5442023bc1::t_9d05b54464edef 7-8
+commons/src/core/reporter-factory.ts
+  s_183d5442023bc1::t_9d05b54464edef 85-86
+commons/CHANGELOG.md
+  s_183d5442023bc1::t_9d05b54464edef 8-12
+commons/test/core/options-resolver.test.ts
+  s_183d5442023bc1::t_9d05b54464edef 150,153-157
+  s_183d5442023bc1::t_9f4b41f9b29308 158
+jest/README.md
+  s_183d5442023bc1::t_9d05b54464edef 122,150,168-169,174-175,178-179
+vitest/CHANGELOG.md
+  s_183d5442023bc1::t_9d05b54464edef 7-8
+playwright/CHANGELOG.md
+  s_183d5442023bc1::t_9d05b54464edef 7-8
+vitest/README.md
+  s_183d5442023bc1::t_9d05b54464edef 135,163,200-201,206-207,210-211
+playwright/README.md
+  s_183d5442023bc1::t_9d05b54464edef 116,144,162-163,168-169,172-173
+commons/src/core/options-resolver.ts
+  s_183d5442023bc1::t_9d05b54464edef 35-37,39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4673c2619725b5bdbbf6d118f3e869c60d938b38",
+  "prompts": {},
+  "sessions": {
+    "s_183d5442023bc1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "85835d40-186d-470b-9432-9282dbd1bb18",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "prostoandrei <avaganov@qase.io>"
+    }
+  }
+}
