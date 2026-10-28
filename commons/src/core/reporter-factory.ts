@@ -82,8 +82,8 @@ export class ReporterFactory {
       tiden.clientMeta['gitRepository'] = gitRepository;
     }
     // The commit under test: a release's Quality Gate counts only the runs of
-    // its own build SHA. Config, then TIDEN_BUILD_SHA (OptionsResolver), then
-    // the checkout's HEAD; a blank value falls through. Trimmed, otherwise
+    // its own build SHA. TIDEN_BUILD_SHA, then the config (OptionsResolver),
+    // then the checkout's HEAD; a blank value falls through. Trimmed, otherwise
     // sent as found: the server lowercases it. Omitted when nothing resolves.
     tiden.run = {
       ...tiden.run,

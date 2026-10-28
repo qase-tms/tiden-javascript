@@ -5,10 +5,11 @@
 - **The run carries `buildSha`.** `RunService.createRun` sends `run.buildSha` as the run's
   `buildSha` (the field `CreateTestRunBody` already had) and omits it when none resolves. A
   release's Quality Gate counts only the runs of the release's own build SHA.
-- **Resolution order:** `tiden.run.buildSha` from the config, then the new `TIDEN_BUILD_SHA`, then
-  the git `HEAD` of the reporting root. `run.buildSha` is the one option where the config wins over
-  its environment variable (`OptionsResolver`). The value is trimmed and otherwise sent as found;
-  the server lowercases it. A blank value counts as not set.
+- **Resolution order:** the new `TIDEN_BUILD_SHA`, then `tiden.run.buildSha` from the config, then
+  the git `HEAD` of the reporting root: the environment wins, as for every other option, the order
+  every Tiden reporter uses. The value is trimmed and otherwise sent as found; the server lowercases
+  it. A blank value counts as not set (`OptionsResolver` keeps the config's value under a blank
+  `TIDEN_BUILD_SHA`).
 - **`RepositoryContext.headSha`** on the `/internal` entry point: `HEAD` of the git directory
   `resolveRepositoryContext` already finds, read from files with no subprocess. A detached `HEAD`
   holds the SHA; a symbolic one is followed to its loose ref or its `packed-refs` line. A linked

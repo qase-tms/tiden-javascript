@@ -147,8 +147,14 @@ describe('OptionsResolver', () => {
       delete process.env[EnvRunEnum.buildSha];
     });
 
-    it('prefers run.buildSha from the config over TIDEN_BUILD_SHA', () => {
+    it('prefers TIDEN_BUILD_SHA over run.buildSha from the config, like every other setting', () => {
       process.env[EnvRunEnum.buildSha] = 'from-env';
+
+      expect(resolveWith('from-config')).toBe('from-env');
+    });
+
+    it('keeps the config\'s run.buildSha when TIDEN_BUILD_SHA is blank', () => {
+      process.env[EnvRunEnum.buildSha] = '  ';
 
       expect(resolveWith('from-config')).toBe('from-config');
     });

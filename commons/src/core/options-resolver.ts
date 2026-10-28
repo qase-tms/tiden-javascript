@@ -32,11 +32,11 @@ export class OptionsResolver {
     const env = envToConfig(envSchema({ schema: envValidationSchema }));
     const composed = composeOptions(options, env);
 
-    // The one field where the reporter config wins over its environment
-    // variable: the build SHA resolves as config, then TIDEN_BUILD_SHA, then
-    // git HEAD (ReporterFactory).
+    // TIDEN_BUILD_SHA overrides the config like every other setting, but a
+    // blank one counts as unset: the config's run.buildSha (then git HEAD, in
+    // ReporterFactory) still applies.
     const configuredSha = options.tiden?.run?.buildSha;
-    if (configuredSha?.trim() && composed.tiden?.run) {
+    if (!composed.tiden?.run?.buildSha?.trim() && configuredSha?.trim() && composed.tiden?.run) {
       composed.tiden.run.buildSha = configuredSha;
     }
 
