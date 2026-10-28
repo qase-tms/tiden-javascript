@@ -1,0 +1,38 @@
+commons/CHANGELOG.md
+  s_acfe2340dae968::t_0a342947f786d4 3-18
+jest/CHANGELOG.md
+  s_acfe2340dae968::t_0a342947f786d4 3-10
+jest/package.json
+  s_acfe2340dae968::t_ddcb1080eb597d 59
+  s_acfe2340dae968::t_1b0cb191368d9f 3
+commons/package.json
+  s_acfe2340dae968::t_1b0cb191368d9f 3
+playwright/CHANGELOG.md
+  s_acfe2340dae968::t_0a342947f786d4 3-10
+vitest/CHANGELOG.md
+  s_acfe2340dae968::t_0a342947f786d4 3-10
+vitest/package.json
+  s_acfe2340dae968::t_1b0cb191368d9f 3
+  s_acfe2340dae968::t_ddcb1080eb597d 59
+playwright/package.json
+  s_acfe2340dae968::t_1b0cb191368d9f 3
+  s_acfe2340dae968::t_ddcb1080eb597d 58
+package-lock.json
+  s_acfe2340dae968::t_7afdc5b57eeb82 52,93,96,9440,9443,9462,9465
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "68cafded71a481b87a58c2b849d337e412d866bb",
+  "prompts": {},
+  "sessions": {
+    "s_acfe2340dae968": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d55807a2-e282-4814-bd9d-a7fc2525cbc4",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "prostoandrei <avaganov@qase.io>"
+    }
+  }
+}
