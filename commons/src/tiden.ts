@@ -149,7 +149,9 @@ export class TidenReporter implements ReporterInterface {
     // the same tail is how a message stops being read.
     const credentials = credentialsRelevant
       ? ' "tiden" mode also requires tiden.api.token, tiden.product and' +
-        ' tiden.api.baseUrl (TIDEN_API_TOKEN, TIDEN_PRODUCT_ID, TIDEN_BASE_URL).'
+        ' tiden.api.baseUrl (TIDEN_API_TOKEN, TIDEN_PRODUCT_ID, TIDEN_BASE_URL).' +
+        ' Or run the suite as `tiden run exec -- <command>`, which creates the run' +
+        ' and passes all of these from your tiden CLI login.'
       : '';
     this.logger.log(
       `reporter disabled — nothing will be reported to Tiden, because ${reason}. ` +

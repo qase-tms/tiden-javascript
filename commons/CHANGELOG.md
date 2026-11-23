@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- **The "reporter disabled" message names `tiden run exec`.** When the message lists the
+  credentials "tiden" mode needs, it now adds that `tiden run exec -- <command>` creates the run and
+  passes all of them from the tiden CLI login. An agent that read only the variable list took it as
+  "no token here" and never reported its run (AICP-135).
+
 ## 0.5.0
 
 - **The run carries `buildSha`.** `RunService.createRun` sends `run.buildSha` as the run's

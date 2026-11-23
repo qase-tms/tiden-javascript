@@ -78,6 +78,9 @@ describe('TidenReporter disabled announcement', () => {
     expect(out).toContain('reporter disabled');
     expect(out).toContain('nothing will be reported to Tiden');
     expect(out).toContain('mode is "off"');
+    // The way to run with credentials without finding a token: an agent once
+    // read the bare variable list as "no token here" and never reported a run.
+    expect(out).toContain('tiden run exec -- <command>');
   });
 
   it('names the missing credentials when tiden mode cannot start and fallback is off', () => {
