@@ -6,6 +6,7 @@ import { TestStatusEnum, TestResultType, Attachment } from './models';
 import { ConfigType } from './config';
 
 import { DisabledException } from './utils/disabled-exception';
+import { MissingCredentialsException } from './utils/missing-credentials-exception';
 import { Logger, LoggerInterface } from './utils/logger';
 import { getHostInfo } from './utils/hostData';
 import { sanitizeOptionsForLog } from './utils/token-masker';
@@ -195,6 +196,10 @@ export class TidenReporter implements ReporterInterface {
           this.logReporterDisabled(
             'the upstream reporter could not be created and no fallback is configured',
             'fix the error above',
+            // A missing credential is the common case here (no fallback is the
+            // default): name all of them and the run exec route, or the reader
+            // goes looking for a token. Any other failure is about something else.
+            error instanceof MissingCredentialsException,
           );
           return { upstream, fallback: fallbackReporter, disabled, useFallbackFromStart: false };
         }

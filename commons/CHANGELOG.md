@@ -5,7 +5,10 @@
 - **The "reporter disabled" message names `tiden run exec`.** When the message lists the
   credentials "tiden" mode needs, it now adds that `tiden run exec -- <command>` creates the run and
   passes all of them from the tiden CLI login. An agent that read only the variable list took it as
-  "no token here" and never reported its run (AICP-135).
+  "no token here" and never reported its run (AICP-135). The list and the hint now also appear when
+  "tiden" mode lacks a credential and no fallback is configured, which is the default; before, that
+  message said only "fix the error above". A startup failure that is not a missing credential still
+  does not list them.
 
 ## 0.5.0
 
