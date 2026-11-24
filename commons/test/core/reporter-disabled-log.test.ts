@@ -78,6 +78,35 @@ describe('TidenReporter disabled announcement', () => {
     expect(out).toContain('reporter disabled');
     expect(out).toContain('nothing will be reported to Tiden');
     expect(out).toContain('mode is "off"');
+    // Enabling it is the next step, and run exec is how to do that without
+    // finding a token by hand.
+    expect(out).toContain('tiden run exec -- <command>');
+  });
+
+  it('names the credentials and tiden run exec when a token is missing and no fallback is set', () => {
+    // No fallback is the default, so this is what TIDEN_MODE=tiden without a
+    // token prints. An agent once read the bare variable list as "no token
+    // here" and never reported its run.
+    build({ mode: ModeEnum.tiden, tiden: {} });
+
+    const out = lines();
+    expect(out).toContain('reporter disabled');
+    expect(out).toContain('no fallback is configured');
+    expect(out).toContain('TIDEN_API_TOKEN');
+    expect(out).toContain('TIDEN_PRODUCT_ID');
+    expect(out).toContain('TIDEN_BASE_URL');
+    expect(out).toContain('tiden run exec -- <command>');
+  });
+
+  it('does not name the credentials when the reporter fails for another reason and no fallback is set', () => {
+    // An unknown mode fails in the factory for a reason no credential fixes.
+    build({ mode: 'bogus' as ModeEnum });
+
+    const out = lines();
+    expect(out).toContain('reporter disabled');
+    expect(out).toContain('no fallback is configured');
+    expect(out).not.toContain('TIDEN_API_TOKEN');
+    expect(out).not.toContain('tiden run exec');
   });
 
   it('names the missing credentials when tiden mode cannot start and fallback is off', () => {
@@ -90,8 +119,8 @@ describe('TidenReporter disabled announcement', () => {
     expect(out).toContain('TIDEN_API_TOKEN');
     expect(out).toContain('TIDEN_PRODUCT_ID');
     expect(out).toContain('TIDEN_BASE_URL');
+    expect(out).toContain('tiden run exec -- <command>');
   });
-
 
   it('stays quiet when the reporter is actually working', () => {
     build({ mode: ModeEnum.report });

@@ -8,6 +8,7 @@ import { ConfigType } from '../config';
 import { EnvApiEnum, EnvTidenEnum } from '../env';
 import { LoggerInterface } from '../utils/logger';
 import { DisabledException } from '../utils/disabled-exception';
+import { MissingCredentialsException } from '../utils/missing-credentials-exception';
 import { HostData } from '../models/host-data';
 import { TidenOptionsType } from '../models/config/TidenOptionsType';
 import { TidenApiClient } from '../client/tiden-client';
@@ -48,17 +49,17 @@ export class ReporterFactory {
     withState: boolean,
   ): RunReporter {
     if (!options.tiden?.api?.token) {
-      throw new Error(
+      throw new MissingCredentialsException(
         `Either "tiden.api.token" parameter or "${EnvApiEnum.token}" environment variable is required in "tiden" mode`,
       );
     }
     if (!options.tiden.product) {
-      throw new Error(
+      throw new MissingCredentialsException(
         `Either "tiden.product" parameter or "${EnvTidenEnum.product}" environment variable is required in "tiden" mode`,
       );
     }
     if (!options.tiden?.api?.baseUrl) {
-      throw new Error(
+      throw new MissingCredentialsException(
         `Either "tiden.api.baseUrl" parameter or "${EnvApiEnum.baseUrl}" environment variable is required in "tiden" mode`,
       );
     }
