@@ -1,0 +1,35 @@
+commons/CHANGELOG.md
+  s_546e1e24a7e372::t_c8ffc931022da2 3
+commons/package.json
+  s_546e1e24a7e372::t_8dae422f83b1a9 3
+jest/CHANGELOG.md
+  s_546e1e24a7e372::t_81bd8820bdad99 3-6
+jest/package.json
+  s_546e1e24a7e372::t_abfd6c6e1bfe76 3,59
+package-lock.json
+  s_546e1e24a7e372::t_9638807d81b197 52,93,96,9440,9443,9462,9465
+playwright/CHANGELOG.md
+  s_546e1e24a7e372::t_8f1a6971adb39b 3-6
+playwright/package.json
+  s_546e1e24a7e372::t_d6eb886fdb18da 3,58
+vitest/CHANGELOG.md
+  s_546e1e24a7e372::t_87fbd8270ec568 3-6
+vitest/package.json
+  s_546e1e24a7e372::t_89c3d07966d5ec 3,59
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9aa41ff95427e71a502bd7b5753ea114f8111130",
+  "prompts": {},
+  "sessions": {
+    "s_546e1e24a7e372": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f19ee34b-131c-43a3-8f5c-9b8d05162d03",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "prostoandrei <avaganov@qase.io>"
+    }
+  }
+}
