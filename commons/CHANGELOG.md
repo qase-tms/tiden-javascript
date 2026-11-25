@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.5.1
 
 - **The "reporter disabled" message names `tiden run exec`.** When the message lists the
   credentials "tiden" mode needs, it now adds that `tiden run exec -- <command>` creates the run and

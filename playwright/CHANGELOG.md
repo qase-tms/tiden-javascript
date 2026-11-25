@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.1
+
+- Uses `@tiden/reporter-commons` 0.5.1: the reporter's disabled and missing-credential messages name `tiden run exec`.
+
 ## 0.5.0
 
 - **Every run carries the commit it tested as `buildSha`**, so a release's Quality Gate can count
